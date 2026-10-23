@@ -66,7 +66,7 @@ canvas#gl.drag{cursor:grabbing}
 <div id="nav"><button id="prev" aria-label="Momento anterior">◀</button><span id="dots"></span><span id="st"></span><button id="next" aria-label="Momento siguiente">▶</button><button id="fs" aria-label="Pantalla completa">⤢</button></div>
 <div id="hint">Arrastra para girar · rueda para acercar · ← → momentos</div>
 <!--THREE--><script src="vendor/three.min.js?v=158"></script>
-<script src="img_data.js?v=7"></script>
+<script src="img_data.js?v=8"></script>
 <script>
 (async function(){
 "use strict";
@@ -110,11 +110,15 @@ function nails(g,step){const xs=[],ys=[];for(let x=W/2;x<OX1-.012;x+=step)xs.pus
 /* ================= textos ================= */
 const FR1=[["Al principio ellos pedían y pagaban, después ya no, ellos ya solo pedían, ya no pagaban, hasta que se acabó la tienda.","01:20"],["Permiso teníamos solamente hasta las 6 de la tarde. Después ya no podíamos andar.","01:45"],["Llegaban a nuestras casas 2, 3 de la mañana para que nos levantemos y ellos poder descansar.","02:28"],["Tenían personas secuestradas y las llevaban a la casa.","03:40"],["De una loma el ejército, de la otra loma guerrilla y nosotros en la mitad.","04:01"],["Nos metíamos debajo la cama, debajo las mesas.","04:14"],["Los dejaban que amanezcan, amarrados a un árbol y sin nada de ropa, y les ponían un letrero arriba: por sapos.","05:15"],["Nos decían que si nosotros decíamos algo (…) que nos mataban, o si no, que nos quitaban los niños pequeños.","05:37"]];
 const FR2=[["Decidimos mejor salir de la vereda y venirnos acá a la ciudad.","05:55"],["Uno llega sin saber qué hacer, dónde irse.","06:10"],["Es muy distinta la vida de ciudad a la vida de campo.","06:22"]];
-function torn(x,w,h,fill){x.fillStyle=fill;x.fillRect(0,0,w,h);seed=Math.floor(w+h);for(let k=0;k<900;k++){x.fillStyle=fill==="#0f0e0d"?`rgba(255,255,255,${rnd()*.025})`:`rgba(0,0,0,${rnd()*.03})`;x.fillRect(rnd()*w,rnd()*h,2,2);}}
-const quoteTex=(s,ts,dark)=>tex(900,640,(x,w,h)=>{torn(x,w,h,dark?"#0f0e0d":"#f6f4ee");x.fillStyle=dark?"#fff":"#9d978c";x.font=`500 46px ${F.body}`;wrap(x,"«"+s+"»",w-120,60,60,120);x.font=`500 28px ${F.body}`;x.fillStyle=dark?"#8f897f":"#c4beb3";x.fillText("Entrevista · "+ts,60,h-58);hole(x,w,48);});
+function torn(x,w,h,fill){x.fillStyle=fill;x.fillRect(0,0,w,h);seed=Math.floor(w+h);for(let k=0;k<900;k++){x.fillStyle=fill!=="#f6f4ee"?`rgba(255,255,255,${rnd()*.03})`:`rgba(0,0,0,${rnd()*.03})`;x.fillRect(rnd()*w,rnd()*h,2,2);}}
+/* módulo 1 negro (lo oscuro), módulo 2 gris (el limbo) */
+const QS={dark:["#0f0e0d","#ffffff","#8f897f"],gray:["#6f6b66","#f5f3ee","#d2ccc2"]};
+const quoteTex=(s,ts,k)=>tex(900,640,(x,w,h)=>{const c=QS[k];torn(x,w,h,c[0]);x.fillStyle=c[1];x.font=`500 46px ${F.body}`;wrap(x,"«"+s+"»",w-120,60,60,120);x.font=`500 28px ${F.body}`;x.fillStyle=c[2];x.fillText("Entrevista · "+ts,60,h-58);hole(x,w,48);});
 const NARR=["Vivían en la vereda: una tienda, cuyes, gallinas. Un día llegaron hombres armados y la vida se volvió un nudo.","Escaparon. Pero llegó la incertidumbre.","Salieron con lo que tenían. En la ciudad nadie los esperaba.","Pero ese no era el final.","Empezó otra vez, punto por punto.","Hoy teje y vende su trabajo."];
-const noteTex=s=>tex(560,760,(x,w,h)=>{x.fillStyle="#efe5cc";x.fillRect(0,0,w,h);x.strokeStyle="rgba(80,110,160,.28)";x.lineWidth=2;for(let y=150;y<h;y+=58){x.beginPath();x.moveTo(0,y);x.lineTo(w,y);x.stroke();}x.strokeStyle="rgba(190,60,60,.35)";x.beginPath();x.moveTo(70,0);x.lineTo(70,h);x.stroke();
-  x.fillStyle="#2a2620";x.font=`700 54px ${F.hand}`;wrap(x,s,w-120,58,90,142);hole(x,w,44);});
+/* notas de la historia: papel amarillo crema, letra grande que se ajusta al papel */
+const noteTex=s=>tex(640,720,(x,w,h)=>{x.fillStyle="#f7df86";x.fillRect(0,0,w,h);seed=s.length;for(let k=0;k<700;k++){x.fillStyle=`rgba(120,90,20,${rnd()*.04})`;x.fillRect(rnd()*w,rnd()*h,2,2);}
+  x.fillStyle="#2a2620";let fs=150;const fits=f=>{x.font=`700 ${f}px ${F.hand}`;const words=s.split(" ");if(words.some(wd=>x.measureText(wd).width>w-100))return false;let line="",n=1;for(const wd of words){const t=line?line+" "+wd:wd;if(x.measureText(t).width>w-100&&line){n++;line=wd;}else line=t;}x._n=n;return 110+n*f*1.0<h-30;};
+  while(fs>44&&!fits(fs))fs-=4;x.font=`700 ${fs}px ${F.hand}`;fits(fs);wrap(x,s,w-100,fs,50,Math.max(110,(h+60-x._n*fs)/2)+fs*.78);hole(x,w,44);});
 const DEST=[["La vereda",1],["¿?",0],["",2],["¿Dónde?",1],["¿?",2]];
 const tagTex=(n)=>tex(300,500,(x,w,h)=>{x.fillStyle="#f6f1e4";x.beginPath();x.moveTo(60,0);x.lineTo(w-60,0);x.lineTo(w,60);x.lineTo(w,h);x.lineTo(0,h);x.lineTo(0,60);x.closePath();x.fill();hole(x,w,55);
   x.font=`600 40px ${F.body}`;x.fillStyle="#3a3631";x.fillText("DESTINO",44,185);const d=DEST[n%DEST.length];x.font=`700 60px ${F.hand}`;x.fillStyle="#4a463f";if(d[0])x.fillText(d[0],48,282);
@@ -146,21 +150,22 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
   if(i===0){seed=21;const pk=a=>a[Math.floor(rnd()*a.length)];const pairs=[[P.t,P.b],[P.l,P.r],[P.t,P.r],[P.l,P.b],[P.t,P.l],[P.r,P.b]];
     for(let k=0;k<84;k++){const p=pairs[k%6];segs.push([pk(p[0]),pk(p[1]),rnd()<.4?RED2:RED]);}
     const mr=near(P.r,"y",yM);for(let k=0;k<4;k++)segs.push([pk(k%2?P.t:P.b),mr,RED]);
-    seed=77;const pos=[[.43,1.61],[.53,1.37],[.30,1.31],[.14,1.12],[.45,1.08],[.28,.89],[.13,.71],[.50,.66]];const map=[0,1,2,3,6,5,4,7];
-    g.userData.cards=[];map.forEach((fi,k)=>{g.userData.cards[fi]=hang(g,quoteTex(FR1[fi][0],FR1[fi][1],true),.16,.114,pos[k][0],pos[k][1],(rnd()-.5)*.16,.035);});}
+    seed=77;/* columnas a .135/.325/.515; notas arriba a la izquierda y abajo a la derecha */
+    const pos=[[.515,1.635],[.325,1.50],[.135,1.37],[.515,1.315],[.135,1.05],[.515,.995],[.325,.90],[.135,.73]];
+    g.userData.cards=[];pos.forEach((p,fi)=>{g.userData.cards[fi]=hang(g,quoteTex(FR1[fi][0],FR1[fi][1],"dark"),.16,.114,p[0],p[1],(rnd()-.5)*.08,.03);});}
   if(i===1){const ml=near(P.l,"y",yM),mr=near(P.r,"y",yM);segs.push([ml,mr,RED]);
     const HL=[yM+.48,yM+.36,yM+.24,yM+.12,yM-.12,yM-.24,yM-.36,yM-.48];HL.forEach(y=>segs.push([near(P.l,"y",y),near(P.r,"y",y),0x9a9e99]));
     /* caminos rectos y paralelos (misma inclinación), sin cruzarse */
-    const xs=[.10,.20,.32],sl=2,BR=[[xs[0],.12],[xs[1],.48],[xs[2],.24],[(xs[0]+xs[1])/2,-.24],[(xs[1]+xs[2])/2,-.48]];const tags=[];
+    const sl=2,BR=[[.08,.12],[.17,.36],[.34,.24],[.30,-.12],[.40,-.24]];const tags=[];
     BR.forEach((b,k)=>{const a=new T.Vector3(b[0],yM,0),e=new T.Vector3(b[0]+Math.abs(b[1])/sl,yM+b[1],0);segs.push([a,e,RED]);tags.push(hang(g,tagTex(k),.055,.09,e.x,e.y,(k%2?.08:-.08),.16));});
-    g.userData.tags=tags;g.userData.cards=[hang(g,quoteTex(FR2[0][0],FR2[0][1],false),.16,.114,.50,yM-.12,.04,.035),hang(g,quoteTex(FR2[1][0],FR2[1][1],false),.16,.114,.13,yM-.24,-.04,.035),hang(g,quoteTex(FR2[2][0],FR2[2][1],false),.16,.114,.30,yM-.36,.03,.035)];}
+    g.userData.tags=tags;g.userData.cards=[hang(g,quoteTex(FR2[0][0],FR2[0][1],"gray"),.16,.114,.515,yM+.48,.03,.03),hang(g,quoteTex(FR2[1][0],FR2[1][1],"gray"),.16,.114,.135,yM-.12,-.03,.03),hang(g,quoteTex(FR2[2][0],FR2[2][1],"gray"),.16,.114,.30,yM-.36,.03,.03)];}
   if(i===2){const PAL=[0xff006e,0x3a86ff,0xffbe0b,0x06d6a0,0x8338ec,0xfb5607,0x118ab2,0xef476f,0x2ec4b6,0xffd166];
     P.t.slice().sort((a,b)=>a.x-b.x).forEach((a,k)=>segs.push([a,near(P.b,"x",a.x),PAL[Math.floor(k/2)%PAL.length]]));
     P.l.slice().sort((a,b)=>a.y-b.y).forEach((a,k)=>{const isR=Math.abs(a.y-yM)<.001;segs.push([a.clone().setZ(.003),near(P.r,"y",a.y).clone().setZ(.003),isR?RED:PAL[(Math.floor(k/3)+3)%PAL.length]]);});
-    const snap=y=>yM+Math.round((y-yM)/.02)*.02;const pos=[[.35,1.62],[.53,1.52],[.33,1.34],[.14,1.28],[.52,1.24],[.32,1.04],[.14,.92],[.31,.76]];
-    g.userData.photos=pos.map((p,k)=>hang(g,photoTex(k),.11,.144,p[0],snap(p[1]),(k%2?.04:-.04),.03));}
+    const snap=y=>yM+Math.round((y-yM)/.02)*.02;const pos=[[.515,1.6275],[.325,1.4875],[.515,1.3275],[.135,1.4075],[.135,1.1075],[.325,.9675],[.515,1.0275],[.135,.8075]];
+    g.userData.photos=pos.map((p,k)=>hang(g,photoTex(k),.11,.144,p[0],snap(p[1]),(k%2?.03:-.03),.025));}
   threads(g,segs,i===2?.0013:.0015);
-  const NP=[[[0,.155,1.6,.15,.2],[1,.50,.95,.12,.16]],[[2,.13,yM+.48,.15,.2],[3,.54,yM+.36,.12,.16]],[[4,.155,1.62,.14,.17],[5,.50,.96,.12,.16]]][i];g.userData.notes=NP.map(n=>hang(g,noteTex(NARR[n[0]]),n[3],n[4],n[1],n[2],(n[1]>.3?.03:-.03),.02));
+  g.userData.notes=[[2*i,.135,1.635],[2*i+1,.515,.73]].map(n=>hang(g,noteTex(NARR[n[0]]),.16,.18,n[1],n[2],(n[1]>.3?.025:-.025),.018));
   g.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});return g;}
 const frames=[0,1,2].map(frame);const stand=new T.Group();frames.forEach(f=>stand.add(f));scene.add(stand);
 /* bisagras alternas para plegar en acordeón */
