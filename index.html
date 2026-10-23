@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <!--HEAD-->
-<title>Punto de partida 3D</title>
+<title>Museo al aire libre · Punto de partida</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23b3261e%22/%3E%3Cpath%20d%3D%22M8%2040%20L14%2040%20C20%2040%2021%2031%2017%2031%20C13%2031%2013%2040%2022%2040%20C31%2040%2033%2027%2027%2027%20C21%2027%2021%2040%2032%2040%20C44%2040%2046%2021%2039%2021%20C32%2021%2032%2040%2046%2040%20L50%2040%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%223.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2255%22%20cy%3D%2240%22%20r%3D%224%22%20fill%3D%22%23fff%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Instrument+Serif:ital@0;1&family=Work+Sans:wght@400;500;600&family=Caveat:wght@500;700&display=swap">
 <style>
@@ -184,7 +185,7 @@ const ground=new T.Mesh(new T.PlaneGeometry(40,40),new T.MeshStandardMaterial({m
 const curb=new T.MeshStandardMaterial({color:0x5c544b,roughness:.9});[-4.4,4.4].forEach(z=>{const b=new T.Mesh(new T.BoxGeometry(40,.5,.3),curb);b.position.set(0,.25,z-.9);b.receiveShadow=true;scene.add(b);});
 /* peatones: tubos que saltan, con piel y ropa variadas */
 const people=new T.Group();scene.add(people);let pf=0,pfT=0;const SKIN=[0xf0d0b0,0xd9a77c,0xb67f57,0x8f5b3c,0xe2b996];const CLO=[0x3d5a80,0xc0392b,0x6c757d,0xe9a03b,0x2a9d8f,0x7b6fd0,0x6a994e,0xe07a5f,0x264653,0xf28482];
-const LANES=[{z:2.5,dir:1,sp:.8},{z:3.3,dir:-1,sp:.7},{z:-2.1,dir:-1,sp:.75}];
+const LANES=[{z:2.2,dir:1,sp:.8},{z:2.85,dir:-1,sp:.7},{z:-2.1,dir:-1,sp:.75}];
 LANES.forEach((ln,li)=>{for(let k=0;k<4;k++){const p=new T.Group();const mats=[];const mk=c=>{const m=new T.MeshStandardMaterial({color:c,roughness:.6,transparent:true});mats.push(m);return m;};
   const sc=.88+rnd()*.24;const body=new T.Mesh(new T.CapsuleGeometry(.17,.62,10,18),mk(CLO[(li*4+k*3)%CLO.length]));body.position.y=.48;const head=new T.Mesh(new T.SphereGeometry(.125,22,16),mk(SKIN[(li*2+k)%SKIN.length]));head.position.y=1.08;
   const bod=new T.Group();bod.add(body,head);bod.scale.setScalar(sc);p.add(bod);p.traverse(o=>{if(o.isMesh)o.castShadow=true;});
@@ -235,7 +236,7 @@ const S=[
  {ch:1,n:"Las fichas",view:()=>({pos:V(.2,.62,2.3),look:V(-.4,.34,0)}),html:`<span class="k">Lo informativo</span><h2>Cada momento, con su ficha</h2><p>Abajo, una impresión grande con número, título y un texto corto que sitúa al público.</p>`},
  {n:"Un hilo que no se corta",view:()=>({pos:V(.4,1.5,2.9),look:V(-.4,1.1,0)}),bare:1,html:`<span class="k">El personaje</span><h2>Un hilo que no se corta</h2><p>Un solo hilo rojo atraviesa los tres bastidores: se enreda en el primero, se abre en caminos sin destino en el segundo y se vuelve parte del tejido en el tercero. Es el recorrido de ella.</p>`},
  {ch:1,n:"Medidas",view:()=>{const f=frames[0],c=V(W/2,.95,0).applyMatrix4(f.matrixWorld);return {pos:c.clone().add(V(1.0,.45,2.6)),look:c.clone().add(V(.55,0,0))};},dims:1,lab:"tec",html:`<span class="k">Soluciones técnicas</span><h2>Medidas</h2><p>Los tres bastidores son iguales. Plegado, el conjunto mide 0,65 × 1,70 × 0,15 m.</p>`},
- {n:"En la calle 19",view:()=>({pos:V(3.6,5.0,7.6),look:V(-1,.4,0)}),people:1,orbit:.6,html:`<span class="k">Distribución</span><h2>En el paso de la gente</h2><p>Calle 19 peatonal, entre carreras 25 y 26. El frente mira al flujo de peatones y deja 1,5 m para detenerse.</p>`},
+ {n:"En la calle 19",view:()=>({pos:V(3.6,5.0,7.6),look:V(-1,.4,0)}),people:1,orbit:.6,html:`<span class="k">Distribución</span><h2>En el paso de la gente</h2><p>Calle 19 peatonal, entre carreras 25 y 26. El exhibidor se instala en el paso de los peatones, de frente a quien camina.</p>`},
  {ch:1,n:"Cierre",view:()=>({pos:V(1.5,1.35,3.9),look:V(-.6,1.0,0)}),orbit:.8,html:`<span class="k">Punto de partida</span><h2>Punto por punto,<br>volvió a empezar.</h2><p>Del enredo a la trama</p>`},
  {n:"Fin",view:()=>({pos:V(.3,1.1,1.2),look:V(0,1.1,0)}),end:1,html:``}
 ];
