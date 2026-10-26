@@ -66,7 +66,7 @@ canvas#gl.drag{cursor:grabbing}
 <div id="nav"><button id="prev" aria-label="Momento anterior">◀</button><span id="dots"></span><span id="st"></span><button id="next" aria-label="Momento siguiente">▶</button><button id="fs" aria-label="Pantalla completa">⤢</button></div>
 <div id="hint">Arrastra para girar · rueda para acercar · ← → momentos</div>
 <!--THREE--><script src="vendor/three.min.js?v=158"></script>
-<script src="img_data.js?v=9"></script>
+<script src="img_data.js?v=10"></script>
 <script>
 (async function(){
 "use strict";
@@ -96,7 +96,7 @@ const M={wood:new T.MeshStandardMaterial({map:woodTex,roughness:.72}),hinge:new 
   rojo:new T.MeshStandardMaterial({color:0xb3261e,roughness:.55,emissive:0x300000}),canto:new T.MeshStandardMaterial({color:0x161514,roughness:.6})};
 /* ================= medidas (m) ================= */
 const W=.65,H=1.70,t=.05,MID=.50,LOW=.10;const OX0=t,OX1=W-t,OY0=MID+t/2,OY1=H-t;const OW=OX1-OX0;const ZF=t/2;
-const yM=(OY0+OY1)/2;const LT=.009,TAPA=MID+t/2-LOW;/* tapa: 0,65 × 0,425 m *//* altura del hilo rojo: clavo del medio */
+const yM=(OY0+OY1)/2;const LT=.009,TY0=LOW+t/2,TAPA=MID-TY0,TAW=W-t;/* tapa: 0,60 × 0,375 m, cubre medio listón alrededor *//* altura del hilo rojo: clavo del medio */
 const STEP=.04;
 function threads(g,segs,r){const geo=new T.CylinderGeometry(r,r,1,5,1,true);const mat=new T.MeshStandardMaterial({roughness:.85});const im=new T.InstancedMesh(geo,mat,segs.length);const up=new T.Vector3(0,1,0),q=new T.Quaternion(),m4=new T.Matrix4();
   segs.forEach((s,i)=>{const a=s[0],b=s[1],d=b.clone().sub(a),L=d.length();q.setFromUnitVectors(up,d.clone().normalize());m4.compose(a.clone().add(b).multiplyScalar(.5),q,new T.Vector3(1,L,1));im.setMatrixAt(i,m4);im.setColorAt(i,new T.Color(s[2]));});
@@ -123,23 +123,28 @@ const tagTex=(n)=>tex(300,500,(x,w,h)=>{x.fillStyle="#f6f1e4";x.beginPath();x.mo
 const FI=[{t:"Lo que pasó",n:"01",s:"Vivían en la vereda de una tienda, sus cuyes y sus gallinas. Llegaron hombres armados: toque de queda, amenazas, miedo. La vida se volvió un nudo y, por sus hijos, escaparon.",bg:"#0e0d0c",fg:"#ffffff",mu:"#bdb7ac",ac:"#e5534b"},
  {t:"Lo que no se ve",n:"02",s:"Salieron con lo que tenían. En la ciudad nadie los esperaba: sin casa, sin trabajo, sin saber adónde ir. Es el vacío y la duda que nadie ve.",bg:"#6f6b66",fg:"#ffffff",mu:"#e4dfd6",ac:"#f2efe8"},
  {t:"Lo que volvió a tejer",n:"03",s:"Pero ese no era el final. Con crochet, lana guajira, chaquiras y gobelino empezó otra vez, punto por punto. Hoy teje, vende su trabajo y sostiene a su familia.",bg:"#0e8487",fg:"#ffffff",mu:"#d9f0ef",ac:"#f5e38a"}];
-const TW=1300,TH2=850;
-const fichaTex=(f,k)=>tex(TW,TH2,(x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.fillStyle=f.ac;x.fillRect(0,0,w,16);
+const TW=1280,TH2=800;
+const fichaTex=(f,k)=>tex(TW,TH2,(x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.fillStyle=f.ac;
   x.font=`800 330px ${F.brand}`;x.globalAlpha=.22;x.textAlign="right";x.fillText(f.n,w-50,h-120);x.globalAlpha=1;
   x.font=`600 30px ${F.body}`;["01","02","03"].forEach((n,j)=>{x.fillStyle=j===k?f.ac:f.mu;x.globalAlpha=j===k?1:.45;x.fillText(n,w-70-(2-j)*70,92);});x.globalAlpha=1;x.textAlign="left";
-  x.fillStyle=f.ac;x.fillText("PUNTO DE PARTIDA · "+f.n,70,92);x.fillStyle=f.fg;x.font=`800 112px ${F.brand}`;x.fillText(f.t,64,220);
+  x.fillStyle=f.ac;x.fillText("PUNTO DE PARTIDA · "+f.n,70,92);x.fillStyle=f.fg;let ts=112;do{x.font=`800 ${ts}px ${F.brand}`;ts-=4;}while(x.measureText(f.t).width>w-200);x.fillText(f.t,64,220);
   x.font=`500 50px ${F.body}`;x.fillStyle=f.fg;wrap(x,f.s,w-430,68,70,320);
-  /* el hilo rojo pasa por las tres tapas */
-  x.strokeStyle="#c8322a";x.lineWidth=9;x.beginPath();x.moveTo(0,h-62);x.lineTo(w,h-62);x.stroke();});
-function symbol(x,k,cx,cy,r,col){x.save();x.lineCap="round";
-  if(k===0){seed=41;x.strokeStyle=col;x.lineWidth=5;for(let i=0;i<46;i++){const a=rnd()*6.283,b=a+1.2+rnd()*3;x.beginPath();x.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);x.lineTo(cx+Math.cos(b)*r,cy+Math.sin(b)*r);x.stroke();}}
-  if(k===1){x.strokeStyle=col;x.lineWidth=9;x.beginPath();x.moveTo(cx-r*1.15,cy);x.lineTo(cx+r*1.15,cy);x.stroke();x.lineWidth=7;x.font=`700 64px ${F.hand}`;x.fillStyle=col;x.textAlign="center";
-    [[-.8,.55],[-.35,-.85],[.15,.45],[.5,-.6]].forEach(([o,d])=>{const ax=cx+o*r,ex=ax+Math.abs(d)*r*.5,ey=cy-d*r;x.beginPath();x.moveTo(ax,cy);x.lineTo(ex,ey);x.stroke();x.fillText("?",ex+6,ey+(d>0?-14:58));});}
-  if(k===2){const PAL=["#ff006e","#3a86ff","#ffbe0b","#06d6a0","#8338ec","#fb5607"];x.lineWidth=9;for(let i=0;i<9;i++){const p=-r+i*r/4;x.strokeStyle=PAL[i%6];x.beginPath();x.moveTo(cx+p,cy-r);x.lineTo(cx+p,cy+r);x.stroke();x.strokeStyle=PAL[(i+3)%6];x.beginPath();x.moveTo(cx-r,cy+p);x.lineTo(cx+r,cy+p);x.stroke();}
-    x.strokeStyle="#c8322a";x.lineWidth=11;x.beginPath();x.moveTo(cx-r,cy);x.lineTo(cx+r,cy);x.stroke();}
+});
+/* pictogramas: 01 el nudo, 02 caminos sin destino, 03 la trama */
+function symbol(x,k,cx,cy,r,col){x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=x.fillStyle=col;const lw=r*.085;
+  if(k===0){/* un hilo entra, se enreda en lazos y sale */x.lineWidth=lw;x.beginPath();x.moveTo(cx-r*1.25,cy+r*.35);x.lineTo(cx-r*.55,cy+r*.35);
+    x.bezierCurveTo(cx+r*.2,cy+r*.35,cx+r*.5,cy-r*.75,cx-r*.05,cy-r*.8);x.bezierCurveTo(cx-r*.75,cy-r*.85,cx-r*.7,cy+r*.15,cx-r*.05,cy+r*.3);
+    x.bezierCurveTo(cx+r*.6,cy+r*.45,cx+r*.85,cy-r*.35,cx+r*.35,cy-r*.45);x.bezierCurveTo(cx-r*.15,cy-r*.55,cx-r*.35,cy+r*.05,cx+r*.05,cy+r*.15);
+    x.bezierCurveTo(cx+r*.45,cy+r*.25,cx+r*.6,cy+r*.75,cx+r*.15,cy+r*.8);x.bezierCurveTo(cx-r*.3,cy+r*.85,cx-r*.25,cy+r*.35,cx+r*.55,cy+r*.35);x.lineTo(cx+r*1.25,cy+r*.35);x.stroke();}
+  if(k===1){/* un hilo recto con ramas paralelas que terminan en duda */x.lineWidth=lw;x.beginPath();x.moveTo(cx-r*1.25,cy);x.lineTo(cx+r*1.25,cy);x.stroke();
+    x.lineWidth=lw*.7;x.font=`800 ${r*.5}px ${F.brand}`;x.textAlign="center";x.textBaseline="middle";
+    [[-.85,-.7],[-.25,.7],[.35,-.7]].forEach(([o,d])=>{const ax=cx+o*r,ex=ax+Math.abs(d)*r*.55,ey=cy+d*r;x.beginPath();x.moveTo(ax,cy);x.lineTo(ex,ey);x.stroke();x.beginPath();x.arc(ex,ey,lw*.75,0,7);x.fill();x.fillText("?",ex+r*.28,ey);});}
+  if(k===2){/* trama: urdimbre y trama que pasan por encima y por debajo */const n=5,st=r*2/n,PAL=["#ff8fab","#8ecae6","#ffd166","#95d5b2","#cdb4db"];x.lineWidth=st*.55;x.lineCap="butt";
+    for(let i=0;i<n;i++){const px=cx-r+st*(i+.5);x.strokeStyle=PAL[i];x.beginPath();x.moveTo(px,cy-r);x.lineTo(px,cy+r);x.stroke();}
+    for(let j=0;j<n;j++){const py=cy-r+st*(j+.5);x.strokeStyle=j===2?"#e5534b":col;for(let i=0;i<n;i++){if((i+j)%2&&j!==2)continue;x.beginPath();x.moveTo(cx-r+st*i-(i===0?0:1),py);x.lineTo(cx-r+st*(i+1)+1,py);x.stroke();}}}
   x.restore();}
-const backTex=(f,k)=>tex(TW,TH2,(x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.fillStyle=f.ac;x.fillRect(0,0,w,16);symbol(x,k,400,h/2+10,230,k===0?"#e5534b":f.ac);
-  x.fillStyle=f.fg;x.font=`800 360px ${F.brand}`;x.textAlign="right";x.fillText(f.n,w-80,h/2+130);x.font=`600 30px ${F.body}`;x.fillStyle=f.ac;x.fillText("PUNTO DE PARTIDA",w-90,h/2+200);x.textAlign="left";});
+const backTex=(f,k)=>tex(TW,TH2,(x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);symbol(x,k,255,h/2,170,k===0?"#e5534b":f.ac);
+  x.fillStyle=f.fg;x.font=`800 560px ${F.brand}`;x.textAlign="right";x.fillText(f.n,w-70,h/2+190);x.font=`600 30px ${F.body}`;x.fillStyle=f.mu;x.fillText("PUNTO DE PARTIDA",w-82,h/2+255);x.textAlign="left";});
 const CAP=["Primeras puntadas","Crochet: cobija de cuadros","Detalle del crochet","Mochilas en lana guajira","Detalle de una mochila","Bordado a mano","Gobelino","Detalle del gobelino"];
 function photoTex(k){const c=document.createElement("canvas");c.width=520;c.height=680;const x=c.getContext("2d");const paint=im=>{x.clearRect(0,0,520,680);x.fillStyle="#f8f6f0";x.fillRect(0,0,520,680);x.fillStyle="#ddd6c8";x.fillRect(30,70,460,460);if(im)x.drawImage(im,30,70,460,460);
   x.fillStyle="#2a2620";x.font=`700 48px ${F.hand}`;x.fillText(CAP[k],34,598);x.font=`500 22px ${F.body}`;x.fillStyle="#8a8378";x.fillText("0"+(k+1),34,648);hole(x,520,36);};paint(null);
@@ -156,8 +161,8 @@ const reds=[];
 function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,t),M.wood);m.position.set(x,y,0);m.castShadow=m.receiveShadow=true;g.add(m);};
   bar(t,H,t/2,H/2);bar(t,H,W-t/2,H/2);bar(W-2*t,t,W/2,H-t/2);bar(W-2*t,t,W/2,MID);bar(W-2*t,t,W/2,LOW+t/2);
   /* tapas de MDF de 9 mm con canto negro, atornilladas sobre el marco por las dos caras; encima va el propalcote impreso */
-  const tg=new T.BoxGeometry(W,TAPA,LT),tf=new T.Mesh(tg,[M.canto,M.canto,M.canto,M.canto,new T.MeshStandardMaterial({map:fichaTex(FI[i],i),roughness:.7}),M.canto]),tb=new T.Mesh(tg,[M.canto,M.canto,M.canto,M.canto,M.canto,new T.MeshStandardMaterial({map:backTex(FI[i],i),roughness:.7})]);
-  tf.position.set(W/2,LOW+TAPA/2,t/2+LT/2);tb.position.set(W/2,LOW+TAPA/2,-t/2-LT/2);[tf,tb].forEach(m=>{m.castShadow=true;g.add(m);});g.userData.tapa=tf;
+  const tg=new T.BoxGeometry(TAW,TAPA,LT),tf=new T.Mesh(tg,[M.canto,M.canto,M.canto,M.canto,new T.MeshStandardMaterial({map:fichaTex(FI[i],i),roughness:.7}),M.canto]),tb=new T.Mesh(tg,[M.canto,M.canto,M.canto,M.canto,M.canto,new T.MeshStandardMaterial({map:backTex(FI[i],i),roughness:.7})]);
+  tf.position.set(W/2,TY0+TAPA/2,t/2+LT/2);tb.position.set(W/2,TY0+TAPA/2,-t/2-LT/2);[tf,tb].forEach(m=>{m.castShadow=true;g.add(m);});g.userData.tapa=tf;
   const {P,near}=nails(g,i===2?.02:STEP);const segs=[];const RED=0xb3261e,RED2=0x7d1a14;
   if(i===0){seed=21;const pk=a=>a[Math.floor(rnd()*a.length)];const pairs=[[P.t,P.b],[P.l,P.r],[P.t,P.r],[P.l,P.b],[P.t,P.l],[P.r,P.b]];
     for(let k=0;k<84;k++){const p=pairs[k%6];segs.push([pk(p[0]),pk(p[1]),rnd()<.4?RED2:RED]);}
@@ -207,7 +212,7 @@ function dimLine(a,b,tick){const pts=[a,b];const d=b.clone().sub(a).normalize();
   const geo=new T.BufferGeometry().setFromPoints([pts[0],pts[1],pts[2],pts[3],pts[4],pts[5]]);geo.setIndex([0,1,2,3,4,5]);dimG.add(new T.LineSegments(geo,dmat));}
 let DIMS=[];
 function buildDims(){dimG.clear();const A=frames[0].matrixWorld;const v=(x,y,z)=>new T.Vector3(x,y,z).applyMatrix4(A);const X=new T.Vector3(1,0,0).transformDirection(A),Yv=new T.Vector3(0,1,0);
-  DIMS=[[v(-.09,0,ZF),v(-.09,H,ZF),X,"1,70 m"],[v(0,H+.08,ZF),v(W,H+.08,ZF),Yv,"0,65 m"],[v(W+.07,LOW,ZF+LT),v(W+.07,LOW+TAPA,ZF+LT),X,"0,425 m"],[v(W+.07,OY0,ZF),v(W+.07,OY1,ZF),X,"1,13 m de hilo"]];
+  DIMS=[[v(-.09,0,ZF),v(-.09,H,ZF),X,"1,70 m"],[v(0,H+.08,ZF),v(W,H+.08,ZF),Yv,"0,65 m"],[v(W+.07,TY0,ZF+LT),v(W+.07,TY0+TAPA,ZF+LT),X,"0,375 m"],[v(W+.07,OY0,ZF),v(W+.07,OY1,ZF),X,"1,13 m de hilo"]];
   DIMS.forEach(d=>dimLine(d[0],d[1],d[2]));}
 /* ================= calle ================= */
 const pave=tex(1024,1024,(x,w,h)=>{x.fillStyle="#6f665c";x.fillRect(0,0,w,h);for(let r=0;r<16;r++)for(let c=0;c<9;c++){const off=r%2?64:0;x.fillStyle=`hsl(26,${8+((r*7+c*3)%6)}%,${42+((r*5+c*11)%9)}%)`;x.fillRect(c*128+off-64+3,r*64+3,122,58);}});
@@ -224,8 +229,8 @@ LANES.forEach((ln,li)=>{for(let k=0;k<4;k++){const p=new T.Group();const mats=[]
 /* ================= etiquetas ================= */
 const labs=document.getElementById("labs");const LBL=[];function label(txt,getPos,cls){const d=document.createElement("div");d.className="lab"+(cls?" "+cls:"");d.textContent=txt;labs.appendChild(d);LBL.push({d,getPos});return d;}
 const wp=(f,x,y,z)=>()=>new T.Vector3(x,y,z).applyMatrix4(frames[f].matrixWorld);
-const LG={tec:[label("1,70 m",()=>DIMS[0][0].clone().lerp(DIMS[0][1],.5),"dim"),label("0,65 m",()=>DIMS[1][0].clone().lerp(DIMS[1][1],.5),"dim"),label("Tapa: 0,425 m de alto",()=>DIMS[2][0].clone().lerp(DIMS[2][1],.5),"dim"),label("1,13 m de hilo",()=>DIMS[3][0].clone().lerp(DIMS[3][1],.5),"dim"),
-  label("Listón de madera 5 × 5 cm (2″ × 2″)",wp(2,W+.12,.9,0)),label("Puntillas con cabeza cada 4 cm",wp(1,W/2,OY1-.02,.05)),label("Bisagra de 3″ (4 en total)",wp(1,W+.02,1.48,-.05)),label("Tapa de MDF 9 mm, canto negro, con propalcote · 0,65 × 0,425 m",wp(2,W/2,.3,.06))]};
+const LG={tec:[label("1,70 m",()=>DIMS[0][0].clone().lerp(DIMS[0][1],.5),"dim"),label("0,65 m",()=>DIMS[1][0].clone().lerp(DIMS[1][1],.5),"dim"),label("Tapa: 0,375 m de alto",()=>DIMS[2][0].clone().lerp(DIMS[2][1],.5),"dim"),label("1,13 m de hilo",()=>DIMS[3][0].clone().lerp(DIMS[3][1],.5),"dim"),
+  label("Listón de madera 5 × 5 cm (2″ × 2″)",wp(2,W+.12,.9,0)),label("Puntillas con cabeza cada 4 cm",wp(1,W/2,OY1-.02,.05)),label("Bisagra de 3″ (4 en total)",wp(1,W+.02,1.48,-.05)),label("Tapa de MDF 9 mm, canto negro, con propalcote · 0,60 × 0,375 m",wp(2,W/2,.3,.06))]};
 /* ================= cámara ================= */
 const look=new T.Vector3(0,.95,0);let target={pos:new T.Vector3(3,1.6,4),look:look.clone()};let from=null,tween=1,tdur=1,afterT=0;let yaw=0,pitch=0,dist=0;
 function goCam(pos,lk,d){from={pos:cam.position.clone(),look:look.clone()};target={pos:pos.clone(),look:lk.clone()};tween=0;tdur=d||2.2;yaw=pitch=0;dist=0;afterT=0;}
@@ -242,7 +247,7 @@ const H_=a=>hung.find(h=>h.anchor===a);
 /* ================= momentos ================= */
 const ov=document.getElementById("ov"),veil=document.getElementById("veil"),black=document.getElementById("black"),cred=document.getElementById("cred");
 const C1=frames[0].userData.cards.map(H_),C2=frames[1].userData.cards.map(H_),PH=frames[2].userData.photos.map(H_);
-function tapaView(i,d,shift){const f=frames[i],c=V(W/2,LOW+TAPA/2,t/2+LT).applyMatrix4(f.matrixWorld),q=new T.Quaternion();f.matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());
+function tapaView(i,d,shift){const f=frames[i],c=V(W/2,TY0+TAPA/2,t/2+LT).applyMatrix4(f.matrixWorld),q=new T.Quaternion();f.matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());
   const n=V(0,0,1).applyQuaternion(q),r=V(1,0,0).applyQuaternion(q);return {pos:c.clone().addScaledVector(n,d).add(V(0,.06,0)),look:c.clone().addScaledVector(r,-(shift??.26))};}
 const lab=(a,b,c)=>`<span class="k">${a}</span><h2>${b}</h2><p class="st">${c}</p>`;
 const S=[
