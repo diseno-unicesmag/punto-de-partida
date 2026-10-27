@@ -16,9 +16,11 @@ canvas#gl.drag{cursor:grabbing}
 #panel h1{font:800 26px/1 var(--brand);letter-spacing:-.02em;margin:4px 0 0}
 #panel h3{font:600 11px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
 #panel .ver{font:500 12px var(--body);color:#8a8378;margin-top:6px}
+.nota{font-size:12px;line-height:1.45;color:#8a8378;margin:8px 0 0}
 dl{display:grid;grid-template-columns:1fr auto;gap:5px 12px;margin:0;font-size:13px}
 dt{color:var(--muted)}dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
 .row{display:flex;align-items:center;gap:10px;font-size:13px;padding:4px 0;cursor:pointer}
+.row input[type=radio]{border-radius:50%}
 .row input{accent-color:var(--rojo);width:16px;height:16px;margin:0;cursor:pointer}
 input[type=range]{width:100%;accent-color:var(--rojo)}
 .rng{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:2px}
@@ -40,7 +42,12 @@ body.labs .lab:not(.dim),body.dims .lab.dim{display:block}
 <aside id="panel">
   <div><span class="k">Museo al aire libre</span><h1>Punto de partida · modelo 3D</h1><div class="ver" id="ver"></div></div>
   <section><h3>Ficha técnica</h3><dl id="ficha"></dl></section>
+  <section><h3>Puntillas</h3><dl id="puntillas"></dl><p class="nota">En el canto interior del marco, centradas en el grueso del listón. Se marcan desde la mitad de cada lado hacia las esquinas: la del medio siempre queda, porque ahí se amarra el hilo rojo.</p></section>
   <section><h3>Despiece (3 bastidores)</h3><dl id="despiece"></dl></section>
+  <section><h3>Acabado</h3>
+    <label class="row"><input type="radio" name="fin" value="1" checked>Marco negro, MDF blanco</label>
+    <label class="row"><input type="radio" name="fin" value="0">Madera natural, MDF negro</label>
+  </section>
   <section><h3>Plegado</h3><input type="range" id="fold" min="0" max="100" value="0" aria-label="Plegado"><div class="rng"><span>Abierto</span><span>Plegado</span></div></section>
   <section><h3>Mostrar</h3>
     <label class="row"><input type="checkbox" id="cDims" checked>Cotas</label>
@@ -57,7 +64,7 @@ body.labs .lab:not(.dim),body.dims .lab.dim{display:block}
 <div id="hint">Arrastra para girar · clic derecho o Shift para mover<br>rueda para acercar · doble clic para centrar</div>
 <script src="vendor/three.min.js?v=158"></script>
 <script src="img_data.js?v=10"></script>
-<script src="stand.js?v=1"></script>
+<script src="stand.js?v=2"></script>
 <script>
 (async function(){
 "use strict";
@@ -75,18 +82,20 @@ Object.assign(sun.shadow.camera,{left:-2.5,right:2.5,top:2.5,bottom:-2.5,near:1,
 const fillL=new T.DirectionalLight(0xffe2c4,.6);fillL.position.set(-2,2.5,4);scene.add(fillL);
 const rim=new T.DirectionalLight(0xbfd3ff,.8);rim.position.set(-4,3,-4);scene.add(rim);
 /* ================= exhibidor ================= */
-const ST=buildStand(T,scene);const {m,clamp,ease,t,IN,W,H,MID,LOW,OY0,OY1,OW,TAPA,TAW,FD,HY,frames,stand,hinges,conn,hung,dimG,layout,buildDims}=ST;
+const ST=buildStand(T,scene);const {m,clamp,ease,t,IN,W,H,MID,LOW,OY0,OY1,OW,TAPA,TAW,PRW,PRH,FD,HY,setFinish,frames,stand,hinges,conn,hung,dimG,layout,buildDims}=ST;
 /* piso, cuadrícula y persona de referencia */
 const ground=new T.Mesh(new T.PlaneGeometry(30,30),new T.MeshStandardMaterial({color:0x2b2723,roughness:.95}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
 const grid=new T.GridHelper(4,40,0x6a6258,0x3c3731);grid.position.y=.001;scene.add(grid);
 const man=new T.Group();{const mat=new T.MeshStandardMaterial({color:0x6c757d,roughness:.6});const s=1.65/1.205;const b=new T.Mesh(new T.CapsuleGeometry(.17,.62,10,18),mat);b.position.y=.48;const h=new T.Mesh(new T.SphereGeometry(.125,22,16),new T.MeshStandardMaterial({color:0xd9a77c,roughness:.6}));h.position.y=1.08;
   man.add(b,h);man.scale.setScalar(s);man.traverse(o=>{if(o.isMesh)o.castShadow=true;});man.position.set(1.15,0,.75);man.visible=false;scene.add(man);}
 /* ================= ficha ================= */
-const cm=v=>Math.round(v*1000)/10+" cm";
+const cm=v=>String(Math.round(v*1000)/10).replace(".",",")+" cm";
 document.getElementById("ver").textContent="Listón de "+t*100+" × "+t*100+" cm · bastidor de "+m(W)+" × "+m(H)+" m";
 const dl=(id,rows)=>{document.getElementById(id).innerHTML=rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("");};
 dl("ficha",[["Listón",t*100+" × "+t*100+" cm"],["Bastidor, por fuera",m(W)+" × "+m(H)+" m"],["Travesaños, por dentro",m(IN)+" m"],["Travesaño medio (eje)",m(MID)+" m del piso"],["Travesaño bajo (eje)",m(LOW+t/2)+" m del piso"],
-  ["Vano del hilo",m(OW)+" × "+m(OY1-OY0)+" m"],["Tapas MDF 9 mm (6)",m(TAW)+" × "+m(TAPA)+" m"],["Bisagras de 3″",(HY.length*2)+", a "+HY.map(m).join(" y ")+" m"],["Plegado",m(W)+" × "+m(H)+" × "+m(FD)+" m"]]);
+  ["Vano del hilo",m(OW)+" × "+m(OY1-OY0)+" m"],["Tapas MDF 9 mm (6)",m(TAW)+" × "+m(TAPA)+" m"],["Propalcote (6)",PRW*100+" × "+PRH*100+" cm"],["Borde de MDF alrededor",cm((TAW-PRW)/2)+" · "+cm((TAPA-PRH)/2)],["Bisagras de 3″",(HY.length*2)+", a "+HY.map(m).join(" y ")+" m"],["Plegado",m(W)+" × "+m(H)+" × "+m(FD)+" m"]]);
+const NN=ST.nails,cmv=cm;
+dl("puntillas",[...NN.map((n,i)=>["Bastidor "+(i+1)+" · cada "+cmv(n.step),n.n+(i===1?" ("+n.lr+" por lado)":" ("+n.tb+" arriba y abajo, "+n.lr+" por lado)")]),["Total",NN.reduce((a,n)=>a+n.n,0)+""]]);
 dl("despiece",[["Largueros",6+" × "+cm(H)],["Travesaños",9+" × "+cm(IN)],["Listón en total",m(6*H+9*IN)+" m"],["Tapas MDF",6+" × "+cm(TAW)+" × "+cm(TAPA)]]);
 /* ================= rótulos ================= */
 const labs=document.getElementById("labs");const LBL=ST.notes.map(n=>{const d=document.createElement("div");d.className="lab"+(n[2]?" "+n[2]:"");d.textContent=n[0];labs.appendChild(d);return {d,getPos:n[1]};});
@@ -97,6 +106,7 @@ $("fold").oninput=e=>{foldT=e.target.value/100;};
 const flag=(id,cls)=>{const f=()=>document.body.classList.toggle(cls,$(id).checked);$(id).onchange=f;f();};flag("cDims","dims");flag("cLabs","labs");
 $("cDims").addEventListener("change",()=>{dimG.visible=$("cDims").checked;});
 $("cHung").onchange=e=>{showHung=e.target.checked?1:0;};$("cGrid").onchange=e=>{grid.visible=e.target.checked;};$("cMan").onchange=e=>{man.visible=e.target.checked;};$("cSpin").onchange=e=>{spin=e.target.checked?1:0;};
+document.querySelectorAll("input[name=fin]").forEach(r=>r.onchange=()=>setFinish(+r.value));
 $("tog").onclick=()=>$("panel").classList.toggle("hide");if(innerWidth<760)$("panel").classList.add("hide");
 /* ================= cámara orbital: objetivo + distancia + ángulos ================= */
 const V=(x,y,z)=>new T.Vector3(x,y,z);
@@ -106,8 +116,10 @@ function goView(pos,look,d){const s=new T.Spherical().setFromVector3(pos.clone()
   tw={a:{target:orb.target.clone(),r:orb.r,th:orb.th,ph:orb.ph},b:{target:look.clone(),r:s.radius,th,ph:clamp(s.phi,.02,Math.PI-.02)},k:0,d:d||1.2};}
 const frameN=i=>{const f=frames[i],q=new T.Quaternion();f.matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());return {c:V(W/2,H/2,0).applyMatrix4(f.matrixWorld),n:V(0,0,1).applyQuaternion(q)};};
 const C=()=>V(0,H/2,0);
+/* distancia para que quepa un alto y un ancho dados en la pantalla */
+const fitD=(h,w)=>Math.max(h/2/Math.tan(cam.fov*Math.PI/360),w/2/(Math.tan(cam.fov*Math.PI/360)*cam.aspect));
 const VIEWS=[["Perspectiva",()=>[V(2.2,1.7,3.0),V(0,H/2-.05,0)]],["Frente",()=>[V(0,H/2,3.6),C()]],["Atrás",()=>[V(0,H/2,-3.6),C()]],["Lado",()=>[V(3.6,H/2,0),C()]],["Arriba",()=>[V(0,4.2,.001),V(0,0,0)]],
-  ...[0,1,2].map(i=>["Bastidor "+(i+1),()=>{const {c,n}=frameN(i);return [c.clone().addScaledVector(n,2.1),c];}]),
+  ...[0,1,2].map(i=>["Bastidor "+(i+1),()=>{const {c,n}=frameN(i);return [c.clone().addScaledVector(n,fitD(H+.2,W+.3)),c];}]),
   ["Tapas",()=>{const {c,n}=frameN(1);const p=V(0,.31,0);return [p.clone().add(V(.2,.5,2.0)),p];}]];
 const vb=$("views");VIEWS.forEach((v,k)=>{const b=document.createElement("button");b.textContent=v[0];b.onclick=()=>{[...vb.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");stand.updateMatrixWorld(true);const [p,l]=v[1]();goView(p,l);};vb.appendChild(b);});
 /* ratón y toque: un dedo gira, dos dedos acercan y mueven; clic derecho o Shift mueve */
