@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Punto de partida · Modelo 3D</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23b3261e%22/%3E%3Cpath%20d%3D%22M8%2040%20L14%2040%20C20%2040%2021%2031%2017%2031%20C13%2031%2013%2040%2022%2040%20C31%2040%2033%2027%2027%2027%20C21%2027%2021%2040%2032%2040%20C44%2040%2046%2021%2039%2021%20C32%2021%2032%2040%2046%2040%20L50%2040%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%223.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2255%22%20cy%3D%2240%22%20r%3D%224%22%20fill%3D%22%23fff%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Work+Sans:wght@400;500;600&family=Caveat:wght@500;700&display=swap">
+<style>
+/* Visor del modelo: escena a pantalla completa, panel de ficha y controles a la izquierda, vistas abajo */
+:root{--ink:#f2efe8;--muted:#bdb7ac;--rojo:#e5534b;--bg:#141210;--line:#3a3631;--panel:rgba(20,18,16,.86);--brand:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--body:"Work Sans","Segoe UI",system-ui,sans-serif;color-scheme:dark}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);overflow:hidden;user-select:none;-webkit-user-select:none}
+canvas#gl{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+canvas#gl.drag{cursor:grabbing}
+#panel{position:fixed;left:16px;top:16px;bottom:16px;width:300px;box-sizing:border-box;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 18px 14px;backdrop-filter:blur(10px);display:flex;flex-direction:column;gap:16px;transition:transform .35s ease}
+#panel.hide{transform:translateX(calc(-100% - 24px))}
+#panel .k{font:600 11px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--rojo)}
+#panel h1{font:800 26px/1 var(--brand);letter-spacing:-.02em;margin:4px 0 0}
+#panel h3{font:600 11px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+#panel .ver{font:500 12px var(--body);color:#8a8378;margin-top:6px}
+dl{display:grid;grid-template-columns:1fr auto;gap:5px 12px;margin:0;font-size:13px}
+dt{color:var(--muted)}dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+.row{display:flex;align-items:center;gap:10px;font-size:13px;padding:4px 0;cursor:pointer}
+.row input{accent-color:var(--rojo);width:16px;height:16px;margin:0;cursor:pointer}
+input[type=range]{width:100%;accent-color:var(--rojo)}
+.rng{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:2px}
+#panel a{color:var(--ink);font-size:13px;text-decoration:none;border-bottom:1px solid var(--rojo);align-self:flex-start}
+#tog{position:fixed;left:16px;top:16px;z-index:2;display:none;font:600 13px var(--body);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:8px 14px;cursor:pointer}
+#views{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:5px;backdrop-filter:blur(8px);max-width:calc(100vw - 32px);box-sizing:border-box}
+#views button{font:600 13px var(--body);color:var(--ink);background:transparent;border:0;border-radius:99px;padding:7px 12px;cursor:pointer}
+#views button:hover{background:#2c2925}#views button.on{background:var(--rojo)}
+button:focus-visible{outline:2px solid var(--rojo)}
+#hint{position:fixed;right:18px;top:18px;font:500 12px/1.6 var(--body);color:#7d776e;text-align:right}
+.lab{position:fixed;transform:translate(-50%,-50%);font:600 12px var(--body);color:#fff;background:rgba(14,13,12,.85);border:1px solid var(--line);padding:3px 9px;border-radius:99px;white-space:nowrap;pointer-events:none;display:none}
+.lab.dim{background:#f2efe8;color:#141210;border-color:#f2efe8;font-weight:700}
+body.labs .lab:not(.dim),body.dims .lab.dim{display:block}
+@media (max-width:760px){#panel{left:8px;right:8px;top:8px;bottom:auto;width:auto;max-height:58vh}#tog{display:block;left:auto;right:8px;top:auto;bottom:70px}#hint{display:none}#views{bottom:10px;border-radius:14px}}
+</style>
+</head><body class="dims">
+<canvas id="gl"></canvas>
+<div id="labs"></div>
+<aside id="panel">
+  <div><span class="k">Museo al aire libre</span><h1>Punto de partida · modelo 3D</h1><div class="ver" id="ver"></div></div>
+  <section><h3>Ficha técnica</h3><dl id="ficha"></dl></section>
+  <section><h3>Despiece (3 bastidores)</h3><dl id="despiece"></dl></section>
+  <section><h3>Plegado</h3><input type="range" id="fold" min="0" max="100" value="0" aria-label="Plegado"><div class="rng"><span>Abierto</span><span>Plegado</span></div></section>
+  <section><h3>Mostrar</h3>
+    <label class="row"><input type="checkbox" id="cDims" checked>Cotas</label>
+    <label class="row"><input type="checkbox" id="cLabs">Rótulos técnicos</label>
+    <label class="row"><input type="checkbox" id="cHung" checked>Frases, etiquetas y fotos</label>
+    <label class="row"><input type="checkbox" id="cGrid" checked>Cuadrícula de 10 cm</label>
+    <label class="row"><input type="checkbox" id="cMan">Persona de 1,65 m</label>
+    <label class="row"><input type="checkbox" id="cSpin">Girar solo</label>
+  </section>
+  <a href="index.html">Ver la presentación →</a>
+</aside>
+<button id="tog">Ficha</button>
+<nav id="views"></nav>
+<div id="hint">Arrastra para girar · clic derecho o Shift para mover<br>rueda para acercar · doble clic para centrar</div>
+<script src="vendor/three.min.js?v=158"></script>
+<script src="img_data.js?v=10"></script>
+<script src="stand.js?v=1"></script>
+<script>
+(async function(){
+"use strict";
+if(document.fonts&&document.fonts.ready){try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))]);}catch(_){}}
+const T=THREE;
+/* ================= render ================= */
+const cv=document.getElementById("gl");
+const R=new T.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;
+R.outputColorSpace=T.SRGBColorSpace;R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=1.08;
+const scene=new T.Scene();scene.background=new T.Color(0x1a1714);scene.fog=new T.Fog(0x1a1714,10,30);
+const cam=new T.PerspectiveCamera(36,1,.02,80);
+scene.add(new T.HemisphereLight(0xfff4e6,0x2a2520,.85));
+const sun=new T.DirectionalLight(0xfff1dc,2.2);sun.position.set(3.2,6.5,5);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.radius=4;
+Object.assign(sun.shadow.camera,{left:-2.5,right:2.5,top:2.5,bottom:-2.5,near:1,far:20});sun.shadow.bias=-.0003;sun.shadow.normalBias=.02;scene.add(sun);
+const fillL=new T.DirectionalLight(0xffe2c4,.6);fillL.position.set(-2,2.5,4);scene.add(fillL);
+const rim=new T.DirectionalLight(0xbfd3ff,.8);rim.position.set(-4,3,-4);scene.add(rim);
+/* ================= exhibidor ================= */
+const ST=buildStand(T,scene);const {m,clamp,ease,t,IN,W,H,MID,LOW,OY0,OY1,OW,TAPA,TAW,FD,HY,frames,stand,hinges,conn,hung,dimG,layout,buildDims}=ST;
+/* piso, cuadrícula y persona de referencia */
+const ground=new T.Mesh(new T.PlaneGeometry(30,30),new T.MeshStandardMaterial({color:0x2b2723,roughness:.95}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+const grid=new T.GridHelper(4,40,0x6a6258,0x3c3731);grid.position.y=.001;scene.add(grid);
+const man=new T.Group();{const mat=new T.MeshStandardMaterial({color:0x6c757d,roughness:.6});const s=1.65/1.205;const b=new T.Mesh(new T.CapsuleGeometry(.17,.62,10,18),mat);b.position.y=.48;const h=new T.Mesh(new T.SphereGeometry(.125,22,16),new T.MeshStandardMaterial({color:0xd9a77c,roughness:.6}));h.position.y=1.08;
+  man.add(b,h);man.scale.setScalar(s);man.traverse(o=>{if(o.isMesh)o.castShadow=true;});man.position.set(1.15,0,.75);man.visible=false;scene.add(man);}
+/* ================= ficha ================= */
+const cm=v=>Math.round(v*1000)/10+" cm";
+document.getElementById("ver").textContent="Listón de "+t*100+" × "+t*100+" cm · bastidor de "+m(W)+" × "+m(H)+" m";
+const dl=(id,rows)=>{document.getElementById(id).innerHTML=rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("");};
+dl("ficha",[["Listón",t*100+" × "+t*100+" cm"],["Bastidor, por fuera",m(W)+" × "+m(H)+" m"],["Travesaños, por dentro",m(IN)+" m"],["Travesaño medio (eje)",m(MID)+" m del piso"],["Travesaño bajo (eje)",m(LOW+t/2)+" m del piso"],
+  ["Vano del hilo",m(OW)+" × "+m(OY1-OY0)+" m"],["Tapas MDF 9 mm (6)",m(TAW)+" × "+m(TAPA)+" m"],["Bisagras de 3″",(HY.length*2)+", a "+HY.map(m).join(" y ")+" m"],["Plegado",m(W)+" × "+m(H)+" × "+m(FD)+" m"]]);
+dl("despiece",[["Largueros",6+" × "+cm(H)],["Travesaños",9+" × "+cm(IN)],["Listón en total",m(6*H+9*IN)+" m"],["Tapas MDF",6+" × "+cm(TAW)+" × "+cm(TAPA)]]);
+/* ================= rótulos ================= */
+const labs=document.getElementById("labs");const LBL=ST.notes.map(n=>{const d=document.createElement("div");d.className="lab"+(n[2]?" "+n[2]:"");d.textContent=n[0];labs.appendChild(d);return {d,getPos:n[1]};});
+/* ================= controles ================= */
+let fold=0,foldT=0,showHung=1,hungK=1,spin=0;
+const $=id=>document.getElementById(id);
+$("fold").oninput=e=>{foldT=e.target.value/100;};
+const flag=(id,cls)=>{const f=()=>document.body.classList.toggle(cls,$(id).checked);$(id).onchange=f;f();};flag("cDims","dims");flag("cLabs","labs");
+$("cDims").addEventListener("change",()=>{dimG.visible=$("cDims").checked;});
+$("cHung").onchange=e=>{showHung=e.target.checked?1:0;};$("cGrid").onchange=e=>{grid.visible=e.target.checked;};$("cMan").onchange=e=>{man.visible=e.target.checked;};$("cSpin").onchange=e=>{spin=e.target.checked?1:0;};
+$("tog").onclick=()=>$("panel").classList.toggle("hide");if(innerWidth<760)$("panel").classList.add("hide");
+/* ================= cámara orbital: objetivo + distancia + ángulos ================= */
+const V=(x,y,z)=>new T.Vector3(x,y,z);
+const orb={target:V(0,.8,0),r:3.6,th:.55,ph:1.2};let tw=null;
+function camFrom(){const p=new T.Vector3().setFromSphericalCoords(orb.r,orb.ph,orb.th).add(orb.target);cam.position.copy(p);cam.lookAt(orb.target);}
+function goView(pos,look,d){const s=new T.Spherical().setFromVector3(pos.clone().sub(look));let th=s.theta;while(th-orb.th>Math.PI)th-=2*Math.PI;while(th-orb.th<-Math.PI)th+=2*Math.PI;
+  tw={a:{target:orb.target.clone(),r:orb.r,th:orb.th,ph:orb.ph},b:{target:look.clone(),r:s.radius,th,ph:clamp(s.phi,.02,Math.PI-.02)},k:0,d:d||1.2};}
+const frameN=i=>{const f=frames[i],q=new T.Quaternion();f.matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());return {c:V(W/2,H/2,0).applyMatrix4(f.matrixWorld),n:V(0,0,1).applyQuaternion(q)};};
+const C=()=>V(0,H/2,0);
+const VIEWS=[["Perspectiva",()=>[V(2.2,1.7,3.0),V(0,H/2-.05,0)]],["Frente",()=>[V(0,H/2,3.6),C()]],["Atrás",()=>[V(0,H/2,-3.6),C()]],["Lado",()=>[V(3.6,H/2,0),C()]],["Arriba",()=>[V(0,4.2,.001),V(0,0,0)]],
+  ...[0,1,2].map(i=>["Bastidor "+(i+1),()=>{const {c,n}=frameN(i);return [c.clone().addScaledVector(n,2.1),c];}]),
+  ["Tapas",()=>{const {c,n}=frameN(1);const p=V(0,.31,0);return [p.clone().add(V(.2,.5,2.0)),p];}]];
+const vb=$("views");VIEWS.forEach((v,k)=>{const b=document.createElement("button");b.textContent=v[0];b.onclick=()=>{[...vb.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");stand.updateMatrixWorld(true);const [p,l]=v[1]();goView(p,l);};vb.appendChild(b);});
+/* ratón y toque: un dedo gira, dos dedos acercan y mueven; clic derecho o Shift mueve */
+const pts=new Map();let mode=null,lx=0,ly=0,pinch=0;
+const pan=(dx,dy)=>{const s=orb.r*.0012;const r=V(1,0,0).applyQuaternion(cam.quaternion),u=V(0,1,0).applyQuaternion(cam.quaternion);orb.target.addScaledVector(r,-dx*s).addScaledVector(u,dy*s);orb.target.y=clamp(orb.target.y,-.2,3);};
+cv.addEventListener("contextmenu",e=>e.preventDefault());
+cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});tw=null;cv.classList.add("drag");
+  mode=pts.size>1?"two":(e.button===2||e.shiftKey?"pan":"rot");lx=e.clientX;ly=e.clientY;if(mode==="two"){const [a,b]=[...pts.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);lx=(a.x+b.x)/2;ly=(a.y+b.y)/2;}});
+cv.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(mode==="two"&&pts.size>1){const [a,b]=[...pts.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;if(pinch)orb.r=clamp(orb.r*pinch/d,.25,12);pinch=d;pan(cx-lx,cy-ly);lx=cx;ly=cy;return;}
+  const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;if(mode==="pan")pan(dx,dy);else if(mode==="rot"){orb.th-=dx*.006;orb.ph=clamp(orb.ph-dy*.005,.05,Math.PI/2+.25);}});
+const end=e=>{pts.delete(e.pointerId);if(!pts.size){mode=null;cv.classList.remove("drag");}else if(pts.size===1){mode="rot";const p=[...pts.values()][0];lx=p.x;ly=p.y;}};
+cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end);
+cv.addEventListener("wheel",e=>{e.preventDefault();tw=null;orb.r=clamp(orb.r*Math.exp(e.deltaY*.0012),.25,12);},{passive:false});
+/* doble clic: centra la vista en el punto del modelo */
+const ray=new T.Raycaster();cv.addEventListener("dblclick",e=>{ray.setFromCamera(new T.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),cam);const hit=ray.intersectObjects([stand,...hinges],true)[0];if(hit){const p=cam.position.clone().sub(orb.target).normalize().multiplyScalar(Math.max(.5,orb.r*.6)).add(hit.point);goView(p,hit.point,.8);}});
+addEventListener("keydown",e=>{const k=parseInt(e.key,10);if(k>=1&&k<=VIEWS.length)vb.children[k-1].click();});
+/* ================= bucle ================= */
+function size(){const w=innerWidth,h=innerHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}addEventListener("resize",size);size();
+let last=performance.now(),lastFold=-1;stand.updateMatrixWorld(true);vb.children[0].classList.add("on");{const [p,l]=VIEWS[0][1]();const s=new T.Spherical().setFromVector3(p.clone().sub(l));Object.assign(orb,{target:l,r:s.radius,th:s.theta,ph:s.phi});}
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;const tt=now/1000;
+  fold+=(foldT-fold)*Math.min(1,dt*4);if(Math.abs(foldT-fold)<.0005)fold=foldT;if(fold!==lastFold){layout(fold);buildDims();dimG.visible=$("cDims").checked;lastFold=fold;}
+  if(tw){tw.k=Math.min(1,tw.k+dt/tw.d);const k=ease(tw.k);orb.target.lerpVectors(tw.a.target,tw.b.target,k);["r","th","ph"].forEach(p=>orb[p]=tw.a[p]+(tw.b[p]-tw.a[p])*k);if(tw.k>=1)tw=null;}
+  else if(spin&&!mode)orb.th+=dt*.25;
+  camFrom();
+  hungK+=(showHung-hungK)*Math.min(1,dt*4);const show=clamp(1-fold*5,0,1)*hungK;
+  hung.forEach(h=>{const u=h.piv.userData;h.anchor.scale.setScalar(.001+ease(show));h.anchor.visible=show>.01;h.piv.rotation.z=u.base+Math.sin(tt*u.f+u.ph)*u.amp;});
+  R.render(scene,cam);
+  const w=innerWidth,hh=innerHeight;LBL.forEach(l=>{const v=l.getPos().project(cam);const off=v.z>1;l.d.style.visibility=off?"hidden":"";l.d.style.left=((v.x+1)/2*w)+"px";l.d.style.top=((1-v.y)/2*hh)+"px";});
+  requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+})();
+</script>
+</body></html>
