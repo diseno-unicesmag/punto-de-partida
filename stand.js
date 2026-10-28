@@ -13,19 +13,20 @@ const m=v=>v.toFixed(3).replace(/0$/,"").replace(".",",");
 const hole=(x,w,yy)=>{x.save();x.globalCompositeOperation="destination-out";x.beginPath();x.arc(w/2,yy,14,0,7);x.fill();x.restore();};
 const woodTex=tex(256,1024,(x,w,h)=>{x.fillStyle="#d9bb8b";x.fillRect(0,0,w,h);seed=3;for(let i=0;i<70;i++){x.strokeStyle=`rgba(${120+rnd()*40},${80+rnd()*30},40,${.06+rnd()*.12})`;x.lineWidth=1+rnd()*3;x.beginPath();const x0=rnd()*w;x.moveTo(x0,0);for(let y=0;y<=h;y+=32)x.lineTo(x0+Math.sin(y*.01+i)*6+rnd()*2,y);x.stroke();}});
 const M={wood:new T.MeshStandardMaterial({map:woodTex,roughness:.72}),hinge:new T.MeshStandardMaterial({color:0x8d8a83,metalness:.85,roughness:.32}),
-  nail:new T.MeshStandardMaterial({color:0x77726b,metalness:.9,roughness:.35}),string:new T.MeshStandardMaterial({color:0xe9e2d3,roughness:.9}),
-  rojo:new T.MeshStandardMaterial({color:0xb3261e,roughness:.55,emissive:0x300000}),canto:new T.MeshStandardMaterial({color:0x161514,roughness:.6})};
+  nail:new T.MeshStandardMaterial({color:0xd9d9d4,metalness:.45,roughness:.28}),string:new T.MeshStandardMaterial({color:0xe9e2d3,roughness:.9}),
+  rojo:new T.MeshStandardMaterial({color:0xb3261e,roughness:.55,emissive:0x300000}),canto:new T.MeshStandardMaterial({color:0x34322f,roughness:.62})};
 /* ================= medidas (m) ================= */
 /* listón de 4 × 4 cm; travesaños de 0,50 m por dentro; largueros de 1,60 m; vano de hilos de 0,50 × 1,00 m */
-const t=.04,IN=.50,W=IN+2*t,H=1.60,MID=.54,LOW=.12;/* LOW: borde inferior del travesaño bajo = largo de las patas; la tapa cubre la mitad del travesaño y deja 2 cm a la vista, igual que en los largueros */const OX0=t,OX1=W-t,OY0=MID+t/2,OY1=H-t;const OW=OX1-OX0;const ZF=t/2;
+const t=.04,IN=.50,W=IN+2*t,H=1.60,MID=.54;const OX0=t,OX1=W-t,OY0=MID+t/2,OY1=H-t;const OW=OX1-OX0;const ZF=t/2;
 const yM=(OY0+OY1)/2;/* altura del hilo rojo: clavo del medio */
-/* propalcote: área visible máxima de impresión, centrada en la tapa con el mismo borde a los cuatro lados (3,5 cm) */
-const PRW=.47,PRH=.32,BOR=.035;
-/* tapa: a lo ancho cubre medio listón a cada lado; arriba solo 1 cm del travesaño medio, para dejar libre la franja de las puntillas de atrás */
-const LT=.009,TAW=W-t,TAPA=PRH+2*BOR,TY0=OY0-.03-TAPA;
+/* propalcote: área visible máxima de impresión (47 × 32 cm), centrada en el tablero */
+const PRW=.47,PRH=.32;
+/* tablero de triplex de 9 mm: deja ver MAR de marco a los lados y abajo, y GAP de travesaño medio arriba (la franja de las puntillas de atrás);
+   el borde alrededor del propalcote es parejo, y de ahí sale dónde va el travesaño bajo (LOW = largo de las patas) */
+const MAR=.01,GAP=.02,LT=.009,TAW=W-2*MAR,BOR=(TAW-PRW)/2,TAPA=PRH+2*BOR,TY0=OY0-GAP-TAPA,LOW=TY0-MAR;
 /* puntillas en la cara de atrás del marco, a NI del borde interior, sobresalen 6 mm; el hilo se amarra en el vástago (plano ZT) */
 const NI=.012,NL=.006,ZT=-(t/2+.004);
-/* acabado: 1 marco negro y MDF blanco, 0 madera natural y MDF negro */
+/* acabado: 1 todo negro (marco y tableros), 0 madera natural y tablero negro */
 let FIN=1;
 const FD=Math.ceil(3*(t+2*LT)*100)/100;/* fondo plegado: tres marcos con sus dos tapas */
 const HY=[.62,H-.22];/* altura de las bisagras */
@@ -65,13 +66,13 @@ const tagTex=(n)=>tex(300,500,(x,w,h)=>{x.fillStyle="#f6f1e4";x.beginPath();x.mo
   x.strokeStyle="#2a2620";x.lineWidth=6;if(d[1]===1){x.beginPath();x.moveTo(40,262);x.lineTo(w-38,248);x.stroke();}if(d[1]===2){seed=n+5;x.beginPath();x.moveTo(44,270);for(let k=0;k<14;k++)x.lineTo(44+rnd()*(w-90),236+rnd()*60);x.stroke();}
   x.strokeStyle="#8d918d";x.lineWidth=4;for(let l=0;l<2;l++){x.beginPath();x.moveTo(42,360+l*70);x.lineTo(w-42,360+l*70);x.stroke();}});
 /* tapas de MDF (frente: número, título e historia; atrás: número y símbolo) */
-const FI=[{t:"Lo que pasó",n:"01",s:"Vivían en la vereda de una tienda, sus cuyes y sus gallinas. Llegaron hombres armados: toque de queda, amenazas, miedo. La vida se volvió un nudo y, por sus hijos, escaparon.",bg:"#0e0d0c",fg:"#ffffff",mu:"#bdb7ac",ac:"#e5534b"},
- {t:"Lo que no se ve",n:"02",s:"Salieron con lo que tenían. En la ciudad nadie los esperaba: sin casa, sin trabajo, sin saber adónde ir. Es el vacío y la duda que nadie ve.",bg:"#6f6b66",fg:"#ffffff",mu:"#e4dfd6",ac:"#f2efe8"},
- {t:"Lo que volvió a tejer",n:"03",s:"Pero ese no era el final. Con crochet, lana guajira, chaquiras y gobelino empezó otra vez, punto por punto. Hoy teje, vende su trabajo y sostiene a su familia.",bg:"#0e8487",fg:"#ffffff",mu:"#d9f0ef",ac:"#f5e38a"}];
-/* la tapa es MDF (blanco o negro según el acabado) con el propalcote de PRW × PRH centrado; el diseño se pinta aparte y se pega en su sitio */
+const FI=[{t:"Lo que pasó",n:"01",s:"Vivían en la vereda de una tienda, sus cuyes y sus gallinas. Llegaron hombres armados: toque de queda, amenazas, miedo. La vida se volvió un nudo y, por sus hijos, escaparon.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
+ {t:"Lo que no se ve",n:"02",s:"Salieron con lo que tenían. En la ciudad nadie los esperaba: sin casa, sin trabajo, sin saber adónde ir. Es el vacío y la duda que nadie ve.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
+ {t:"Lo que volvió a tejer",n:"03",s:"Pero ese no era el final. Con crochet, lana guajira, chaquiras y gobelino empezó otra vez, punto por punto. Hoy teje, vende su trabajo y sostiene a su familia.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#b3261e"}];
+/* el tablero va negro, con el propalcote de PRW × PRH centrado; el diseño se pinta aparte y se pega en su sitio */
 const TW=1280,TH2=Math.round(TW*TAPA/TAW),DW=1280,DH=Math.round(DW*PRH/PRW);const dc=document.createElement("canvas");dc.width=DW;dc.height=DH;const dctx=dc.getContext("2d");
-const TAPAS=[];
-function paintTapa(o){const x=o.t.image.getContext("2d"),w=TW,h=TH2;x.fillStyle=FIN?"#f4f2ee":"#161514";x.fillRect(0,0,w,h);dctx.clearRect(0,0,DW,DH);o.draw(dctx,DW,DH);
+const TAPAS=[];const BLK="#34322f";/* negro con cuerpo: se leen luces, sombras y aristas */
+function paintTapa(o){const x=o.t.image.getContext("2d"),w=TW,h=TH2;x.fillStyle=BLK;x.fillRect(0,0,w,h);dctx.clearRect(0,0,DW,DH);o.draw(dctx,DW,DH);
   const pw=w*PRW/TAW,ph=h*PRH/TAPA;x.drawImage(dc,(w-pw)/2,(h-ph)/2,pw,ph);o.t.needsUpdate=true;}
 function tapaTex(draw){const o={t:tex(TW,TH2,()=>{}),draw};TAPAS.push(o);paintTapa(o);return o.t;}
 const fichaTex=(f,k)=>tapaTex((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.fillStyle=f.ac;
@@ -80,21 +81,33 @@ const fichaTex=(f,k)=>tapaTex((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.f
   x.fillStyle=f.ac;x.fillText("PUNTO DE PARTIDA · "+f.n,70,92);x.fillStyle=f.fg;let ts=112;do{x.font=`800 ${ts}px ${F.brand}`;ts-=4;}while(x.measureText(f.t).width>w-200);x.fillText(f.t,64,220);
   x.font=`500 50px ${F.body}`;x.fillStyle=f.fg;wrap(x,f.s,w-430,68,70,320);
 });
-/* pictogramas: 01 el nudo, 02 caminos sin destino, 03 la trama */
-function symbol(x,k,cx,cy,r,col){x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=x.fillStyle=col;const lw=r*.085;
-  if(k===0){/* un hilo entra, se enreda en lazos y sale */x.lineWidth=lw;x.beginPath();x.moveTo(cx-r*1.25,cy+r*.35);x.lineTo(cx-r*.55,cy+r*.35);
-    x.bezierCurveTo(cx+r*.2,cy+r*.35,cx+r*.5,cy-r*.75,cx-r*.05,cy-r*.8);x.bezierCurveTo(cx-r*.75,cy-r*.85,cx-r*.7,cy+r*.15,cx-r*.05,cy+r*.3);
-    x.bezierCurveTo(cx+r*.6,cy+r*.45,cx+r*.85,cy-r*.35,cx+r*.35,cy-r*.45);x.bezierCurveTo(cx-r*.15,cy-r*.55,cx-r*.35,cy+r*.05,cx+r*.05,cy+r*.15);
-    x.bezierCurveTo(cx+r*.45,cy+r*.25,cx+r*.6,cy+r*.75,cx+r*.15,cy+r*.8);x.bezierCurveTo(cx-r*.3,cy+r*.85,cx-r*.25,cy+r*.35,cx+r*.55,cy+r*.35);x.lineTo(cx+r*1.25,cy+r*.35);x.stroke();}
-  if(k===1){/* un hilo recto con ramas paralelas que terminan en duda */x.lineWidth=lw;x.beginPath();x.moveTo(cx-r*1.25,cy);x.lineTo(cx+r*1.25,cy);x.stroke();
-    x.lineWidth=lw*.7;x.font=`800 ${r*.5}px ${F.brand}`;x.textAlign="center";x.textBaseline="middle";
-    [[-.85,-.7],[-.25,.7],[.35,-.7]].forEach(([o,d])=>{const ax=cx+o*r,ex=ax+Math.abs(d)*r*.55,ey=cy+d*r;x.beginPath();x.moveTo(ax,cy);x.lineTo(ex,ey);x.stroke();x.beginPath();x.arc(ex,ey,lw*.75,0,7);x.fill();x.fillText("?",ex+r*.28,ey);});}
-  if(k===2){/* trama: urdimbre y trama que pasan por encima y por debajo */const n=5,st=r*2/n,PAL=["#ff8fab","#8ecae6","#ffd166","#95d5b2","#cdb4db"];x.lineWidth=st*.55;x.lineCap="butt";
-    for(let i=0;i<n;i++){const px=cx-r+st*(i+.5);x.strokeStyle=PAL[i];x.beginPath();x.moveTo(px,cy-r);x.lineTo(px,cy+r);x.stroke();}
-    for(let j=0;j<n;j++){const py=cy-r+st*(j+.5);x.strokeStyle=j===2?"#e5534b":col;for(let i=0;i<n;i++){if((i+j)%2&&j!==2)continue;x.beginPath();x.moveTo(cx-r+st*i-(i===0?0:1),py);x.lineTo(cx-r+st*(i+1)+1,py);x.stroke();}}}
+/* pictogramas, un solo sistema: el mismo trazo redondo, el mismo cuadro de lado sz y el hilo rojo pasando por la mitad.
+   01 el hilo se enreda en un nudo · 02 del hilo salen caminos que terminan en nada · 03 el hilo queda tejido en la trama */
+const RED_I="#c4302b";
+function symbol(x,k,cx,cy,sz,col,w){x.save();x.lineCap=x.lineJoin="round";const lw=sz*.06,r=sz/2;x.lineWidth=lw;
+  const red=(x0,x1)=>{x.strokeStyle=RED_I;x.beginPath();x.moveTo(x0,cy);x.lineTo(x1,cy);x.stroke();};
+  x.strokeStyle=col;x.fillStyle=col;
+  if(k===0){/* otros hilos cruzados alrededor del nudo */x.strokeStyle=col;
+    [[-1,-.55,1,.75],[-1,.7,1,-.6],[-.45,-1,.5,1]].forEach(([a,b,c2,d])=>{x.beginPath();x.moveTo(cx+a*r,cy+b*r);x.quadraticCurveTo(cx,cy+(b+d)*r*.1,cx+c2*r,cy+d*r);x.stroke();});
+    red(0,cx-r*.62);red(cx+r*.62,w);x.strokeStyle=RED_I;x.beginPath();x.moveTo(cx-r*.62,cy);
+    x.bezierCurveTo(cx-r*.1,cy,cx+r*.35,cy-r*.85,cx-r*.05,cy-r*.85);x.bezierCurveTo(cx-r*.55,cy-r*.85,cx-r*.6,cy+r*.15,cx,cy+r*.2);
+    x.bezierCurveTo(cx+r*.6,cy+r*.25,cx+r*.55,cy-r*.55,cx+r*.15,cy-r*.45);x.bezierCurveTo(cx-r*.3,cy-r*.35,cx-r*.35,cy+r*.85,cx+r*.1,cy+r*.85);
+    x.bezierCurveTo(cx+r*.5,cy+r*.85,cx+r*.3,cy,cx+r*.62,cy);x.stroke();}
+  if(k===1){red(0,w);x.strokeStyle=col;[[-.75,-1],[-.2,1],[.3,-1]].forEach(([o,d])=>{const ax=cx+o*r,ex=ax+r*.45,ey=cy+d*r*.78;
+    x.beginPath();x.moveTo(ax,cy);x.lineTo(ex,ey);x.stroke();x.beginPath();x.arc(ex+lw*.9*Math.SQRT1_2,ey+d*lw*.9*Math.SQRT1_2,lw*.9,0,7);x.fillStyle=x.canvas.__bg||"#000";x.fill();x.stroke();});}
+  if(k===2){const n=4,st=sz/(n+1),gap=lw*1.1;const xs=[...Array(n)].map((_,i)=>cx-r+st*(i+1)),ys=[cy-st,cy+st];
+    /* urdimbre */xs.forEach(px=>{x.strokeStyle=col;x.beginPath();x.moveTo(px,cy-r);x.lineTo(px,cy+r);x.stroke();});
+    /* trama: pasa por encima y por debajo, alternando; la del medio es el hilo rojo */
+    const weft=(py,c,ph,x0,x1)=>{x.strokeStyle=c;x.beginPath();x.moveTo(x0,py);xs.forEach((px,i)=>{if((i+ph)%2){x.lineTo(px-gap,py);x.stroke();x.beginPath();x.moveTo(px+gap,py);}});x.lineTo(x1,py);x.stroke();};
+    weft(ys[0],col,0,cx-r,cx+r);weft(ys[1],col,1,cx-r,cx+r);weft(cy,RED_I,1,0,w);}
   x.restore();}
-const backTex=(f,k)=>tapaTex((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);symbol(x,k,255,h/2,170,k===0?"#e5534b":f.ac);
-  x.fillStyle=f.fg;x.font=`800 560px ${F.brand}`;x.textAlign="right";x.fillText(f.n,w-70,h/2+190);x.font=`600 30px ${F.body}`;x.fillStyle=f.mu;x.fillText("PUNTO DE PARTIDA",w-82,h/2+255);x.textAlign="left";});
+const backTex=(f,k)=>tapaTex((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.canvas.__bg=f.bg;
+  const sz=330,cx=w-90-sz/2,cy=h*.47;symbol(x,k,cx,cy,sz,f.fg,w);
+  /* número grande y grueso: Bricolage 800 con un contorno del mismo color para engrosarlo */
+  x.font=`800 600px ${F.brand}`;x.textAlign="left";x.textBaseline="alphabetic";x.fillStyle=x.strokeStyle=f.fg;x.lineWidth=16;x.lineJoin="round";
+  x.strokeText(f.n,58,cy+218);x.fillText(f.n,58,cy+218);
+  x.font=`600 34px ${F.body}`;x.fillStyle=f.mu;x.textAlign="center";x.fillText(f.t,cx,cy+sz/2+86);
+  x.textAlign="left";x.font=`600 28px ${F.body}`;x.fillText("PUNTO DE PARTIDA",70,84);});
 const CAP=["Primeras puntadas","Crochet: cobija de cuadros","Detalle del crochet","Mochilas en lana guajira","Detalle de una mochila","Bordado a mano","Gobelino","Detalle del gobelino"];
 function photoTex(k){const c=document.createElement("canvas");c.width=520;c.height=680;const x=c.getContext("2d");const paint=im=>{x.clearRect(0,0,520,680);x.fillStyle="#f8f6f0";x.fillRect(0,0,520,680);x.fillStyle="#ddd6c8";x.fillRect(30,70,460,460);if(im)x.drawImage(im,30,70,460,460);
   x.fillStyle="#2a2620";x.font=`700 48px ${F.hand}`;x.fillText(CAP[k],34,598);x.font=`500 22px ${F.body}`;x.fillStyle="#8a8378";x.fillText("0"+(k+1),34,648);hole(x,520,36);};paint(null);
@@ -112,6 +125,10 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
   /* tapas de MDF de 9 mm atornilladas sobre el marco por las dos caras; encima va el propalcote impreso, centrado */
   const tg=new T.BoxGeometry(TAW,TAPA,LT),tf=new T.Mesh(tg,[M.canto,M.canto,M.canto,M.canto,new T.MeshStandardMaterial({map:fichaTex(FI[i],i),roughness:.7}),M.canto]),tb=new T.Mesh(tg,[M.canto,M.canto,M.canto,M.canto,M.canto,new T.MeshStandardMaterial({map:backTex(FI[i],i),roughness:.7})]);
   tf.position.set(W/2,TY0+TAPA/2,t/2+LT/2);tb.position.set(W/2,TY0+TAPA/2,-t/2-LT/2);[tf,tb].forEach(m=>{m.castShadow=true;g.add(m);});g.userData.tapa=tf;
+  /* clavitos que sujetan el tablero: 7 arriba, 7 abajo y 3 más en cada larguero, centrados en la parte montada sobre el marco */
+  {const hx=TAW/2-(t-MAR)/2,yb=-TAPA/2+(t-MAR)/2,yt=TAPA/2-(t-GAP)/2,P=[];[-hx,-.18,-.09,0,.09,.18,hx].forEach(x=>P.push([x,yb],[x,yt]));[1,2,3].forEach(k=>{const y=yb+.095*k;P.push([-hx,y],[hx,y]);});/* cada 9 cm a lo ancho, cada 9,5 cm a lo alto */
+   const hg=new T.CylinderGeometry(.0021,.0021,.0008,10).rotateX(Math.PI/2),im=new T.InstancedMesh(hg,M.nail,P.length*2),m4=new T.Matrix4();
+   P.forEach(([x,y],k)=>{[1,-1].forEach((sd,j)=>{m4.makeTranslation(W/2+x,TY0+TAPA/2+y,sd*(t/2+LT+.0004));im.setMatrixAt(k*2+j,m4);});});g.add(im);g.userData.clavitos=P.length;}
   const {P,near}=nails(g,STEP[i],i===1);const segs=[];const RED=0xb3261e,RED2=0x7d1a14;
   if(i===0){seed=21;const pk=a=>a[Math.floor(rnd()*a.length)];const pairs=[[P.t,P.b],[P.l,P.r],[P.t,P.r],[P.l,P.b],[P.t,P.l],[P.r,P.b]];
     for(let k=0;k<84;k++){const p=pairs[k%6];segs.push([pk(p[0]),pk(p[1]),rnd()<.4?RED2:RED]);}
@@ -134,7 +151,7 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
   threads(g,segs,i===2?.0013:.0015);
   g.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});return g;}
 const frames=[0,1,2].map(frame);
-function setFinish(k){FIN=k;M.wood.map=k?null:woodTex;M.wood.color.set(k?0x1d1c1b:0xffffff);M.wood.roughness=k?.5:.72;M.wood.needsUpdate=true;M.canto.color.set(k?0xf4f2ee:0x161514);TAPAS.forEach(paintTapa);}
+function setFinish(k){FIN=k;M.wood.map=k?null:woodTex;M.wood.color.set(k?BLK:0xffffff);M.wood.roughness=k?.62:.72;M.wood.needsUpdate=true;M.canto.color.set(BLK);TAPAS.forEach(paintTapa);}
 setFinish(FIN);const stand=new T.Group();frames.forEach(f=>stand.add(f));scene.add(stand);
 /* bisagras alternas para plegar en acordeón */
 const HZ=[ZF+LT,-(ZF+LT)];/* el eje de la bisagra queda a ras de las tapas, sobre un taco de 9 mm, para que plegado no choquen */
@@ -170,7 +187,7 @@ function buildDims(){dimG.children.forEach(o=>o.geometry.dispose());dimG.clear()
 const mid=k=>()=>DIMS[k][0].clone().lerp(DIMS[k][1],.5);
 const wp=(f,x,y,z)=>()=>new T.Vector3(x,y,z).applyMatrix4(frames[f].matrixWorld);
 /* rótulos técnicos: [texto, posición en el mundo, clase] */
-const notes=[[m(H)+" m",mid(0),"dim"],[m(W)+" m",mid(1),"dim"],["Tapa: "+m(TAPA)+" m de alto",mid(2),"dim"],[m(OY1-OY0)+" m de hilo",mid(3),"dim"],[m(IN)+" m por dentro",mid(4),"dim"],
-  ["Listón de madera "+t*100+" × "+t*100+" cm",wp(2,W+.12,.9,0)],["Puntillas atrás cada 5 cm",wp(0,W/2,OY1+NI,-t/2-.04)],["Puntillas atrás cada 10 cm, solo a los lados",wp(1,OX0-NI,yM+.2,-t/2-.04)],["Puntillas atrás cada 2,5 cm",wp(2,W/2,OY1+NI,-t/2-.04)],["Bisagra de 3″ (4 en total)",wp(1,W+.02,HY[1],-.05)],["Tapa de MDF 9 mm · "+m(TAW)+" × "+m(TAPA)+" m, con propalcote de "+PRW*100+" × "+PRH*100+" cm",wp(2,W/2,TY0+TAPA/2-.01,.06)]];
+const notes=[[m(H)+" m",mid(0),"dim"],[m(W)+" m",mid(1),"dim"],["Tablero: "+m(TAPA)+" m de alto",mid(2),"dim"],[m(OY1-OY0)+" m de hilo",mid(3),"dim"],[m(IN)+" m por dentro",mid(4),"dim"],
+  ["Listón de madera "+t*100+" × "+t*100+" cm",wp(2,W+.12,.9,0)],["Puntillas atrás cada 5 cm",wp(0,W/2,OY1+NI,-t/2-.04)],["Puntillas atrás cada 10 cm, solo a los lados",wp(1,OX0-NI,yM+.2,-t/2-.04)],["Puntillas atrás cada 2,5 cm",wp(2,W/2,OY1+NI,-t/2-.04)],["Bisagra de 3″ (4 en total)",wp(1,W+.02,HY[1],-.05)],["Tablero de triplex 9 mm · "+m(TAW)+" × "+m(TAPA)+" m, con propalcote de "+PRW*100+" × "+PRH*100+" cm",wp(2,W/2,TY0+TAPA/2-.01,.06)]];
 return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,setFinish,get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
 };

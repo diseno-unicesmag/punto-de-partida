@@ -67,7 +67,7 @@ canvas#gl.drag{cursor:grabbing}
 <div id="hint">Arrastra para girar · rueda para acercar · ← → momentos</div>
 <!--THREE--><script src="vendor/three.min.js?v=158"></script>
 <script src="img_data.js?v=10"></script>
-<script src="stand.js?v=5"></script>
+<script src="stand.js?v=6"></script>
 <script>
 (async function(){
 "use strict";
@@ -140,7 +140,7 @@ const S=[
  {n:"Bastidor 3 · la tapa",view:()=>tapaView(2,1.15),soft:1,html:lab("Lo que volvió a tejer","Bastidor 3","La historia, en la tapa")},
  {n:"Bastidor 3 · el comienzo",view:()=>{const a=objView(PH[5],.8,0),b=objView(PH[7],.8,0);return {pos:a.pos.clone().lerp(b.pos,.5),look:a.look.clone().lerp(b.look,.5).add(V(-.1,0,0))};},soft:1,html:lab("Lo que volvió a tejer","Bastidor 3","Su trabajo")},
  {n:"Bastidor 3 · hoy",view:()=>{const a=objView(PH[0],.95,0),b=objView(PH[1],.95,0);return {pos:a.pos.clone().lerp(b.pos,.5),look:a.look.clone().lerp(b.look,.5).add(V(-.1,0,0))};},soft:1,html:lab("Lo que volvió a tejer","Bastidor 3","Su trabajo")},
- {ch:1,n:"Las tapas",view:()=>({pos:V(.3,.95,3.6),look:V(-.75,.4,0)}),html:`<span class="k">Lo informativo</span><h2>Cada momento, con su tapa</h2><p>Abajo, tapas de MDF atornilladas sobre el marco por las dos caras: amarran el bastidor y lo hacen más firme. Al frente, el número, el título y la historia de ese momento.</p>`},
+ {ch:1,n:"Las tapas",view:()=>({pos:V(.3,.95,3.6),look:V(-.75,.4,0)}),html:`<span class="k">Lo informativo</span><h2>Cada momento, con su tapa</h2><p>Abajo, tableros de triplex clavados sobre el marco por las dos caras: amarran el bastidor y lo hacen más firme. Al frente, el número, el título y la historia de ese momento.</p>`},
  {n:"Las tapas · atrás",view:()=>{const f=frames[1],c=V(W/2,.45,-(t/2+LT)).applyMatrix4(f.matrixWorld),q=new T.Quaternion();f.matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());const n=V(0,0,-1).applyQuaternion(q),r=V(1,0,0).applyQuaternion(q);return {pos:c.clone().addScaledVector(n,2.6).add(V(0,.35,0)),look:c.clone().addScaledVector(r,.5).add(V(0,-.05,0))};},html:`<span class="k">Lo informativo</span><h2>Y por detrás, el símbolo</h2><p>El nudo, los caminos sin destino y la trama: cada momento se reconoce por su número y su símbolo desde el otro lado.</p>`},
  {n:"Un hilo que no se corta",view:()=>({pos:V(.4,1.5,2.9),look:V(-.4,1.1,0)}),bare:1,html:`<span class="k">El personaje</span><h2>Un hilo que no se corta</h2><p>Un solo hilo rojo atraviesa los tres bastidores: se enreda en el primero, se abre en caminos sin destino en el segundo y se vuelve parte del tejido en el tercero. Es el recorrido de ella.</p>`},
  {ch:1,n:"Medidas",view:()=>{const f=frames[0],c=V(W/2,.95,0).applyMatrix4(f.matrixWorld);return {pos:c.clone().add(V(1.1,.55,3.4)),look:c.clone().add(V(.2,0,0))};},dims:1,lab:"tec",html:`<span class="k">Soluciones técnicas</span><h2>Medidas</h2><p>Los tres bastidores son iguales. Con las tapas, plegado mide ${m(W)} × ${m(H)} × ${m(FD)} m.</p>`},

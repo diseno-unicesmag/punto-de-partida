@@ -45,8 +45,8 @@ body.labs .lab:not(.dim),body.dims .lab.dim{display:block}
   <section><h3>Puntillas</h3><dl id="puntillas"></dl><p class="nota">Clavadas en la cara de atrás del marco, a 1,2 cm del borde interior, sobresaliendo 6 mm. El hilo se amarra en el clavo y cruza el vano; desde el frente no se ve ninguna. Se marcan desde la mitad de cada lado hacia las esquinas: la del medio siempre queda, porque ahí se amarra el hilo rojo.</p></section>
   <section><h3>Despiece (3 bastidores)</h3><dl id="despiece"></dl></section>
   <section><h3>Acabado</h3>
-    <label class="row"><input type="radio" name="fin" value="1" checked>Marco negro, MDF blanco</label>
-    <label class="row"><input type="radio" name="fin" value="0">Madera natural, MDF negro</label>
+    <label class="row"><input type="radio" name="fin" value="1" checked>Todo negro</label>
+    <label class="row"><input type="radio" name="fin" value="0">Madera natural, tablero negro</label>
   </section>
   <section><h3>Plegado</h3><input type="range" id="fold" min="0" max="100" value="0" aria-label="Plegado"><div class="rng"><span>Abierto</span><span>Plegado</span></div></section>
   <section><h3>Mostrar</h3>
@@ -64,7 +64,7 @@ body.labs .lab:not(.dim),body.dims .lab.dim{display:block}
 <div id="hint">Arrastra para girar · clic derecho o Shift para mover<br>rueda para acercar · doble clic para centrar</div>
 <script src="vendor/three.min.js?v=158"></script>
 <script src="img_data.js?v=10"></script>
-<script src="stand.js?v=5"></script>
+<script src="stand.js?v=6"></script>
 <script>
 (async function(){
 "use strict";
@@ -93,10 +93,10 @@ const cm=v=>String(Math.round(v*1000)/10).replace(".",",")+" cm";
 document.getElementById("ver").textContent="Listón de "+t*100+" × "+t*100+" cm · bastidor de "+m(W)+" × "+m(H)+" m";
 const dl=(id,rows)=>{document.getElementById(id).innerHTML=rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("");};
 dl("ficha",[["Listón",t*100+" × "+t*100+" cm"],["Bastidor, por fuera",m(W)+" × "+m(H)+" m"],["Travesaños, por dentro",m(IN)+" m"],["Travesaño medio (eje)",m(MID)+" m del piso"],["Travesaño bajo (eje)",m(LOW+t/2)+" m del piso"],["Patas",cm(LOW)],
-  ["Vano del hilo",m(OW)+" × "+m(OY1-OY0)+" m"],["Tapas MDF 9 mm (6)",m(TAW)+" × "+m(TAPA)+" m"],["Propalcote (6)",PRW*100+" × "+PRH*100+" cm"],["Borde de MDF alrededor",cm((TAW-PRW)/2)+" · "+cm((TAPA-PRH)/2)],["Bisagras de 3″",(HY.length*2)+", a "+HY.map(m).join(" y ")+" m"],["Plegado",m(W)+" × "+m(H)+" × "+m(FD)+" m"]]);
+  ["Vano del hilo",m(OW)+" × "+m(OY1-OY0)+" m"],["Tableros de triplex 9 mm (6)",m(TAW)+" × "+m(TAPA)+" m"],["Propalcote (6)",PRW*100+" × "+PRH*100+" cm"],["Borde de tablero alrededor",cm((TAW-PRW)/2)+" · "+cm((TAPA-PRH)/2)],["Marco a la vista bajo el tablero","1 cm a los lados y abajo · 2 cm arriba"],["Clavitos del tablero",ST.frames[0].userData.clavitos*6+" (20 por tablero)"],["Bisagras de 3″",(HY.length*2)+", a "+HY.map(m).join(" y ")+" m"],["Plegado",m(W)+" × "+m(H)+" × "+m(FD)+" m"]]);
 const NN=ST.nails,cmv=cm;
 dl("puntillas",[...NN.map((n,i)=>["Bastidor "+(i+1)+" · cada "+cmv(n.step),n.n+(i===1?" ("+n.lr+" por lado)":" ("+n.tb+" arriba y abajo, "+n.lr+" por lado)")]),["Total",NN.reduce((a,n)=>a+n.n,0)+""]]);
-dl("despiece",[["Largueros",6+" × "+cm(H)],["Travesaños",9+" × "+cm(IN)],["Listón en total",m(6*H+9*IN)+" m"],["Tapas MDF",6+" × "+cm(TAW)+" × "+cm(TAPA)],["Tacos de bisagra MDF 9 mm",8+" × 4 × 8,5 cm"]]);
+dl("despiece",[["Largueros",6+" × "+cm(H)],["Travesaños",9+" × "+cm(IN)],["Listón en total",m(6*H+9*IN)+" m"],["Tableros de triplex",6+" × "+cm(TAW)+" × "+cm(TAPA)],["Tacos de bisagra triplex 9 mm",8+" × 4 × 8,5 cm"]]);
 /* ================= rótulos ================= */
 const labs=document.getElementById("labs");const LBL=ST.notes.map(n=>{const d=document.createElement("div");d.className="lab"+(n[2]?" "+n[2]:"");d.textContent=n[0];labs.appendChild(d);return {d,getPos:n[1]};});
 /* ================= controles ================= */
