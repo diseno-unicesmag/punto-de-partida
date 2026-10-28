@@ -17,7 +17,7 @@ const M={wood:new T.MeshStandardMaterial({map:woodTex,roughness:.72}),hinge:new 
   rojo:new T.MeshStandardMaterial({color:0xb3261e,roughness:.55,emissive:0x300000}),canto:new T.MeshStandardMaterial({color:0x161514,roughness:.6})};
 /* ================= medidas (m) ================= */
 /* listón de 4 × 4 cm; travesaños de 0,50 m por dentro; largueros de 1,60 m; vano de hilos de 0,50 × 1,00 m */
-const t=.04,IN=.50,W=IN+2*t,H=1.60,MID=.54,LOW=.13;const OX0=t,OX1=W-t,OY0=MID+t/2,OY1=H-t;const OW=OX1-OX0;const ZF=t/2;
+const t=.04,IN=.50,W=IN+2*t,H=1.60,MID=.54,LOW=.12;/* LOW: borde inferior del travesaño bajo = largo de las patas; la tapa cubre la mitad del travesaño y deja 2 cm a la vista, igual que en los largueros */const OX0=t,OX1=W-t,OY0=MID+t/2,OY1=H-t;const OW=OX1-OX0;const ZF=t/2;
 const yM=(OY0+OY1)/2;/* altura del hilo rojo: clavo del medio */
 /* propalcote: área visible máxima de impresión, centrada en la tapa con el mismo borde a los cuatro lados (3,5 cm) */
 const PRW=.47,PRH=.32,BOR=.035;
