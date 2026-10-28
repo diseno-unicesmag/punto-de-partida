@@ -125,7 +125,7 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
     const sl=2,BR=[[.10,.10],[.20,.40],[.32,.20],[.15,-.20],[.27,-.30]];/* cada camino termina sobre un hilo gris */const tags=[];
     BR.forEach((b,k)=>{const a=new T.Vector3(b[0],yM,ZT),e=new T.Vector3(b[0]+Math.abs(b[1])/sl,yM+b[1],ZT);segs.push([a,e,RED]);tags.push(hang(g,tagTex(k),.055,.09,e.x,e.y,(k%2?.08:-.08),.16));});
     g.userData.tags=tags;const c0=OX0+.015+CW/2,c2=OX1-.015-CW/2;g.userData.cards=[hang(g,quoteTex(FR2[0][0],FR2[0][1],"gray"),CW,CH,c0,yM+.40,-.03,.03),hang(g,quoteTex(FR2[1][0],FR2[1][1],"gray"),CW,CH,c2,yM-.10,.03,.03),hang(g,quoteTex(FR2[2][0],FR2[2][1],"gray"),CW,CH,c0,yM-.30,-.03,.03)];}
-  if(i===2){const PAL=[0xff006e,0x3a86ff,0xffbe0b,0x06d6a0,0x8338ec,0xfb5607,0x118ab2,0xef476f,0x2ec4b6,0xffd166];
+  if(i===2){const PAL=[0xf2c200,0x2f6fd6,0x2e9e4f,0xe0218a];/* amarillo, azul, verde, fucsia: verticales de a 2, horizontales de a 3 */
     P.t.slice().sort((a,b)=>a.x-b.x).forEach((a,k)=>segs.push([a,near(P.b,"x",a.x),PAL[Math.floor(k/2)%PAL.length]]));
     P.l.slice().sort((a,b)=>a.y-b.y).forEach((a,k)=>{const isR=Math.abs(a.y-yM)<.001;segs.push([a.clone().setZ(ZT+.003),near(P.r,"y",a.y).clone().setZ(ZT+.003),isR?RED:PAL[(Math.floor(k/3)+3)%PAL.length]]);});
     /* regadas sin patrón; de arriba abajo conservan el orden de antes (01 arriba) */
