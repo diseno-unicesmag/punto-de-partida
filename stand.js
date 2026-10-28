@@ -18,9 +18,13 @@ const M={wood:new T.MeshStandardMaterial({map:woodTex,roughness:.72}),hinge:new 
 /* ================= medidas (m) ================= */
 /* listón de 4 × 4 cm; travesaños de 0,50 m por dentro; largueros de 1,60 m; vano de hilos de 0,50 × 1,00 m */
 const t=.04,IN=.50,W=IN+2*t,H=1.60,MID=.54,LOW=.13;const OX0=t,OX1=W-t,OY0=MID+t/2,OY1=H-t;const OW=OX1-OX0;const ZF=t/2;
-const yM=(OY0+OY1)/2;const LT=.009,TY0=LOW+t/2,TAPA=MID-TY0,TAW=W-t;/* tapa: cubre medio listón alrededor *//* altura del hilo rojo: clavo del medio */
+const yM=(OY0+OY1)/2;/* altura del hilo rojo: clavo del medio */
 /* propalcote: área visible máxima de impresión, centrada en la tapa con el mismo borde a los cuatro lados (3,5 cm) */
-const PRW=.47,PRH=.32;
+const PRW=.47,PRH=.32,BOR=.035;
+/* tapa: a lo ancho cubre medio listón a cada lado; arriba solo 1 cm del travesaño medio, para dejar libre la franja de las puntillas de atrás */
+const LT=.009,TAW=W-t,TAPA=PRH+2*BOR,TY0=OY0-.03-TAPA;
+/* puntillas en la cara de atrás del marco, a NI del borde interior, sobresalen 6 mm; el hilo se amarra en el vástago (plano ZT) */
+const NI=.012,NL=.006,ZT=-(t/2+.004);
 /* acabado: 1 marco negro y MDF blanco, 0 madera natural y MDF negro */
 let FIN=1;
 const FD=Math.ceil(3*(t+2*LT)*100)/100;/* fondo plegado: tres marcos con sus dos tapas */
@@ -39,12 +43,13 @@ function scatter(n,w,h,sd){const pad=.015,LM=.045;for(let tr=0;tr<50;tr++){seed=
 function threads(g,segs,r){const geo=new T.CylinderGeometry(r,r,1,5,1,true);const mat=new T.MeshStandardMaterial({roughness:.85});const im=new T.InstancedMesh(geo,mat,segs.length);const up=new T.Vector3(0,1,0),q=new T.Quaternion(),m4=new T.Matrix4();
   segs.forEach((s,i)=>{const a=s[0],b=s[1],d=b.clone().sub(a),L=d.length();q.setFromUnitVectors(up,d.clone().normalize());m4.compose(a.clone().add(b).multiplyScalar(.5),q,new T.Vector3(1,L,1));im.setMatrixAt(i,m4);im.setColorAt(i,new T.Color(s[2]));});
   im.castShadow=true;im.instanceColor.needsUpdate=true;g.add(im);return im;}
-/* puntillas con cabeza en el canto interior del marco: el hilo queda en el plano del bastidor y al plegar nada choca.
+/* puntillas clavadas en la cara de atrás del marco: desde el frente solo se ven los hilos cruzando el vano.
    Se marcan desde el centro hacia afuera, así siempre hay una en la mitad de cada lado (ahí pasa el hilo rojo); sides: solo en los largueros */
 function nails(g,step,sides){const xs=[],ys=[];if(!sides){for(let x=W/2;x<OX1-.012;x+=step)xs.push(x);for(let x=W/2-step;x>OX0+.012;x-=step)xs.push(x);}for(let y=yM;y<OY1-.012;y+=step)ys.push(y);for(let y=yM-step;y>OY0+.012;y-=step)ys.push(y);
-  const P={t:xs.map(x=>new T.Vector3(x,OY1,0)),b:xs.map(x=>new T.Vector3(x,OY0,0)),l:ys.map(y=>new T.Vector3(OX0,y,0)),r:ys.map(y=>new T.Vector3(OX1,y,0))};
-  const all=[].concat(P.t,P.b,P.l,P.r);const head=new T.InstancedMesh(new T.SphereGeometry(.0042,8,6),M.nail,all.length);const m4=new T.Matrix4();
-  all.forEach((p,i)=>{m4.makeTranslation(p.x+(p.x<=OX0?.003:p.x>=OX1?-.003:0),p.y+(p.y>=OY1?-.003:p.y<=OY0?.003:0),p.z);head.setMatrixAt(i,m4);});g.add(head);
+  const P={t:xs.map(x=>new T.Vector3(x,OY1+NI,ZT)),b:xs.map(x=>new T.Vector3(x,OY0-NI,ZT)),l:ys.map(y=>new T.Vector3(OX0-NI,y,ZT)),r:ys.map(y=>new T.Vector3(OX1+NI,y,ZT))};
+  const all=[].concat(P.t,P.b,P.l,P.r);const sg=new T.CylinderGeometry(.0009,.0009,NL,6).rotateX(Math.PI/2),hg=new T.CylinderGeometry(.0024,.0024,.0008,12).rotateX(Math.PI/2);
+  const shank=new T.InstancedMesh(sg,M.nail,all.length),head=new T.InstancedMesh(hg,M.nail,all.length);const m4=new T.Matrix4();
+  all.forEach((p,i)=>{m4.makeTranslation(p.x,p.y,-t/2-NL/2);shank.setMatrixAt(i,m4);m4.makeTranslation(p.x,p.y,-t/2-NL);head.setMatrixAt(i,m4);});g.add(shank,head);
   g.userData.nails={step,n:all.length,tb:xs.length,lr:ys.length};
   const near=(arr,k,v)=>arr.reduce((m,p)=>Math.abs(p[k]-v)<Math.abs(m[k]-v)?p:m);return {P,near};}
 /* ================= textos ================= */
@@ -96,7 +101,7 @@ function photoTex(k){const c=document.createElement("canvas");c.width=520;c.heig
   const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=8;const im=new Image();im.onload=()=>{paint(im);t.needsUpdate=true;};im.src=(window.IMG||{})["ph"+(k+1)]||"";return t;}
 /* ===== todo cuelga de un hilito con su argolla y se mece ===== */
 const hung=[];
-function hang(g,map,w,h,ax,ay,rot,amp,len){const anchor=new T.Group();anchor.position.set(ax,ay,.004);const piv=new T.Group();anchor.add(piv);const L=len||.022;
+function hang(g,map,w,h,ax,ay,rot,amp,len){const anchor=new T.Group();anchor.position.set(ax,ay,ZT+.004);/* cuelga del hilo, por delante */const piv=new T.Group();anchor.add(piv);const L=len||.022;
   const s=new T.Mesh(new T.CylinderGeometry(.0009,.0009,L,5),M.string);s.position.y=-L/2;piv.add(s);
   const ring=new T.Mesh(new T.TorusGeometry(.0045,.0011,6,14),M.string);ring.position.set(0,-L,.001);piv.add(ring);
   const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshStandardMaterial({map,roughness:.85,side:T.DoubleSide,transparent:true,alphaTest:.5}));m.position.set(0,-L-h/2+.012,.003);m.castShadow=true;piv.add(m);
@@ -118,11 +123,11 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
     P.l.forEach(a=>{if(Math.abs(a.y-yM)>.001)segs.push([a,near(P.r,"y",a.y),0x9a9e99]);});
     /* caminos rectos y paralelos (misma inclinación), sin cruzarse */
     const sl=2,BR=[[.10,.10],[.20,.40],[.32,.20],[.15,-.20],[.27,-.30]];/* cada camino termina sobre un hilo gris */const tags=[];
-    BR.forEach((b,k)=>{const a=new T.Vector3(b[0],yM,0),e=new T.Vector3(b[0]+Math.abs(b[1])/sl,yM+b[1],0);segs.push([a,e,RED]);tags.push(hang(g,tagTex(k),.055,.09,e.x,e.y,(k%2?.08:-.08),.16));});
+    BR.forEach((b,k)=>{const a=new T.Vector3(b[0],yM,ZT),e=new T.Vector3(b[0]+Math.abs(b[1])/sl,yM+b[1],ZT);segs.push([a,e,RED]);tags.push(hang(g,tagTex(k),.055,.09,e.x,e.y,(k%2?.08:-.08),.16));});
     g.userData.tags=tags;const c0=OX0+.015+CW/2,c2=OX1-.015-CW/2;g.userData.cards=[hang(g,quoteTex(FR2[0][0],FR2[0][1],"gray"),CW,CH,c0,yM+.40,-.03,.03),hang(g,quoteTex(FR2[1][0],FR2[1][1],"gray"),CW,CH,c2,yM-.10,.03,.03),hang(g,quoteTex(FR2[2][0],FR2[2][1],"gray"),CW,CH,c0,yM-.30,-.03,.03)];}
   if(i===2){const PAL=[0xff006e,0x3a86ff,0xffbe0b,0x06d6a0,0x8338ec,0xfb5607,0x118ab2,0xef476f,0x2ec4b6,0xffd166];
     P.t.slice().sort((a,b)=>a.x-b.x).forEach((a,k)=>segs.push([a,near(P.b,"x",a.x),PAL[Math.floor(k/2)%PAL.length]]));
-    P.l.slice().sort((a,b)=>a.y-b.y).forEach((a,k)=>{const isR=Math.abs(a.y-yM)<.001;segs.push([a.clone().setZ(.003),near(P.r,"y",a.y).clone().setZ(.003),isR?RED:PAL[(Math.floor(k/3)+3)%PAL.length]]);});
+    P.l.slice().sort((a,b)=>a.y-b.y).forEach((a,k)=>{const isR=Math.abs(a.y-yM)<.001;segs.push([a.clone().setZ(ZT+.003),near(P.r,"y",a.y).clone().setZ(ZT+.003),isR?RED:PAL[(Math.floor(k/3)+3)%PAL.length]]);});
     /* regadas sin patrón; de arriba abajo conservan el orden de antes (01 arriba) */
     const pos=scatter(8,.11,.144,SC[2]),ord=[0,1,2,3,4,5,7,6];g.userData.photos=[];
     pos.forEach((p,j)=>{const k=ord[j];g.userData.photos[k]=hang(g,photoTex(k),.11,.144,p.x,p.y+.072-.012+p.L,(rnd()-.5)*.12,.025,p.L);});}
@@ -136,7 +141,7 @@ const HZ=[ZF+LT,-(ZF+LT)];/* el eje de la bisagra queda a ras de las tapas, sobr
 const hinges=[];[0,1].forEach(k=>HY.forEach(y=>{const h=new T.Group();const l1=new T.Mesh(new T.BoxGeometry(.035,.075,.003),M.hinge),l2=l1.clone();l1.position.x=-.0175;l2.position.x=.0175;const pin=new T.Mesh(new T.CylinderGeometry(.004,.004,.08,10),M.hinge);
   const sp=new T.Mesh(new T.BoxGeometry(.04,.085,LT),M.wood);sp.position.set(-.02,0,(k?1:-1)*LT/2);h.add(sp);
   h.add(l1,l2,pin);h.traverse(o=>o.castShadow=true);h.userData={k,y};scene.add(h);hinges.push(h);}));
-/* hilo rojo entre bastidores: de la puntilla del medio a la puntilla del medio, por delante de los listones */
+/* hilo rojo entre bastidores (se ubica en layout) */
 const cylG=new T.CylinderGeometry(.0016,.0016,1,6,1,true);const conn=[0,1].map(()=>[0,1,2,3,4].map(()=>{const m=new T.Mesh(cylG,M.rojo);m.castShadow=true;scene.add(m);return m;}));
 const OPEN={a0:.5,r1:-1.0,r2:1.0},FOLD={a0:.0,r1:-Math.PI+.001,r2:Math.PI-.001};
 const up=new T.Vector3(0,1,0);
@@ -149,7 +154,8 @@ function layout(fold){const a0=OPEN.a0+(FOLD.a0-OPEN.a0)*fold,r1=OPEN.r1+(FOLD.r
   [M0,M1,M2].forEach((m,i)=>{frames[i].matrixAutoUpdate=false;frames[i].matrix.copy(m);});
   const c=new T.Vector3();[0,1,2].forEach(i=>c.add(new T.Vector3(W/2,0,0).applyMatrix4(frames[i].matrix)));c.multiplyScalar(1/3);stand.position.set(-c.x,0,-c.z);stand.updateMatrixWorld(true);
   hinges.forEach(h=>{const {k,y}=h.userData;h.position.copy(new T.Vector3(W,y,HZ[k]).applyMatrix4(frames[k].matrixWorld));const q=new T.Quaternion();frames[k].matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());h.quaternion.copy(q);});
-  const zf=ZF+.003;conn.forEach((ms,k)=>{const A=frames[k].matrixWorld,B=frames[k+1].matrixWorld;const p=[new T.Vector3(OX1,yM,0).applyMatrix4(A),new T.Vector3(OX1,yM,zf).applyMatrix4(A),new T.Vector3(W,yM,zf).applyMatrix4(A),new T.Vector3(0,yM,zf).applyMatrix4(B),new T.Vector3(OX0,yM,zf).applyMatrix4(B),new T.Vector3(OX0,yM,0).applyMatrix4(B)];
+  /* hilo rojo entre bastidores: por detrás, de la puntilla del medio a la del medio, rodeando la junta */
+  conn.forEach((ms,k)=>{const A=frames[k].matrixWorld,B=frames[k+1].matrixWorld;const a=new T.Vector3(OX1+NI,yM,ZT).applyMatrix4(A),b=new T.Vector3(W,yM,ZT).applyMatrix4(A),c=new T.Vector3(0,yM,ZT).applyMatrix4(B),d=new T.Vector3(OX0-NI,yM,ZT).applyMatrix4(B);const p=[a,a,b,c,d,d];
     for(let s=0;s<5;s++)seg(ms[s],p[s],p[s+1]);ms.forEach(m=>m.visible=fold<.02);
 });}
 layout(0);
@@ -165,6 +171,6 @@ const mid=k=>()=>DIMS[k][0].clone().lerp(DIMS[k][1],.5);
 const wp=(f,x,y,z)=>()=>new T.Vector3(x,y,z).applyMatrix4(frames[f].matrixWorld);
 /* rótulos técnicos: [texto, posición en el mundo, clase] */
 const notes=[[m(H)+" m",mid(0),"dim"],[m(W)+" m",mid(1),"dim"],["Tapa: "+m(TAPA)+" m de alto",mid(2),"dim"],[m(OY1-OY0)+" m de hilo",mid(3),"dim"],[m(IN)+" m por dentro",mid(4),"dim"],
-  ["Listón de madera "+t*100+" × "+t*100+" cm",wp(2,W+.12,.9,0)],["Puntillas cada 5 cm",wp(0,W/2,OY1-.02,.05)],["Puntillas cada 10 cm, solo a los lados",wp(1,OX0+.02,yM+.2,.05)],["Puntillas cada 2,5 cm",wp(2,W/2,OY1-.02,.05)],["Bisagra de 3″ (4 en total)",wp(1,W+.02,HY[1],-.05)],["Tapa de MDF 9 mm · "+m(TAW)+" × "+m(TAPA)+" m, con propalcote de "+PRW*100+" × "+PRH*100+" cm",wp(2,W/2,TY0+TAPA/2-.01,.06)]];
-return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,setFinish,get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
+  ["Listón de madera "+t*100+" × "+t*100+" cm",wp(2,W+.12,.9,0)],["Puntillas atrás cada 5 cm",wp(0,W/2,OY1+NI,-t/2-.04)],["Puntillas atrás cada 10 cm, solo a los lados",wp(1,OX0-NI,yM+.2,-t/2-.04)],["Puntillas atrás cada 2,5 cm",wp(2,W/2,OY1+NI,-t/2-.04)],["Bisagra de 3″ (4 en total)",wp(1,W+.02,HY[1],-.05)],["Tapa de MDF 9 mm · "+m(TAW)+" × "+m(TAPA)+" m, con propalcote de "+PRW*100+" × "+PRH*100+" cm",wp(2,W/2,TY0+TAPA/2-.01,.06)]];
+return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,setFinish,get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
 };
