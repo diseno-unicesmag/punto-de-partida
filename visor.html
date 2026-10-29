@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Punto de partida · Visor</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23b3261e%22/%3E%3Cpath%20d%3D%22M8%2040%20L14%2040%20C20%2040%2021%2031%2017%2031%20C13%2031%2013%2040%2022%2040%20C31%2040%2033%2027%2027%2027%20C21%2027%2021%2040%2032%2040%20C44%2040%2046%2021%2039%2021%20C32%2021%2032%2040%2046%2040%20L50%2040%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%223.4%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3Ccircle%20cx%3D%2255%22%20cy%3D%2240%22%20r%3D%224%22%20fill%3D%22%23fff%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Work+Sans:wght@400;500;600&family=Caveat:wght@500;700&display=swap">
+<style>
+/* Visor para presentar: el modelo en tres estados (estructura, pintado, completo), pocas medidas y pocas vistas */
+:root{--ink:#1b1a18;--muted:#6f6a62;--rojo:#b3261e;--bg:#e9e7e2;--card:rgba(255,255,255,.82);--line:#d4d0c8;--brand:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--body:"Work Sans","Segoe UI",system-ui,sans-serif;color-scheme:light}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);overflow:hidden;user-select:none;-webkit-user-select:none}
+canvas#gl{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+canvas#gl.drag{cursor:grabbing}
+header{position:fixed;left:24px;top:22px}
+header .k{font:600 11px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--rojo)}
+header h1{font:800 30px/1 var(--brand);letter-spacing:-.02em;margin:4px 0 4px}
+header p{margin:0;font-size:13px;color:var(--muted)}
+.seg{position:fixed;left:50%;top:22px;transform:translateX(-50%);display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px;backdrop-filter:blur(8px)}
+.seg button,#views button{font:600 14px var(--body);color:var(--ink);background:transparent;border:0;border-radius:99px;padding:9px 18px;cursor:pointer}
+.seg button .n{display:inline-block;font:700 11px var(--body);color:var(--muted);margin-right:7px}
+.seg button.on{background:var(--ink);color:#fff}.seg button.on .n{color:#ffffffaa}
+.seg button:hover:not(.on),#views button:hover:not(.on){background:#00000010}
+#views{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px;backdrop-filter:blur(8px);max-width:calc(100vw - 32px);box-sizing:border-box}
+#views button{font-size:13px;padding:7px 13px}#views button.on{background:var(--rojo);color:#fff}
+#info{position:fixed;right:24px;top:22px;width:240px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;backdrop-filter:blur(8px)}
+#info h3{font:600 11px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+dl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:0;font-size:13px}
+dt{color:var(--muted)}dd{margin:0;text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+#cap{position:fixed;left:24px;bottom:92px;max-width:300px;font-size:13px;line-height:1.5;color:var(--muted)}
+#cap b{display:block;font:700 15px var(--brand);color:var(--ink);margin-bottom:2px}
+.opt{display:flex;gap:14px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:13px}
+.opt label{display:flex;align-items:center;gap:6px;cursor:pointer}.opt input{accent-color:var(--rojo);margin:0}
+.lab{position:fixed;transform:translate(-50%,-50%);font:700 12px var(--body);color:#fff;background:var(--ink);padding:3px 9px;border-radius:99px;white-space:nowrap;pointer-events:none;display:none}
+body.dims .lab{display:block}
+button:focus-visible{outline:2px solid var(--rojo)}
+@media (max-width:860px){#info{display:none}#cap{display:none}header{left:16px;top:16px}header h1{font-size:24px}.seg{top:auto;bottom:74px}.seg button{padding:8px 12px;font-size:13px}#views{bottom:14px;border-radius:14px}}
+</style>
+</head><body>
+<canvas id="gl"></canvas>
+<div id="labs"></div>
+<header><span class="k">Museo al aire libre</span><h1>Punto de partida</h1><p>Tres bastidores plegables · el hilo rojo</p></header>
+<nav class="seg" id="modes">
+  <button data-m="0"><span class="n">01</span>Estructura</button>
+  <button data-m="1"><span class="n">02</span>Pintado</button>
+  <button data-m="2" class="on"><span class="n">03</span>Completo</button>
+</nav>
+<aside id="info"><h3>Medidas</h3><dl id="med"></dl>
+  <div class="opt"><label><input type="checkbox" id="cDims">Cotas</label><label><input type="checkbox" id="cFold">Plegar</label></div></aside>
+<div id="cap"></div>
+<nav id="views"></nav>
+<script src="vendor/three.min.js?v=158"></script>
+<script src="img_data.js?v=10"></script>
+<script src="stand.js?v=9"></script>
+<script>
+(async function(){
+"use strict";
+if(document.fonts&&document.fonts.ready){try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))]);}catch(_){}}
+const T=THREE;
+const cv=document.getElementById("gl");
+const R=new T.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;
+R.outputColorSpace=T.SRGBColorSpace;R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=1.05;
+const BG=0xe9e7e2;const scene=new T.Scene();scene.background=new T.Color(BG);scene.fog=new T.Fog(BG,9,24);
+const cam=new T.PerspectiveCamera(34,1,.02,80);
+scene.add(new T.HemisphereLight(0xffffff,0xb9b3a8,1.1));
+const sun=new T.DirectionalLight(0xfff6ea,2.0);sun.position.set(3,6.5,5);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.radius=5;
+Object.assign(sun.shadow.camera,{left:-2.5,right:2.5,top:2.5,bottom:-2.5,near:1,far:20});sun.shadow.bias=-.0003;sun.shadow.normalBias=.02;scene.add(sun);
+const fillL=new T.DirectionalLight(0xffffff,.7);fillL.position.set(-3,2.5,3);scene.add(fillL);
+const back=new T.DirectionalLight(0xffffff,.6);back.position.set(-2,3,-5);scene.add(back);
+const ST=buildStand(T,scene);const {m,clamp,ease,t,W,H,LOW,OW,OY0,OY1,TAPA,TAW,PRW,PRH,HY,HG,frames,stand,hinges,hung,dimG,layout,buildDims}=ST;
+const ground=new T.Mesh(new T.PlaneGeometry(40,40),new T.ShadowMaterial({opacity:.16}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+const grid=new T.GridHelper(4,20,0xc9c4ba,0xd8d4cc);grid.position.y=.001;scene.add(grid);
+/* medidas clave */
+const cm=v=>String(Math.round(v*1000)/10).replace(".",",")+" cm";const $=id=>document.getElementById(id);
+$("med").innerHTML=[["Bastidor (×3)",m(W)+" × "+m(H)+" m"],["Vano de hilos",cm(OW).replace(" cm","")+" × "+cm(OY1-OY0)],["Listón",t*100+" × "+t*100+" cm"],["Tablero triplex (×6)",cm(TAW).replace(" cm","")+" × "+cm(TAPA)],["Propalcote (×6)",PRW*100+" × "+PRH*100+" cm"],["Patas",cm(LOW)],["Bisagras 2½″",HY.length*2+""],["Desplegado",m(3*W+2*HG)+" m"]].map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("");
+const CAP=[["Estructura","El armazón: listón de 4 × 4 cm y tableros de triplex. El recuadro marca dónde va cada propalcote."],
+  ["Pintado","Todo en negro mate. Las puntillas, los clavitos y las bisagras quedan plateados."],
+  ["Completo","Con los hilos, las frases, las etiquetas, las fotos y los propalcotes. El hilo rojo pasa de un bastidor a otro."]];
+/* cotas */
+const labs=$("labs");const LBL=ST.notes.filter(n=>n[2]==="dim").map(n=>{const d=document.createElement("div");d.className="lab";d.textContent=n[0];labs.appendChild(d);return {d,getPos:n[1]};});
+let fold=0,foldT=0,hungK=1;
+$("cDims").onchange=e=>{document.body.classList.toggle("dims",e.target.checked);dimG.visible=e.target.checked;};
+$("cFold").onchange=e=>{foldT=e.target.checked?1:0;};
+let MODE=2;
+function setM(k){MODE=k;ST.setMode(k);[...$("modes").children].forEach(b=>b.classList.toggle("on",+b.dataset.m===k));$("cap").innerHTML=`<b>${CAP[k][0]}</b>${CAP[k][1]}`;R.toneMappingExposure=1.05;}
+[...$("modes").children].forEach(b=>b.onclick=()=>setM(+b.dataset.m));
+addEventListener("keydown",e=>{if(e.key==="1"||e.key==="2"||e.key==="3")setM(+e.key-1);});
+/* cámara orbital */
+const V=(x,y,z)=>new T.Vector3(x,y,z);
+const orb={target:V(0,.8,0),r:3.6,th:.55,ph:1.2};let tw=null;
+function camFrom(){const p=new T.Vector3().setFromSphericalCoords(orb.r,orb.ph,orb.th).add(orb.target);cam.position.copy(p);cam.lookAt(orb.target);}
+function goView(pos,look,d){const s=new T.Spherical().setFromVector3(pos.clone().sub(look));let th=s.theta;while(th-orb.th>Math.PI)th-=2*Math.PI;while(th-orb.th<-Math.PI)th+=2*Math.PI;
+  tw={a:{target:orb.target.clone(),r:orb.r,th:orb.th,ph:orb.ph},b:{target:look.clone(),r:s.radius,th,ph:clamp(s.phi,.02,Math.PI-.02)},k:0,d:d||1.2};}
+const frameN=i=>{const f=frames[i],q=new T.Quaternion();f.matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());return {c:V(W/2,H/2,0).applyMatrix4(f.matrixWorld),n:V(0,0,1).applyQuaternion(q)};};
+const fitD=(h,w)=>Math.max(h/2/Math.tan(cam.fov*Math.PI/360),w/2/(Math.tan(cam.fov*Math.PI/360)*cam.aspect));
+const C=()=>V(0,H/2,0);
+const VIEWS=[["Perspectiva",()=>[V(2.3,1.6,3.1),V(0,H/2-.08,0)]],["Frente",()=>[V(0,H/2,fitD(H+.35,1.9)),C()]],["Atrás",()=>[V(0,H/2,-fitD(H+.35,1.9)),C()]],
+  ...[0,1,2].map(i=>["Bastidor "+(i+1),()=>{const {c,n}=frameN(i);return [c.clone().addScaledVector(n,fitD(H+.2,W+.3)),c];}]),
+  ["Tableros",()=>{const p=V(0,.33,0);return [p.clone().add(V(.25,.45,2.1)),p];}]];
+const vb=$("views");VIEWS.forEach(v=>{const b=document.createElement("button");b.textContent=v[0];b.onclick=()=>{[...vb.children].forEach(x=>x.classList.remove("on"));b.classList.add("on");stand.updateMatrixWorld(true);const [p,l]=v[1]();goView(p,l);};vb.appendChild(b);});
+const pts=new Map();let mode=null,lx=0,ly=0,pinch=0;
+const pan=(dx,dy)=>{const s=orb.r*.0012;const r=V(1,0,0).applyQuaternion(cam.quaternion),u=V(0,1,0).applyQuaternion(cam.quaternion);orb.target.addScaledVector(r,-dx*s).addScaledVector(u,dy*s);orb.target.y=clamp(orb.target.y,-.2,3);};
+cv.addEventListener("contextmenu",e=>e.preventDefault());
+cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});tw=null;cv.classList.add("drag");
+  mode=pts.size>1?"two":(e.button===2||e.shiftKey?"pan":"rot");lx=e.clientX;ly=e.clientY;if(mode==="two"){const [a,b]=[...pts.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);lx=(a.x+b.x)/2;ly=(a.y+b.y)/2;}});
+cv.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(mode==="two"&&pts.size>1){const [a,b]=[...pts.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),cx=(a.x+b.x)/2,cy=(a.y+b.y)/2;if(pinch)orb.r=clamp(orb.r*pinch/d,.25,12);pinch=d;pan(cx-lx,cy-ly);lx=cx;ly=cy;return;}
+  const dx=e.clientX-lx,dy=e.clientY-ly;lx=e.clientX;ly=e.clientY;if(mode==="pan")pan(dx,dy);else if(mode==="rot"){orb.th-=dx*.006;orb.ph=clamp(orb.ph-dy*.005,.05,Math.PI/2+.25);}});
+const end=e=>{pts.delete(e.pointerId);if(!pts.size){mode=null;cv.classList.remove("drag");}else if(pts.size===1){mode="rot";const p=[...pts.values()][0];lx=p.x;ly=p.y;}};
+cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end);
+cv.addEventListener("wheel",e=>{e.preventDefault();tw=null;orb.r=clamp(orb.r*Math.exp(e.deltaY*.0012),.25,12);},{passive:false});
+const ray=new T.Raycaster();cv.addEventListener("dblclick",e=>{ray.setFromCamera(new T.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),cam);const hit=ray.intersectObjects([stand,...hinges],true).find(h=>h.object.visible&&!h.object.isLine&&!h.object.isLineSegments);if(hit){const p=cam.position.clone().sub(orb.target).normalize().multiplyScalar(Math.max(.5,orb.r*.6)).add(hit.point);goView(p,hit.point,.8);}});
+function size(){const w=innerWidth,h=innerHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}addEventListener("resize",size);size();
+let last=performance.now(),lastFold=-1;stand.updateMatrixWorld(true);vb.children[0].classList.add("on");{const [p,l]=VIEWS[0][1]();const s=new T.Spherical().setFromVector3(p.clone().sub(l));Object.assign(orb,{target:l,r:s.radius,th:s.theta,ph:s.phi});}
+setM(2);
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;const tt=now/1000;
+  fold+=(foldT-fold)*Math.min(1,dt*3);if(Math.abs(foldT-fold)<.0005)fold=foldT;if(fold!==lastFold){layout(fold);buildDims();dimG.visible=$("cDims").checked;lastFold=fold;}
+  if(tw){tw.k=Math.min(1,tw.k+dt/tw.d);const k=ease(tw.k);orb.target.lerpVectors(tw.a.target,tw.b.target,k);["r","th","ph"].forEach(p=>orb[p]=tw.a[p]+(tw.b[p]-tw.a[p])*k);if(tw.k>=1)tw=null;}
+  camFrom();
+  hungK+=((MODE===2?1:0)-hungK)*Math.min(1,dt*5);const show=clamp(1-fold*5,0,1)*hungK;
+  hung.forEach(h=>{const u=h.piv.userData;h.anchor.scale.setScalar(.001+ease(show));h.anchor.visible=show>.01;h.piv.rotation.z=u.base+Math.sin(tt*u.f+u.ph)*u.amp;});
+  R.render(scene,cam);
+  const w=innerWidth,hh=innerHeight;LBL.forEach(l=>{const v=l.getPos().project(cam);l.d.style.visibility=v.z>1?"hidden":"";l.d.style.left=((v.x+1)/2*w)+"px";l.d.style.top=((1-v.y)/2*hh)+"px";});
+  requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+})();
+</script>
+</body></html>

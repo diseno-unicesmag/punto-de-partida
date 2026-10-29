@@ -64,7 +64,7 @@ body.labs .lab:not(.dim),body.dims .lab.dim{display:block}
 <div id="hint">Arrastra para girar · clic derecho o Shift para mover<br>rueda para acercar · doble clic para centrar</div>
 <script src="vendor/three.min.js?v=158"></script>
 <script src="img_data.js?v=10"></script>
-<script src="stand.js?v=8"></script>
+<script src="stand.js?v=9"></script>
 <script>
 (async function(){
 "use strict";
@@ -93,10 +93,10 @@ const cm=v=>String(Math.round(v*1000)/10).replace(".",",")+" cm";
 document.getElementById("ver").textContent="Listón de "+t*100+" × "+t*100+" cm · bastidor de "+m(W)+" × "+m(H)+" m";
 const dl=(id,rows)=>{document.getElementById(id).innerHTML=rows.map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("");};
 dl("ficha",[["Listón",t*100+" × "+t*100+" cm"],["Bastidor, por fuera",m(W)+" × "+m(H)+" m"],["Travesaños, por dentro",m(IN)+" m"],["Travesaño medio (eje)",m(MID)+" m del piso"],["Travesaño bajo (eje)",m(LOW+t/2)+" m del piso"],["Patas",cm(LOW)],
-  ["Vano del hilo",m(OW)+" × "+m(OY1-OY0)+" m"],["Tableros de triplex 9 mm (6)",m(TAW)+" × "+m(TAPA)+" m"],["Propalcote (6)",PRW*100+" × "+PRH*100+" cm"],["Borde de tablero alrededor",cm((TAW-PRW)/2)+" · "+cm((TAPA-PRH)/2)],["Marco a la vista bajo el tablero","1 cm a los lados y abajo · 2 cm arriba"],["Clavitos del tablero",ST.frames[0].userData.clavitos*6+" (20 por tablero)"],["Bisagras de 2½″",(HY.length*2)+", a "+HY.map(m).join(" y ")+" m"],["Ranura entre bastidores",cm(ST.HG)+", con la bisagra centrada"],["Calzo bajo cada ala",cm(ST.CZ)+" de grueso"],["Aire entre tableros al cerrar",cm(ST.AIR)],["Plegado",m(W)+" × "+m(H)+" × "+m(FD)+" m"]]);
+  ["Vano del hilo",m(OW)+" × "+m(OY1-OY0)+" m"],["Tableros de triplex 9 mm (6)",m(TAW)+" × "+m(TAPA)+" m"],["Propalcote (6)",PRW*100+" × "+PRH*100+" cm"],["Borde de tablero alrededor",cm((TAW-PRW)/2)+" · "+cm((TAPA-PRH)/2)],["Marco a la vista bajo el tablero","1 cm a los lados y abajo · 2 cm arriba"],["Clavitos del tablero",ST.frames[0].userData.clavitos*6+" (20 por tablero)"],["Bisagras de 2½″",(HY.length*2)+", a "+HY.map(m).join(" y ")+" m"],["Ranura entre bastidores",cm(ST.HG)+", con la bisagra centrada"],["Plegado",m(W)+" × "+m(H)+" × "+m(FD)+" m"]]);
 const NN=ST.nails,cmv=cm;
 dl("puntillas",[...NN.map((n,i)=>["Bastidor "+(i+1)+" · cada "+cmv(n.step),n.n+(i===1?" ("+n.lr+" por lado)":" ("+n.tb+" arriba y abajo, "+n.lr+" por lado)")]),["Total",NN.reduce((a,n)=>a+n.n,0)+""]]);
-dl("despiece",[["Largueros",6+" × "+cm(H)],["Travesaños",9+" × "+cm(IN)],["Listón en total",m(6*H+9*IN)+" m"],["Tableros de triplex",6+" × "+cm(TAW)+" × "+cm(TAPA)],["Calzos de bisagra",8+" × 3 × 7 × 1,2 cm"]]);
+dl("despiece",[["Largueros",6+" × "+cm(H)],["Travesaños",9+" × "+cm(IN)],["Listón en total",m(6*H+9*IN)+" m"],["Tableros de triplex",6+" × "+cm(TAW)+" × "+cm(TAPA)]]);
 /* ================= rótulos ================= */
 const labs=document.getElementById("labs");const LBL=ST.notes.map(n=>{const d=document.createElement("div");d.className="lab"+(n[2]?" "+n[2]:"");d.textContent=n[0];labs.appendChild(d);return {d,getPos:n[1]};});
 /* ================= controles ================= */
