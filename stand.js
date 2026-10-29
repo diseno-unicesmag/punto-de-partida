@@ -25,7 +25,7 @@ const PRW=.47,PRH=.32;
    el borde alrededor del propalcote es parejo, y de ahí sale dónde va el travesaño bajo (LOW = largo de las patas) */
 const MAR=.01,GAP=.02,LT=.009,TAW=W-2*MAR,BOR=(TAW-PRW)/2,TAPA=PRH+2*BOR,TY0=OY0-GAP-TAPA,LOW=TY0-MAR;
 /* puntillas en la cara de atrás del marco, a NI del borde interior, sobresalen 6 mm; el hilo se amarra en el vástago (plano ZT) */
-const NI=.012,NL=.006,ZT=-(t/2+.004);
+const NI=.005,NL=.006,ZT=-(t/2+.004);
 /* acabado: 1 todo negro (marco y tableros), 0 madera natural y tablero negro */
 let FIN=1;
 const FD=Math.ceil(3*(t+2*LT)*100)/100;/* fondo plegado: tres marcos con sus dos tapas */
@@ -68,7 +68,7 @@ const tagTex=(n)=>tex(300,500,(x,w,h)=>{x.fillStyle="#f6f1e4";x.beginPath();x.mo
 /* tapas de MDF (frente: número, título e historia; atrás: número y símbolo) */
 const FI=[{t:"Lo que pasó",n:"01",s:"Vivían en la vereda de una tienda, sus cuyes y sus gallinas. Llegaron hombres armados: toque de queda, amenazas, miedo. La vida se volvió un nudo y, por sus hijos, escaparon.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
  {t:"Lo que no se ve",n:"02",s:"Salieron con lo que tenían. En la ciudad nadie los esperaba: sin casa, sin trabajo, sin saber adónde ir. Es el vacío y la duda que nadie ve.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
- {t:"Lo que volvió a tejer",n:"03",s:"Pero ese no era el final. Con crochet, lana guajira, chaquiras y gobelino empezó otra vez, punto por punto. Hoy teje, vende su trabajo y sostiene a su familia.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#b3261e"}];
+ {t:"Lo que volvió a tejer",n:"03",s:"Pero ese no era el final. Con crochet, lana guajira, chaquiras y gobelino empezó otra vez, punto por punto. Hoy teje, vende su trabajo y sostiene a su familia.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a"}];
 /* el tablero va negro, con el propalcote de PRW × PRH centrado; el diseño se pinta aparte y se pega en su sitio */
 const TW=1280,TH2=Math.round(TW*TAPA/TAW),DW=1280,DH=Math.round(DW*PRH/PRW);const dc=document.createElement("canvas");dc.width=DW;dc.height=DH;const dctx=dc.getContext("2d");
 const TAPAS=[];const BLK="#34322f";/* negro con cuerpo: se leen luces, sombras y aristas */
@@ -83,7 +83,7 @@ const fichaTex=(f,k)=>tapaTex((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.f
 });
 /* pictogramas, un solo sistema: el mismo trazo redondo, el mismo cuadro de lado sz y el hilo rojo pasando por la mitad.
    01 el hilo se enreda en un nudo · 02 del hilo salen caminos que terminan en nada · 03 el hilo queda tejido en la trama */
-const RED_I="#c4302b";
+const RED_I="#c4302b",COL3=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];/* amarillo, azul, verde, fucsia: los de la trama */
 function symbol(x,k,cx,cy,sz,col,w){x.save();x.lineCap=x.lineJoin="round";const lw=sz*.06,r=sz/2;x.lineWidth=lw;
   const red=(x0,x1)=>{x.strokeStyle=RED_I;x.beginPath();x.moveTo(x0,cy);x.lineTo(x1,cy);x.stroke();};
   x.strokeStyle=col;x.fillStyle=col;
@@ -96,10 +96,11 @@ function symbol(x,k,cx,cy,sz,col,w){x.save();x.lineCap=x.lineJoin="round";const 
   if(k===1){red(0,w);x.strokeStyle=col;[[-.75,-1],[-.2,1],[.3,-1]].forEach(([o,d])=>{const ax=cx+o*r,ex=ax+r*.45,ey=cy+d*r*.78;
     x.beginPath();x.moveTo(ax,cy);x.lineTo(ex,ey);x.stroke();x.beginPath();x.arc(ex+lw*.9*Math.SQRT1_2,ey+d*lw*.9*Math.SQRT1_2,lw*.9,0,7);x.fillStyle=x.canvas.__bg||"#000";x.fill();x.stroke();});}
   if(k===2){const n=4,st=sz/(n+1),gap=lw*1.1;const xs=[...Array(n)].map((_,i)=>cx-r+st*(i+1)),ys=[cy-st,cy+st];
-    /* urdimbre */xs.forEach(px=>{x.strokeStyle=col;x.beginPath();x.moveTo(px,cy-r);x.lineTo(px,cy+r);x.stroke();});
+    /* urdimbre con los colores de la trama del bastidor 3 */xs.forEach((px,i)=>{x.strokeStyle=COL3[i%4];x.beginPath();x.moveTo(px,cy-r);x.lineTo(px,cy+r);x.stroke();});
     /* trama: pasa por encima y por debajo, alternando; la del medio es el hilo rojo */
     const weft=(py,c,ph,x0,x1)=>{x.strokeStyle=c;x.beginPath();x.moveTo(x0,py);xs.forEach((px,i)=>{if((i+ph)%2){x.lineTo(px-gap,py);x.stroke();x.beginPath();x.moveTo(px+gap,py);}});x.lineTo(x1,py);x.stroke();};
-    weft(ys[0],col,0,cx-r,cx+r);weft(ys[1],col,1,cx-r,cx+r);weft(cy,RED_I,1,0,w);}
+    /* aquí el hilo ya no es rojo: llega a la trama hecho de colores */const gr=x.createLinearGradient(0,0,w,0);COL3.forEach((c,i)=>gr.addColorStop(i/3,c));
+    weft(ys[0],col,0,cx-r,cx+r);weft(ys[1],col,1,cx-r,cx+r);weft(cy,gr,1,0,w);}
   x.restore();}
 const backTex=(f,k)=>tapaTex((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.canvas.__bg=f.bg;
   const sz=330,cx=w-90-sz/2,cy=h*.47;symbol(x,k,cx,cy,sz,f.fg,w);
