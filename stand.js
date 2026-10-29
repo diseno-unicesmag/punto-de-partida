@@ -28,7 +28,11 @@ const MAR=.01,GAP=.02,LT=.009,TAW=W-2*MAR,BOR=(TAW-PRW)/2,TAPA=PRH+2*BOR,TY0=OY0
 const NI=.005,NL=.006,ZT=-(t/2+.004);
 /* acabado: 1 todo negro (marco y tableros), 0 madera natural y tablero negro */
 let FIN=1;
-const FD=Math.ceil(3*(t+2*LT)*100)/100;/* fondo plegado: tres marcos con sus dos tapas */
+/* bisagras de 2½″: entre bastidor y bastidor queda una ranura de HG; el eje va centrado sobre ella, levantado por calzos de CZ
+   para que al plegar quede aire entre tablero y tablero (y entre las puntillas de atrás). PO: del ala al centro del eje */
+const HG=.01,CZ=.012,PO=.0035,HL=.0635;
+const AIR=2*(CZ+PO)-2*LT;/* aire entre tableros con el conjunto cerrado */
+const FD=Math.ceil((3*t+2*LT+4*(CZ+PO))*100)/100;/* fondo plegado */
 const HY=[.62,H-.22];/* altura de las bisagras */
 /* puntillas: cada 5 cm en el 1, cada 10 cm y solo en los largueros en el 2, cada 2,5 cm en el 3 (la trama es tupida) */
 const STEP=[.05,.10,.025];
@@ -155,9 +159,10 @@ const frames=[0,1,2].map(frame);
 function setFinish(k){FIN=k;M.wood.map=k?null:woodTex;M.wood.color.set(k?BLK:0xffffff);M.wood.roughness=k?.62:.72;M.wood.needsUpdate=true;M.canto.color.set(BLK);TAPAS.forEach(paintTapa);}
 setFinish(FIN);const stand=new T.Group();frames.forEach(f=>stand.add(f));scene.add(stand);
 /* bisagras alternas para plegar en acordeón */
-const HZ=[ZF+LT,-(ZF+LT)];/* el eje de la bisagra queda a ras de las tapas, sobre un taco de 9 mm, para que plegado no choquen */
-const hinges=[];[0,1].forEach(k=>HY.forEach(y=>{const h=new T.Group();const l1=new T.Mesh(new T.BoxGeometry(.035,.075,.003),M.hinge),l2=l1.clone();l1.position.x=-.0175;l2.position.x=.0175;const pin=new T.Mesh(new T.CylinderGeometry(.004,.004,.08,10),M.hinge);
-  const sp=new T.Mesh(new T.BoxGeometry(.04,.085,LT),M.wood);sp.position.set(-.02,0,(k?1:-1)*LT/2);h.add(sp);
+const HZ=[ZF+CZ+PO,-(ZF+CZ+PO)];/* eje de la bisagra: por fuera de la madera, sobre el calzo */
+/* calzos de 3 × 7 × 1,2 cm bajo cada ala, pegados al larguero contra la ranura */
+[0,1].forEach(k=>HY.forEach(y=>[[k,W-.015],[k+1,.015]].forEach(([f,x])=>{const m=new T.Mesh(new T.BoxGeometry(.03,.07,CZ),M.wood);m.position.set(x,y,(k?-1:1)*(ZF+CZ/2));m.castShadow=true;frames[f].add(m);})));
+const hinges=[];[0,1].forEach(k=>HY.forEach(y=>{const h=new T.Group();const l1=new T.Mesh(new T.BoxGeometry(.025,HL,.0015),M.hinge),l2=l1.clone();const lz=(k?1:-1)*(PO-.00075);l1.position.set(-.0125,0,lz);l2.position.set(.0125,0,lz);const pin=new T.Mesh(new T.CylinderGeometry(PO,PO,HL,12),M.hinge);
   h.add(l1,l2,pin);h.traverse(o=>o.castShadow=true);h.userData={k,y};scene.add(h);hinges.push(h);}));
 /* hilo rojo entre bastidores (se ubica en layout) */
 const cylG=new T.CylinderGeometry(.0016,.0016,1,6,1,true);const conn=[0,1].map(()=>[0,1,2,3,4].map(()=>{const m=new T.Mesh(cylG,M.rojo);m.castShadow=true;scene.add(m);return m;}));
@@ -167,11 +172,11 @@ function seg(m,a,b){const d=b.clone().sub(a),L=d.length();m.position.copy(a).add
 /* fold: 0 abierto en zigzag, 1 plegado */
 function layout(fold){const a0=OPEN.a0+(FOLD.a0-OPEN.a0)*fold,r1=OPEN.r1+(FOLD.r1-OPEN.r1)*fold,r2=OPEN.r2+(FOLD.r2-OPEN.r2)*fold;
   const M0=new T.Matrix4().makeRotationY(a0);
-  const M1=M0.clone().multiply(new T.Matrix4().makeTranslation(W,0,HZ[0])).multiply(new T.Matrix4().makeRotationY(r1)).multiply(new T.Matrix4().makeTranslation(0,0,-HZ[0]));
-  const M2=M1.clone().multiply(new T.Matrix4().makeTranslation(W,0,HZ[1])).multiply(new T.Matrix4().makeRotationY(r2)).multiply(new T.Matrix4().makeTranslation(0,0,-HZ[1]));
+  const M1=M0.clone().multiply(new T.Matrix4().makeTranslation(W+HG/2,0,HZ[0])).multiply(new T.Matrix4().makeRotationY(r1)).multiply(new T.Matrix4().makeTranslation(HG/2,0,-HZ[0]));
+  const M2=M1.clone().multiply(new T.Matrix4().makeTranslation(W+HG/2,0,HZ[1])).multiply(new T.Matrix4().makeRotationY(r2)).multiply(new T.Matrix4().makeTranslation(HG/2,0,-HZ[1]));
   [M0,M1,M2].forEach((m,i)=>{frames[i].matrixAutoUpdate=false;frames[i].matrix.copy(m);});
   const c=new T.Vector3();[0,1,2].forEach(i=>c.add(new T.Vector3(W/2,0,0).applyMatrix4(frames[i].matrix)));c.multiplyScalar(1/3);stand.position.set(-c.x,0,-c.z);stand.updateMatrixWorld(true);
-  hinges.forEach(h=>{const {k,y}=h.userData;h.position.copy(new T.Vector3(W,y,HZ[k]).applyMatrix4(frames[k].matrixWorld));const q=new T.Quaternion();frames[k].matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());h.quaternion.copy(q);});
+  hinges.forEach(h=>{const {k,y}=h.userData;h.position.copy(new T.Vector3(W+HG/2,y,HZ[k]).applyMatrix4(frames[k].matrixWorld));const q=new T.Quaternion();frames[k].matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());h.quaternion.copy(q);});
   /* hilo rojo entre bastidores: por detrás, de la puntilla del medio a la del medio, rodeando la junta */
   conn.forEach((ms,k)=>{const A=frames[k].matrixWorld,B=frames[k+1].matrixWorld;const a=new T.Vector3(OX1+NI,yM,ZT).applyMatrix4(A),b=new T.Vector3(W,yM,ZT).applyMatrix4(A),c=new T.Vector3(0,yM,ZT).applyMatrix4(B),d=new T.Vector3(OX0-NI,yM,ZT).applyMatrix4(B);const p=[a,a,b,c,d,d];
     for(let s=0;s<5;s++)seg(ms[s],p[s],p[s+1]);ms.forEach(m=>m.visible=fold<.02);
@@ -189,6 +194,6 @@ const mid=k=>()=>DIMS[k][0].clone().lerp(DIMS[k][1],.5);
 const wp=(f,x,y,z)=>()=>new T.Vector3(x,y,z).applyMatrix4(frames[f].matrixWorld);
 /* rótulos técnicos: [texto, posición en el mundo, clase] */
 const notes=[[m(H)+" m",mid(0),"dim"],[m(W)+" m",mid(1),"dim"],["Tablero: "+m(TAPA)+" m de alto",mid(2),"dim"],[m(OY1-OY0)+" m de hilo",mid(3),"dim"],[m(IN)+" m por dentro",mid(4),"dim"],
-  ["Listón de madera "+t*100+" × "+t*100+" cm",wp(2,W+.12,.9,0)],["Puntillas atrás cada 5 cm",wp(0,W/2,OY1+NI,-t/2-.04)],["Puntillas atrás cada 10 cm, solo a los lados",wp(1,OX0-NI,yM+.2,-t/2-.04)],["Puntillas atrás cada 2,5 cm",wp(2,W/2,OY1+NI,-t/2-.04)],["Bisagra de 3″ (4 en total)",wp(1,W+.02,HY[1],-.05)],["Tablero de triplex 9 mm · "+m(TAW)+" × "+m(TAPA)+" m, con propalcote de "+PRW*100+" × "+PRH*100+" cm",wp(2,W/2,TY0+TAPA/2-.01,.06)]];
-return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,setFinish,get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
+  ["Listón de madera "+t*100+" × "+t*100+" cm",wp(2,W+.12,.9,0)],["Puntillas atrás cada 5 cm",wp(0,W/2,OY1+NI,-t/2-.04)],["Puntillas atrás cada 10 cm, solo a los lados",wp(1,OX0-NI,yM+.2,-t/2-.04)],["Puntillas atrás cada 2,5 cm",wp(2,W/2,OY1+NI,-t/2-.04)],["Bisagra de 2½″ (4 en total)",wp(1,W+.02,HY[1],-.05)],["Tablero de triplex 9 mm · "+m(TAW)+" × "+m(TAPA)+" m, con propalcote de "+PRW*100+" × "+PRH*100+" cm",wp(2,W/2,TY0+TAPA/2-.01,.06)]];
+return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,HG,CZ,AIR,setFinish,get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
 };
