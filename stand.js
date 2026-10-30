@@ -85,7 +85,7 @@ const drawQuote=(s,ts,k,n,of)=>(x,w,h)=>{const c=QS[k];torn(x,w,h,c.bg);
   punch(x,w/2,62,15);};
 const quoteTex=(s,ts,k,n,of)=>asTex(cvs(QW,QH,1,drawQuote(s,ts,k,n,of)));
 /* etiquetas de destino del bastidor 2 (5,5 × 9 cm): el destino tachado, en duda o borroneado */
-const DEST=[["La vereda",1],["¿?",0],["",2],["¿Dónde?",1],["¿?",2]];
+const DEST=[["Vereda",1],["¿?",0],["",2],["Dónde?",1],["¿?",2]];
 const GW=330,GH=540;
 const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.moveTo(ct,0);x.lineTo(w-ct,0);x.lineTo(w,ct);x.lineTo(w,h);x.lineTo(0,h);x.lineTo(0,ct);x.closePath();x.fill();
   seed=n*31+7;for(let k=0;k<500;k++){x.fillStyle=`rgba(90,70,40,${rnd()*.05})`;x.fillRect(rnd()*w,rnd()*h,2,2);}
@@ -116,41 +116,29 @@ const drawFicha=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
   x.font=`500 46px ${F.body}`;x.fillStyle=f.fg;wrap(x,f.s,w-300,64,70,318);
 });
 const fichaTex=(f,k)=>tapaTex(drawFicha(f,k));
-/* pictogramas, un solo sistema: trazo fino y redondo, el mismo cuadro de lado sz y el hilo rojo de lado a lado en los tres.
-   01 el hilo se enmaraña en una madeja de lazos · 02 del hilo salen caminos que se van borrando y terminan en un punto vacío
-   03 el hilo rojo sostiene un tejido de verdad: urdimbre de colores y tramas rojas que pasan por encima y por debajo */
-const RED_I="#c4302b",RED_D="#7d1a14",COL3=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];
-function symbol(x,k,cx,cy,sz,col,w){x.save();x.lineCap=x.lineJoin="round";const lw=sz*.03,r=sz/2,bg=x.canvas.__bg||"#000";x.lineWidth=lw;
-  const line=(x0,y0,x1,y1,c,l)=>{x.strokeStyle=c;x.lineWidth=l||lw;x.beginPath();x.moveTo(x0,y0);x.lineTo(x1,y1);x.stroke();};
-  const halo=(draw,l)=>{x.save();x.strokeStyle=bg;x.lineWidth=(l||lw)*2.7;draw();x.restore();};
-  if(k===0){/* madeja: lazos que se montan unos sobre otros, en los dos rojos del enredo */
-    line(0,cy,cx-r*.7,cy,RED_I);line(cx+r*.7,cy,w,cy,RED_I);
-    const L=[[.78,.46,.2,0,0],[.62,.36,-.5,.06,-.06],[.5,.62,1.1,-.08,.05],[.74,.3,1.9,.04,.08],[.4,.52,-1.2,.1,-.1],[.62,.42,.75,-.05,-.03],[.32,.28,2.6,0,.03],[.7,.55,-.25,.03,.04],[.46,.2,.4,-.12,.12]];
-    L.forEach(([rx,ry,a,ox,oy],i)=>{const pts=[];for(let q=0;q<=64;q++){const t=q/64*Math.PI*2,ex=Math.cos(t)*rx*r,ey=Math.sin(t)*ry*r;pts.push([cx+ox*r+ex*Math.cos(a)-ey*Math.sin(a),cy+oy*r+ex*Math.sin(a)+ey*Math.cos(a)]);}
-      const go=()=>{x.beginPath();pts.forEach((p,q)=>q?x.lineTo(...p):x.moveTo(...p));x.stroke();};halo(go);x.strokeStyle=i%3===1?RED_D:RED_I;x.lineWidth=lw;go();});
-    /* el hilo sale de la madeja por la derecha, pasando por encima */
-    halo(()=>{x.beginPath();x.moveTo(cx+r*.2,cy+r*.12);x.quadraticCurveTo(cx+r*.5,cy,cx+r*.78,cy);x.stroke();});x.strokeStyle=RED_I;x.beginPath();x.moveTo(cx+r*.2,cy+r*.12);x.quadraticCurveTo(cx+r*.5,cy,cx+r*.78,cy);x.stroke();}
-  if(k===1){/* los hilos grises del limbo detrás; caminos rojos paralelos que se vuelven punteados y acaban en un punto vacío */
-    x.globalAlpha=.32;[-.75,-.45,-.15,.15,.45,.75].forEach(f=>{if(Math.abs(f)>.05)line(cx-r,cy+f*r,cx+r,cy+f*r,col,lw*.5);});x.globalAlpha=1;
-    line(0,cy,w,cy,RED_I);
-    [[-.85,-.82],[-.45,.62],[-.05,-.55],[.3,.86],[.45,-.9]].forEach(([o,d])=>{const ax=cx+o*r,ay=cy,ex=ax+Math.abs(d)*r*.62,ey=cy+d*r,mx=ax+(ex-ax)*.5,my=ay+(ey-ay)*.5;
-      line(ax,ay,mx,my,RED_I);x.save();x.setLineDash([lw*.2,lw*1.8]);line(mx,my,ex-(ex-ax)*.08,ey-(ey-ay)*.08,RED_I);x.restore();
-      x.fillStyle=bg;x.strokeStyle=col;x.lineWidth=lw*.8;x.beginPath();x.arc(ex,ey,lw*1.5,0,7);x.fill();x.stroke();});}
-  if(k===2){/* tejido: 7 hilos de urdimbre con flecos; el rojo del medio pasa por debajo de todos; 4 tramas rojas cruzan por encima y por debajo */
-    const n=7,xs=[...Array(n)].map((_,i)=>cx-r*.78+i*r*1.56/(n-1)),top=cy-r*.82,bot=cy+r*.82,wy=[-.58,-.29,.29,.58].map(f=>cy+f*r);
-    line(0,cy,w,cy,RED_I);
-    xs.forEach((px,i)=>{const c=COL3[i%4];line(px,top,px,bot,c);[[-1,-1],[1,1]].forEach(([s1])=>{const ye=s1<0?top:bot;line(px,ye,px-lw*.7,ye+s1*lw*1.8,c,lw*.5);line(px,ye,px+lw*.7,ye+s1*lw*1.8,c,lw*.5);});});
-    /* el cruce se lee por el orden de dibujo: la trama encima y, en cruces alternos, la urdimbre otra vez por encima */
-    wy.forEach((py,j)=>{line(cx-r*.95,py,cx+r*.95,py,RED_I);
-      xs.forEach((px,i)=>{if((i+j)%2===0)line(px,py-lw*1.4,px,py+lw*1.4,COL3[i%4]);});});}
+/* pictogramas: una sola línea roja, delgada y continua, que entra por la izquierda y sale por la derecha a la misma altura
+   en los tres respaldos (así el hilo pasa de una tapa a la otra).
+   01 el hilo se enreda en lazos · 02 del hilo salen caminos que no llegan a ningún lado · 03 el hilo va y vuelve: se vuelve trama */
+const RED_I="#c4302b";
+function symbol(x,k,cx,cy,sz,w){x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=RED_I;x.lineWidth=7;const r=sz/2;
+  x.beginPath();x.moveTo(0,cy);
+  if(k===0){/* el hilo se enrosca en lazos que crecen y vuelven a cerrarse, cruzando su propio camino */const N=5,span=sz*1.3,x0=cx-span/2,A=span/(2*Math.PI*N);
+    x.lineTo(x0,cy);for(let q=0;q<=600;q++){const u=q/600,t=u*2*Math.PI*N,B=sz*.33*Math.sin(Math.PI*u);x.lineTo(x0+A*t-B*Math.sin(t),cy-B*Math.cos(t));}
+    x.lineTo(w,cy);x.stroke();}
+  if(k===1){/* tres caminos paralelos que se abren del hilo y terminan en un punto vacío */x.lineTo(w,cy);x.stroke();
+    [[-.7,-.75],[-.15,.7],[.4,-.75]].forEach(([o,d])=>{const ax=cx+o*r,ex=ax+Math.abs(d)*r*.6,ey=cy+d*r;x.beginPath();x.moveTo(ax,cy);x.lineTo(ex,ey);x.stroke();
+      x.beginPath();x.arc(ex+(ex-ax)*.12,ey+(ey-cy)*.12,11,0,7);x.stroke();});}
+  if(k===2){/* el hilo sube y teje cinco pasadas de ida y vuelta, luego baja y sigue */const n=5,s2=sz*.8/(n-1),x0=cx-r*.8,x1=cx+r*.8,top=cy-s2*(n-1)/2,rt=s2/2;
+    x.lineTo(x0-s2,cy);x.lineTo(x0-s2,top+rt);x.arcTo(x0-s2,top,x0-s2+rt,top,rt);x.lineTo(x0,top);
+    for(let i=0;i<n;i++){const y=top+i*s2,ltr=i%2===0;x.lineTo(ltr?x1:x0,y);if(i<n-1)x.arc(ltr?x1:x0,y+rt,rt,-Math.PI/2,Math.PI/2,!ltr);}
+    const yb=top+(n-1)*s2;x.lineTo(x1+s2-rt,yb);x.arcTo(x1+s2,yb,x1+s2,yb-rt,rt);x.lineTo(x1+s2,cy);x.lineTo(w,cy);x.stroke();}
   x.restore();}
-const drawBack=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.canvas.__bg=f.bg;
-  const sz=470,cx=w-80-sz/2,cy=h*.5;symbol(x,k,cx,cy,sz,f.fg,w);
-  /* número grande y pesado: Bricolage 800 con contorno del mismo color; tapa el hilo al pasar */
-  x.font=`800 470px ${F.brand}`;x.textAlign="left";x.textBaseline="alphabetic";x.fillStyle=x.strokeStyle=f.fg;x.lineWidth=18;x.lineJoin="round";
-  x.strokeText(f.n,66,cy+168);x.fillText(f.n,66,cy+168);
-  x.fillStyle=f.mu;x.font=`600 24px ${F.body}`;track(x,"PUNTO DE PARTIDA",70,84,3.5);
-  x.font=`600 32px ${F.body}`;x.textAlign="right";x.fillText(f.t,w-60,h-52);x.textAlign="left";});
+const drawBack=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
+  symbol(x,k,w*.5,h*.5,Math.min(w*.42,h*.6),w);
+  /* número pequeño arriba a la izquierda, con el rótulo debajo; el nombre del momento abajo a la derecha */
+  x.textAlign="left";x.textBaseline="alphabetic";x.fillStyle=f.fg;x.font=`800 76px ${F.brand}`;x.fillText(f.n,66,140);
+  x.fillStyle=f.mu;x.font=`600 22px ${F.body}`;track(x,"PUNTO DE PARTIDA",70,180,3.5);
+  x.font=`600 30px ${F.body}`;x.textAlign="right";x.fillText(f.t,w-64,h-56);x.textAlign="left";});
 const backTex=(f,k)=>tapaTex(drawBack(f,k));
 /* fotos del bastidor 3: mismo formato que las frases (15 × 10,7 cm). Arriba el rótulo, en medio la foto, abajo de qué es:
    proceso de trabajo, materiales u obras. Provisionales hasta tener las fotos finales */
