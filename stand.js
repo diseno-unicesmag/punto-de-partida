@@ -149,13 +149,13 @@ const CAP=[["Materiales","Ovillos de lana"],["Obra","Cobija de cuadros en croche
   ["Proceso","Detalle del tejido de una mochila"],["Proceso","Bordado a mano en bastidor"],["Obra","Gobelino"],["Proceso","Detalle del gobelino"]];
 const PW_=QW,PH_=QH,COL3P=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];
 const drawPhoto=(k,im)=>(x,w,h)=>{x.fillStyle="#f6f4ee";x.fillRect(0,0,w,h);seed=k*17+3;for(let q=0;q<700;q++){x.fillStyle=`rgba(0,0,0,${rnd()*.025})`;x.fillRect(rnd()*w,rnd()*h,2,2);}
-  x.fillStyle="#e0218a";x.font=`600 19px ${F.body}`;track(x,"03 · LO QUE VOLVIÓ A TEJER",64,82,1.8);
-  x.textAlign="right";x.fillStyle="#8a857d";x.fillText(String(k+1).padStart(2,"0")+" / 08",w-64,82);x.textAlign="left";
-  const px=64,py=112,pw=w-128,ph=h-112-118;x.fillStyle="#ddd6c8";x.fillRect(px,py,pw,ph);
+  x.fillStyle="#e0218a";x.font=`600 19px ${F.body}`;track(x,"03 · LO QUE VOLVIÓ A TEJER",64,76,1.8);
+  x.textAlign="right";x.fillStyle="#8a857d";x.fillText(String(k+1).padStart(2,"0")+" / 08",w-64,76);x.textAlign="left";
+  const px=64,py=100,pw=w-128,ph=Math.round(pw*9/16);/* 16:9 */x.fillStyle="#ddd6c8";x.fillRect(px,py,pw,ph);
   if(im&&im.width){const r=pw/ph;let sw=im.width,sh=im.width/r;if(sh>im.height){sh=im.height;sw=sh*r;}x.drawImage(im,(im.width-sw)/2,(im.height-sh)/2,sw,sh,px,py,pw,ph);}
-  const [cat,txt]=CAP[k];x.fillStyle="#1a1918";x.font=`700 19px ${F.body}`;const e=track(x,cat.toUpperCase(),64,h-56,2.2);
-  x.fillStyle="#3a3631";x.font=`500 24px ${F.body}`;x.fillText("·  "+txt,e+10,h-56);
-  COL3P.forEach((c,i)=>{x.fillStyle=c;x.beginPath();x.arc(w-72-i*24,h-64,7.5,0,7);x.fill();});
+  const [cat,txt]=CAP[k];x.fillStyle="#1a1918";x.font=`700 19px ${F.body}`;const e=track(x,cat.toUpperCase(),64,h-50,2.2);
+  x.fillStyle="#3a3631";x.font=`500 24px ${F.body}`;x.fillText("·  "+txt,e+10,h-50);
+  COL3P.forEach((c,i)=>{x.fillStyle=c;x.beginPath();x.arc(w-72-i*24,h-58,7.5,0,7);x.fill();});
   punch(x,w/2,62,15);};
 const photoImg=k=>new Promise(res=>{const src=(window.IMG||{})["ph"+(k+1)];if(!src){res(null);return;}const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});
 function photoTex(k){const c=document.createElement("canvas");c.width=PW_;c.height=PH_;const x=c.getContext("2d");drawPhoto(k,null)(x,PW_,PH_);const t=asTex(c);
