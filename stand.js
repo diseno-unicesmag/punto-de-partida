@@ -64,14 +64,38 @@ function nails(g,step,sides){const xs=[],ys=[];if(!sides){for(let x=W/2;x<OX1-.0
 const FR1=[["Al principio ellos pedían y pagaban, después ya no, ellos ya solo pedían, ya no pagaban, hasta que se acabó la tienda.","01:20"],["Permiso teníamos solamente hasta las 6 de la tarde. Después ya no podíamos andar.","01:45"],["Llegaban a nuestras casas 2, 3 de la mañana para que nos levantemos y ellos poder descansar.","02:28"],["Tenían personas secuestradas y las llevaban a la casa.","03:40"],["De una loma el ejército, de la otra loma guerrilla y nosotros en la mitad.","04:01"],["Nos metíamos debajo la cama, debajo las mesas.","04:14"],["Los dejaban que amanezcan, amarrados a un árbol y sin nada de ropa, y les ponían un letrero arriba: por sapos.","05:15"],["Nos decían que si nosotros decíamos algo (…) que nos mataban, o si no, que nos quitaban los niños pequeños.","05:37"]];
 const FR2=[["Decidimos mejor salir de la vereda y venirnos acá a la ciudad.","05:55"],["Uno llega sin saber qué hacer, dónde irse.","06:10"],["Es muy distinta la vida de ciudad a la vida de campo.","06:22"]];
 function torn(x,w,h,fill){x.fillStyle=fill;x.fillRect(0,0,w,h);seed=Math.floor(w+h);for(let k=0;k<900;k++){x.fillStyle=fill!=="#f6f4ee"?`rgba(255,255,255,${rnd()*.03})`:`rgba(0,0,0,${rnd()*.03})`;x.fillRect(rnd()*w,rnd()*h,2,2);}}
-/* módulo 1 negro (lo oscuro), módulo 2 gris (el limbo) */
-const QS={dark:["#0f0e0d","#ffffff","#8f897f"],gray:["#6f6b66","#f5f3ee","#d2ccc2"]};
-const quoteTex=(s,ts,k)=>tex(900,640,(x,w,h)=>{const c=QS[k];torn(x,w,h,c[0]);x.fillStyle=c[1];x.font=`500 46px ${F.body}`;wrap(x,"«"+s+"»",w-120,60,60,120);x.font=`500 28px ${F.body}`;x.fillStyle=c[2];x.fillText("Entrevista · "+ts,60,h-58);hole(x,w,48);});
+/* tarjetas: se dibujan a un tamaño lógico y se pueden pintar a más resolución para imprimir (ART, al final) */
+function cvs(w,h,sc,draw){const c=document.createElement("canvas");c.width=Math.round(w*sc);c.height=Math.round(h*sc);const x=c.getContext("2d");x.scale(sc,sc);draw(x,w,h);return c;}
+const asTex=c=>{const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=8;return t;};
+function lines(x,s,mw){const out=[];let line="";for(const w of s.split(" ")){const t=line?line+" "+w:w;if(x.measureText(t).width>mw&&line){out.push(line);line=w;}else line=t;}if(line)out.push(line);return out;}
+function punch(x,cx,cy,r,ring){if(ring){x.save();x.strokeStyle=ring;x.lineWidth=r*.9;x.beginPath();x.arc(cx,cy,r*1.55,0,7);x.stroke();x.restore();}x.save();x.globalCompositeOperation="destination-out";x.beginPath();x.arc(cx,cy,r,0,7);x.fill();x.restore();}
+function track(x,s,X,Y,sp){let xx=X;for(const ch of s){x.fillText(ch,xx,Y);xx+=x.measureText(ch).width+sp;}return xx;}
+/* frases de la entrevista: negro en el 1 (lo oscuro), gris en el 2 (el limbo). 15 × 10,7 cm */
+const QS={dark:{bg:"#0f0e0d",fg:"#ffffff",mu:"#8f897f",ac:"#e5534b",lab:"01 · LO QUE PASÓ"},gray:{bg:"#6f6b66",fg:"#ffffff",mu:"#d9d3c9",ac:"#ffffff",lab:"02 · LO QUE NO SE VE"}};
+const QW=900,QH=642;
+const drawQuote=(s,ts,k,n,of)=>(x,w,h)=>{const c=QS[k];torn(x,w,h,c.bg);
+  x.fillStyle=c.ac;x.font=`600 21px ${F.body}`;track(x,c.lab,64,82,2.6);
+  x.textAlign="right";x.fillStyle=c.mu;x.font=`600 21px ${F.body}`;x.fillText(String(n).padStart(2,"0")+" / "+String(of).padStart(2,"0"),w-64,82);x.textAlign="left";
+  x.fillStyle=c.ac;x.font=`800 190px ${F.brand}`;x.fillText("“",50,268);
+  let z=60,L;for(;z>32;z-=2){x.font=`500 ${z}px ${F.body}`;L=lines(x,s,w-190);if(L.length*z*1.26<=h-310)break;}
+  x.fillStyle=c.fg;const top=180+Math.max(0,(h-310-L.length*z*1.26)/2);L.forEach((l,i)=>x.fillText(l,130,top+z*.95+i*z*1.26));
+  x.fillStyle=c.mu;x.globalAlpha=.5;x.fillRect(64,h-98,w-128,2);x.globalAlpha=1;
+  x.font=`500 22px ${F.body}`;x.fillText("Entrevista · minuto "+ts,64,h-56);x.textAlign="right";x.fillText("Punto de partida",w-64,h-56);x.textAlign="left";
+  punch(x,w/2,62,15);};
+const quoteTex=(s,ts,k,n,of)=>asTex(cvs(QW,QH,1,drawQuote(s,ts,k,n,of)));
+/* etiquetas de destino del bastidor 2 (5,5 × 9 cm): el destino tachado, en duda o borroneado */
 const DEST=[["La vereda",1],["¿?",0],["",2],["¿Dónde?",1],["¿?",2]];
-const tagTex=(n)=>tex(300,500,(x,w,h)=>{x.fillStyle="#f6f1e4";x.beginPath();x.moveTo(60,0);x.lineTo(w-60,0);x.lineTo(w,60);x.lineTo(w,h);x.lineTo(0,h);x.lineTo(0,60);x.closePath();x.fill();hole(x,w,55);
-  x.font=`600 40px ${F.body}`;x.fillStyle="#3a3631";x.fillText("DESTINO",44,185);const d=DEST[n%DEST.length];x.font=`700 60px ${F.hand}`;x.fillStyle="#4a463f";if(d[0])x.fillText(d[0],48,282);
-  x.strokeStyle="#2a2620";x.lineWidth=6;if(d[1]===1){x.beginPath();x.moveTo(40,262);x.lineTo(w-38,248);x.stroke();}if(d[1]===2){seed=n+5;x.beginPath();x.moveTo(44,270);for(let k=0;k<14;k++)x.lineTo(44+rnd()*(w-90),236+rnd()*60);x.stroke();}
-  x.strokeStyle="#8d918d";x.lineWidth=4;for(let l=0;l<2;l++){x.beginPath();x.moveTo(42,360+l*70);x.lineTo(w-42,360+l*70);x.stroke();}});
+const GW=330,GH=540;
+const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.moveTo(ct,0);x.lineTo(w-ct,0);x.lineTo(w,ct);x.lineTo(w,h);x.lineTo(0,h);x.lineTo(0,ct);x.closePath();x.fill();
+  seed=n*31+7;for(let k=0;k<500;k++){x.fillStyle=`rgba(90,70,40,${rnd()*.05})`;x.fillRect(rnd()*w,rnd()*h,2,2);}
+  x.fillStyle="#3a3631";x.font=`600 22px ${F.body}`;track(x,"DESTINO",40,158,4);x.fillStyle="#3a3631";x.globalAlpha=.35;x.fillRect(40,176,w-80,2);x.globalAlpha=1;
+  const d=DEST[n%DEST.length];x.font=`700 70px ${F.hand}`;x.fillStyle="#2f2b26";if(d[0])x.fillText(d[0],40,272);
+  x.strokeStyle="#2a2620";x.lineWidth=6;x.lineCap="round";if(d[1]===1){x.beginPath();x.moveTo(34,252);x.lineTo(Math.min(w-30,48+x.measureText(d[0]).width),240);x.stroke();}
+  if(d[1]===2){seed=n+5;x.beginPath();x.moveTo(44,262);for(let k=0;k<16;k++)x.lineTo(44+rnd()*(w-90),222+rnd()*70);x.stroke();}
+  x.strokeStyle="#9c8f74";x.lineWidth=2;x.setLineDash([3,9]);[352,422].forEach(y=>{x.beginPath();x.moveTo(40,y);x.lineTo(w-40,y);x.stroke();});x.setLineDash([]);
+  x.fillStyle="#8a7f6a";x.font=`600 17px ${F.body}`;track(x,"02 · LO QUE NO SE VE",40,h-36,1.6);
+  punch(x,w/2,64,15,"#d7c9a6");};
+const tagTex=n=>asTex(cvs(GW,GH,1,drawTag(n)));
 /* tapas de MDF (frente: número, título e historia; atrás: número y símbolo) */
 const FI=[{t:"Lo que pasó",n:"01",s:"Vivían en la vereda de una tienda, sus cuyes y sus gallinas. Llegaron hombres armados: toque de queda, amenazas, miedo. La vida se volvió un nudo y, por sus hijos, escaparon.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
  {t:"Lo que no se ve",n:"02",s:"Salieron con lo que tenían. En la ciudad nadie los esperaba: sin casa, sin trabajo, sin saber adónde ir. Es el vacío y la duda que nadie ve.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
@@ -82,12 +106,13 @@ const TAPAS=[];const BLK="#34322f";/* negro con cuerpo: se leen luces, sombras y
 function paintTapa(o){const x=o.t.image.getContext("2d"),w=TW,h=TH2;x.fillStyle=BLK;x.fillRect(0,0,w,h);dctx.clearRect(0,0,DW,DH);o.draw(dctx,DW,DH);
   const pw=w*PRW/TAW,ph=h*PRH/TAPA;x.drawImage(dc,(w-pw)/2,(h-ph)/2,pw,ph);o.t.needsUpdate=true;}
 function tapaTex(draw){const o={t:tex(TW,TH2,()=>{}),draw};TAPAS.push(o);paintTapa(o);return o.t;}
-const fichaTex=(f,k)=>tapaTex((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.fillStyle=f.ac;
+const drawFicha=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.fillStyle=f.ac;
   x.font=`800 330px ${F.brand}`;x.globalAlpha=.22;x.textAlign="right";x.fillText(f.n,w-50,h-120);x.globalAlpha=1;
   x.font=`600 30px ${F.body}`;["01","02","03"].forEach((n,j)=>{x.fillStyle=j===k?f.ac:f.mu;x.globalAlpha=j===k?1:.45;x.fillText(n,w-70-(2-j)*70,92);});x.globalAlpha=1;x.textAlign="left";
   x.fillStyle=f.ac;x.fillText("PUNTO DE PARTIDA · "+f.n,70,92);x.fillStyle=f.fg;let ts=112;do{x.font=`800 ${ts}px ${F.brand}`;ts-=4;}while(x.measureText(f.t).width>w-200);x.fillText(f.t,64,220);
   x.font=`500 50px ${F.body}`;x.fillStyle=f.fg;wrap(x,f.s,w-430,68,70,320);
 });
+const fichaTex=(f,k)=>tapaTex(drawFicha(f,k));
 /* pictogramas, un solo sistema: el mismo trazo redondo, el mismo cuadro de lado sz y el hilo rojo pasando por la mitad.
    01 el hilo se enreda en un nudo · 02 del hilo salen caminos que terminan en nada · 03 el hilo queda tejido en la trama */
 const RED_I="#c4302b",COL3=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];/* amarillo, azul, verde, fucsia: los de la trama */
@@ -109,17 +134,26 @@ function symbol(x,k,cx,cy,sz,col,w){x.save();x.lineCap=x.lineJoin="round";const 
     /* aquí el hilo ya no es rojo: llega a la trama hecho de colores */const gr=x.createLinearGradient(0,0,w,0);COL3.forEach((c,i)=>gr.addColorStop(i/3,c));
     weft(ys[0],col,0,cx-r,cx+r);weft(ys[1],col,1,cx-r,cx+r);weft(cy,gr,1,0,w);}
   x.restore();}
-const backTex=(f,k)=>tapaTex((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.canvas.__bg=f.bg;
+const drawBack=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.canvas.__bg=f.bg;
   const sz=330,cx=w-90-sz/2,cy=h*.47;symbol(x,k,cx,cy,sz,f.fg,w);
   /* número grande y grueso: Bricolage 800 con un contorno del mismo color para engrosarlo */
   x.font=`800 600px ${F.brand}`;x.textAlign="left";x.textBaseline="alphabetic";x.fillStyle=x.strokeStyle=f.fg;x.lineWidth=16;x.lineJoin="round";
   x.strokeText(f.n,58,cy+218);x.fillText(f.n,58,cy+218);
   x.font=`600 34px ${F.body}`;x.fillStyle=f.mu;x.textAlign="center";x.fillText(f.t,cx,cy+sz/2+86);
   x.textAlign="left";x.font=`600 28px ${F.body}`;x.fillText("PUNTO DE PARTIDA",70,84);});
+const backTex=(f,k)=>tapaTex(drawBack(f,k));
 const CAP=["Primeras puntadas","Crochet: cobija de cuadros","Detalle del crochet","Mochilas en lana guajira","Detalle de una mochila","Bordado a mano","Gobelino","Detalle del gobelino"];
-function photoTex(k){const c=document.createElement("canvas");c.width=520;c.height=680;const x=c.getContext("2d");const paint=im=>{x.clearRect(0,0,520,680);x.fillStyle="#f8f6f0";x.fillRect(0,0,520,680);x.fillStyle="#ddd6c8";x.fillRect(30,70,460,460);if(im)x.drawImage(im,30,70,460,460);
-  x.fillStyle="#2a2620";x.font=`700 48px ${F.hand}`;x.fillText(CAP[k],34,598);x.font=`500 22px ${F.body}`;x.fillStyle="#8a8378";x.fillText("0"+(k+1),34,648);hole(x,520,36);};paint(null);
-  const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=8;const im=new Image();im.onload=()=>{paint(im);t.needsUpdate=true;};im.src=(window.IMG||{})["ph"+(k+1)]||"";return t;}
+/* fotos del bastidor 3 (11 × 14,4 cm): marco blanco tipo instantánea, foto cuadrada y pie escrito a mano */
+const PW_=660,PH_=864,COL3P=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];
+const drawPhoto=(k,im)=>(x,w,h)=>{x.fillStyle="#faf8f3";x.fillRect(0,0,w,h);const m=36,ps=w-2*m,py=104;x.fillStyle="#ddd6c8";x.fillRect(m,py,ps,ps);
+  if(im&&im.width){const s2=Math.min(im.width,im.height);x.drawImage(im,(im.width-s2)/2,(im.height-s2)/2,s2,s2,m,py,ps,ps);}
+  x.fillStyle="#2a2620";let z=60;for(;z>38;z-=2){x.font=`700 ${z}px ${F.hand}`;if(x.measureText(CAP[k]).width<=ps)break;}x.fillText(CAP[k],m,py+ps+82);
+  x.fillStyle="#8a8378";x.font=`700 20px ${F.body}`;const e=track(x,String(k+1).padStart(2,"0"),m,h-44,1.5);x.font=`600 18px ${F.body}`;track(x," · 03 · LO QUE VOLVIÓ A TEJER",e,h-44,1.4);
+  COL3P.forEach((c,i)=>{x.fillStyle=c;x.beginPath();x.arc(w-m-8-i*22,h-50,7,0,7);x.fill();});
+  punch(x,w/2,52,14);};
+const photoImg=k=>new Promise(res=>{const src=(window.IMG||{})["ph"+(k+1)];if(!src){res(null);return;}const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});
+function photoTex(k){const c=document.createElement("canvas");c.width=PW_;c.height=PH_;const x=c.getContext("2d");drawPhoto(k,null)(x,PW_,PH_);const t=asTex(c);
+  photoImg(k).then(im=>{if(im){x.clearRect(0,0,PW_,PH_);drawPhoto(k,im)(x,PW_,PH_);t.needsUpdate=true;}});return t;}
 /* ===== todo cuelga de un hilito con su argolla y se mece ===== */
 const hung=[];
 function hang(g,map,w,h,ax,ay,rot,amp,len){const anchor=new T.Group();anchor.position.set(ax,ay,ZT+.004);/* cuelga del hilo, por delante */const piv=new T.Group();anchor.add(piv);const L=len||.022;
@@ -145,13 +179,13 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
     const mr=near(P.r,"y",yM);for(let k=0;k<4;k++)segs.push([pk(k%2?P.t:P.b),mr,RED]);
     /* regadas sin patrón; las frases siguen el orden de la entrevista de arriba abajo */
     const pos=scatter(8,CW,CH,SC[0]);
-    g.userData.cards=[];pos.forEach((p,fi)=>{g.userData.cards[fi]=hang(g,quoteTex(FR1[fi][0],FR1[fi][1],"dark"),CW,CH,p.x,p.y+CH/2-.012+p.L,(rnd()-.5)*.16,.03,p.L);});}
+    g.userData.cards=[];pos.forEach((p,fi)=>{g.userData.cards[fi]=hang(g,quoteTex(FR1[fi][0],FR1[fi][1],"dark",fi+1,8),CW,CH,p.x,p.y+CH/2-.012+p.L,(rnd()-.5)*.16,.03,p.L);});}
   if(i===1){const ml=near(P.l,"y",yM),mr=near(P.r,"y",yM);segs.push([ml,mr,RED]);
     P.l.forEach(a=>{if(Math.abs(a.y-yM)>.001)segs.push([a,near(P.r,"y",a.y),0x9a9e99]);});
     /* caminos rectos y paralelos (misma inclinación), sin cruzarse */
     const sl=2,BR=[[.10,.10],[.20,.40],[.32,.20],[.15,-.20],[.27,-.30]];/* cada camino termina sobre un hilo gris */const tags=[];
     BR.forEach((b,k)=>{const a=new T.Vector3(b[0],yM,ZT),e=new T.Vector3(b[0]+Math.abs(b[1])/sl,yM+b[1],ZT);segs.push([a,e,RED]);tags.push(hang(g,tagTex(k),.055,.09,e.x,e.y,(k%2?.08:-.08),.16));});
-    g.userData.tags=tags;const c0=OX0+.015+CW/2,c2=OX1-.015-CW/2;g.userData.cards=[hang(g,quoteTex(FR2[0][0],FR2[0][1],"gray"),CW,CH,c0,yM+.40,-.03,.03),hang(g,quoteTex(FR2[1][0],FR2[1][1],"gray"),CW,CH,c2,yM-.10,.03,.03),hang(g,quoteTex(FR2[2][0],FR2[2][1],"gray"),CW,CH,c0,yM-.30,-.03,.03)];}
+    g.userData.tags=tags;const c0=OX0+.015+CW/2,c2=OX1-.015-CW/2;g.userData.cards=[hang(g,quoteTex(FR2[0][0],FR2[0][1],"gray",1,3),CW,CH,c0,yM+.40,-.03,.03),hang(g,quoteTex(FR2[1][0],FR2[1][1],"gray",2,3),CW,CH,c2,yM-.10,.03,.03),hang(g,quoteTex(FR2[2][0],FR2[2][1],"gray",3,3),CW,CH,c0,yM-.30,-.03,.03)];}
   if(i===2){const PAL=[0xf2c200,0x2f6fd6,0x2e9e4f,0xe0218a];/* amarillo, azul, verde, fucsia: verticales de a 2, horizontales de a 3 */
     P.t.slice().sort((a,b)=>a.x-b.x).forEach((a,k)=>segs.push([a,near(P.b,"x",a.x),PAL[Math.floor(k/2)%PAL.length]]));
     P.l.slice().sort((a,b)=>a.y-b.y).forEach((a,k)=>{const isR=Math.abs(a.y-yM)<.001;segs.push([a.clone().setZ(ZT+.003),near(P.r,"y",a.y).clone().setZ(ZT+.003),isR?RED:PAL[(Math.floor(k/3)+3)%PAL.length]]);});
@@ -203,5 +237,5 @@ const wp=(f,x,y,z)=>()=>new T.Vector3(x,y,z).applyMatrix4(frames[f].matrixWorld)
 /* rótulos técnicos: [texto, posición en el mundo, clase] */
 const notes=[[m(H)+" m",mid(0),"dim"],[m(W)+" m",mid(1),"dim"],["Tablero: "+m(TAPA)+" m de alto",mid(2),"dim"],[m(OY1-OY0)+" m de hilo",mid(3),"dim"],[m(IN)+" m por dentro",mid(4),"dim"],
   ["Listón de madera "+t*100+" × "+t*100+" cm",wp(2,W+.12,.9,0)],["Puntillas atrás cada 5 cm",wp(0,W/2,OY1+NI,-t/2-.04)],["Puntillas atrás cada 10 cm, solo a los lados",wp(1,OX0-NI,yM+.2,-t/2-.04)],["Puntillas atrás cada 2,5 cm",wp(2,W/2,OY1+NI,-t/2-.04)],["Bisagra de 2½″ (4 en total)",wp(1,W+.02,HY[1],-.05)],["Tablero de triplex 9 mm · "+m(TAW)+" × "+m(TAPA)+" m, con propalcote de "+PRW*100+" × "+PRH*100+" cm",wp(2,W/2,TY0+TAPA/2-.01,.06)]];
-return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,HG,CZ,AIR,setFinish,setMode,get mode(){return MODE;},get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
+return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,HG,CZ,AIR,setFinish,setMode,get mode(){return MODE;},art:{FI,FR1,FR2,DEST,CAP,DW,DH,QW,QH,GW,GH,PW:PW_,PH:PH_,front:(k,sc)=>cvs(DW,DH,sc||1,drawFicha(FI[k],k)),back:(k,sc)=>cvs(DW,DH,sc||1,drawBack(FI[k],k)),quote:(set,i,sc)=>{const A=set==='dark'?FR1:FR2;return cvs(QW,QH,sc||1,drawQuote(A[i][0],A[i][1],set,i+1,A.length));},tag:(i,sc)=>cvs(GW,GH,sc||1,drawTag(i)),photo:async(k,sc)=>{const im=await photoImg(k);return cvs(PW_,PH_,sc||1,drawPhoto(k,im));}},get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
 };
