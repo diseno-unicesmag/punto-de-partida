@@ -199,8 +199,9 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
     P.t.slice().sort((a,b)=>a.x-b.x).forEach((a,k)=>segs.push([a,near(P.b,"x",a.x),PAL[Math.floor(k/2)%PAL.length]]));
     P.l.slice().sort((a,b)=>a.y-b.y).forEach((a,k)=>{const isR=Math.abs(a.y-yM)<.001;segs.push([a.clone().setZ(ZT+.003),near(P.r,"y",a.y).clone().setZ(ZT+.003),isR?RED:PAL[(Math.floor(k/3)+3)%PAL.length]]);});
     /* regadas sin patrón; de arriba abajo conservan el orden de antes (01 arriba) */
-    const pos=scatter(8,CW,CH,SC[2]),ord=[0,1,2,3,4,5,7,6];g.userData.photos=[];
-    pos.forEach((p,j)=>{const k=ord[j];g.userData.photos[k]=hang(g,photoTex(k),CW,CH,p.x,p.y+CH/2-.012+p.L,(rnd()-.5)*.12,.025,p.L);});}
+    /* fotos en zigzag irregular, de la 01 arriba a la 08 abajo: centro x, borde superior y, giro, largo del cordón (m) */
+    const P3=[[.17,1.53,-.07,.022],[.42,1.47,.05,.036],[.30,1.32,-.03,.016],[.13,1.17,.08,.03],[.44,1.13,-.06,.04],[.27,.97,.04,.018],[.45,.84,.07,.028],[.16,.76,-.05,.02]];
+    g.userData.photos=P3.map(([x,y,r,L],k)=>hang(g,photoTex(k),CW,CH,x,y+L-.012,r,.022,L));}
   threads(g,segs,i===2?.0013:.0015);
   g.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});return g;}
 const frames=[0,1,2].map(frame);
