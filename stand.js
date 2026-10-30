@@ -187,8 +187,9 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
     for(let k=0;k<84;k++){const p=pairs[k%6];segs.push([pk(p[0]),pk(p[1]),rnd()<.4?RED2:RED]);}
     const mr=near(P.r,"y",yM);for(let k=0;k<4;k++)segs.push([pk(k%2?P.t:P.b),mr,RED]);
     /* regadas sin patrón; las frases siguen el orden de la entrevista de arriba abajo */
-    const pos=scatter(8,CW,CH,SC[0]);
-    g.userData.cards=[];pos.forEach((p,fi)=>{g.userData.cards[fi]=hang(g,quoteTex(FR1[fi][0],FR1[fi][1],"dark",fi+1,8),CW,CH,p.x,p.y+CH/2-.012+p.L,(rnd()-.5)*.16,.03,p.L);});}
+    /* frases en zigzag irregular, en el orden de la entrevista de arriba abajo: centro x, borde superior y, giro, cordón (m) */
+    const P1=[[.38,1.53,.06,.026],[.14,1.46,-.05,.034],[.28,1.31,.04,.018],[.45,1.19,-.07,.03],[.15,1.14,.06,.022],[.33,.99,-.04,.038],[.14,.86,-.06,.02],[.42,.78,.05,.03]];
+    g.userData.cards=P1.map(([x,y,r,L],fi)=>hang(g,quoteTex(FR1[fi][0],FR1[fi][1],"dark",fi+1,8),CW,CH,x,y+L-.012,r,.03,L));}
   if(i===1){const ml=near(P.l,"y",yM),mr=near(P.r,"y",yM);segs.push([ml,mr,RED]);
     P.l.forEach(a=>{if(Math.abs(a.y-yM)>.001)segs.push([a,near(P.r,"y",a.y),0x9a9e99]);});
     /* caminos rectos y paralelos (misma inclinación), sin cruzarse */
