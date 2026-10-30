@@ -98,9 +98,9 @@ const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.mov
   punch(x,w/2,64,15,"#d7c9a6");};
 const tagTex=n=>asTex(cvs(GW,GH,1,drawTag(n)));
 /* tapas de MDF (frente: número, título e historia; atrás: número y símbolo) */
-const FI=[{t:"Lo que pasó",n:"01",s:"En La Concepción Alto, entre montañas, ella tenía una tienda, sus cuyes y sus gallinas. Un día llegaron hombres armados: pedían sin pagar, ponían horarios y tocaban la puerta de madrugada. Entre el ejército y la guerrilla, su familia quedó en la mitad.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
- {t:"Lo que no se ve",n:"02",s:"Por sus hijos decidieron irse. Llegaron a la ciudad con lo que pudieron cargar, sin casa ni trabajo, sin saber adónde ir. Nadie notó lo que traían: el miedo no se ve, pero pesa.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
- {t:"Lo que volvió a tejer",n:"03",s:"Pero la historia no terminó ahí. Con lana virgen teñida a mano, chaquiras y agujas, ella volvió a empezar. Hoy teje y borda por encargo, y en cada puntada sostiene a su familia.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a"}];
+const FI=[{t:"Lo que pasó",n:"01",s:"Allá arriba la vida se tejía despacio: la tierra, los animales, la tienda abierta hasta tarde, las risas en la noche. Un día la guerra llegó a la puerta. Primero pidió, después mandó. Y el miedo fue dando vueltas hasta volverse un nudo.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
+ {t:"Lo que no se ve",n:"02",s:"Salir no fue llegar. Se fueron con lo que cabía en las manos, y la ciudad los recibió sin mirarlos. Lo que no se ve es ese tiempo suspendido: la duda, el silencio, un hilo que tiembla sin saber hacia dónde ir.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
+ {t:"Lo que volvió a tejer",n:"03",s:"Pero el hilo no se cortó. En sus manos quedaba el oficio, y con él volvió a empezar, punto por punto. Lo que el miedo había enredado, hoy lo sostiene una trama: su trabajo, su casa, su familia.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a"}];
 /* el tablero va negro, con el propalcote de PRW × PRH centrado; el diseño se pinta aparte y se pega en su sitio */
 const TW=1280,TH2=Math.round(TW*TAPA/TAW),DW=1280,DH=Math.round(DW*PRH/PRW);const dc=document.createElement("canvas");dc.width=DW;dc.height=DH;const dctx=dc.getContext("2d");
 const TAPAS=[];const BLK="#34322f";/* negro con cuerpo: se leen luces, sombras y aristas */
