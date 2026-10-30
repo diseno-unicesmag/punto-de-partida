@@ -98,9 +98,9 @@ const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.mov
   punch(x,w/2,64,15,"#d7c9a6");};
 const tagTex=n=>asTex(cvs(GW,GH,1,drawTag(n)));
 /* tapas de MDF (frente: número, título e historia; atrás: número y símbolo) */
-const FI=[{t:"Lo que pasó",n:"01",s:"En La Concepción Alto, en las montañas de Santa Bárbara, ella atendía una tienda. Llegaron hombres armados que pedían sin pagar y mandaban sobre las horas y las casas. De una loma, el ejército; de la otra, la guerrilla. Y su familia, en la mitad.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
- {t:"Lo que no se ve",n:"02",s:"Un día decidieron irse. Bajaron a la ciudad con lo que alcanzaron a cargar y sin saber adónde llegar. Allí nadie preguntó de dónde venían. El miedo no se veía, pero viajaba con ellos.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
- {t:"Lo que volvió a tejer",n:"03",s:"Entre ovillos y agujas, ella volvió a empezar. Tiñe lana virgen con tintes naturales, borda con chaquiras y teje mochilas por encargo. Cada puntada sostiene a su familia y cose, despacio, lo que la guerra quiso deshacer.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a"}];
+const FI=[{t:"Lo que pasó",n:"01",s:"En La Concepción Alto, entre montañas, ella tenía una tienda, sus cuyes y sus gallinas. Un día llegaron hombres armados: pedían sin pagar, ponían horarios y tocaban la puerta de madrugada. Entre el ejército y la guerrilla, su familia quedó en la mitad.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
+ {t:"Lo que no se ve",n:"02",s:"Por sus hijos decidieron irse. Llegaron a la ciudad con lo que pudieron cargar, sin casa ni trabajo, sin saber adónde ir. Nadie notó lo que traían: el miedo no se ve, pero pesa.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
+ {t:"Lo que volvió a tejer",n:"03",s:"Pero la historia no terminó ahí. Con lana virgen teñida a mano, chaquiras y agujas, ella volvió a empezar. Hoy teje y borda por encargo, y en cada puntada sostiene a su familia.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a"}];
 /* el tablero va negro, con el propalcote de PRW × PRH centrado; el diseño se pinta aparte y se pega en su sitio */
 const TW=1280,TH2=Math.round(TW*TAPA/TAW),DW=1280,DH=Math.round(DW*PRH/PRW);const dc=document.createElement("canvas");dc.width=DW;dc.height=DH;const dctx=dc.getContext("2d");
 const TAPAS=[];const BLK="#34322f";/* negro con cuerpo: se leen luces, sombras y aristas */
@@ -117,30 +117,38 @@ const drawFicha=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
 });
 const fichaTex=(f,k)=>tapaTex(drawFicha(f,k));
 /* pictogramas, un solo sistema: trazo fino y redondo, el mismo cuadro de lado sz y el hilo rojo de lado a lado en los tres.
-   01 el hilo se enreda en un nudo · 02 del hilo salen caminos rojos que terminan en nada (puntos blancos) · 03 el hilo sostiene la trama */
-const RED_I="#c4302b",COL3=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];/* amarillo, azul, verde, fucsia: los de la trama */
-function symbol(x,k,cx,cy,sz,col,w){x.save();x.lineCap=x.lineJoin="round";const lw=sz*.042,r=sz/2,bg=x.canvas.__bg||"#000";x.lineWidth=lw;
-  const line=(x0,y0,x1,y1,c)=>{x.strokeStyle=c;x.beginPath();x.moveTo(x0,y0);x.lineTo(x1,y1);x.stroke();};
-  /* curva por tramos de bezier; con halo del color del fondo para que pase por encima de lo anterior */
-  const P=(a,b)=>[cx+a*r,cy+b*r];
-  const curve=(pts,halo)=>{const go=()=>{x.beginPath();x.moveTo(...pts[0]);for(let i=1;i<pts.length;i+=3)x.bezierCurveTo(...pts[i],...pts[i+1],...pts[i+2]);x.stroke();};
-    if(halo){x.save();x.strokeStyle=bg;x.lineWidth=lw*2.6;x.setLineDash([0,lw*1.6,1e5]);go();x.restore();}x.strokeStyle=RED_I;go();};
-  if(k===0){line(0,cy,cx-r*.7,cy,RED_I);line(cx+r*.7,cy,w,cy,RED_I);
-    curve([P(-.7,0),P(-.05,0),P(.5,-.15),P(.45,-.5),P(.4,-.9),P(-.25,-.95),P(-.38,-.55)]);
-    curve([P(-.38,-.55),P(-.5,-.2),P(-.25,.15),P(.05,.32),P(.35,.5),P(.5,.85),P(.1,.88),P(-.3,.9),P(-.32,.45),P(.05,.15)],true);
-    curve([P(.05,.15),P(.25,0),P(.45,0),P(.7,0)],true);}
-  if(k===1){line(0,cy,w,cy,RED_I);[[-.75,-1],[-.2,1],[.3,-1]].forEach(([o,d])=>{const ax=cx+o*r,ex=ax+r*.45,ey=cy+d*r*.78;
-    line(ax,cy,ex,ey,RED_I);x.fillStyle=col;x.beginPath();x.arc(ex,ey,lw*1.5,0,7);x.fill();});}
-  if(k===2){const n=4,st=sz/(n+1);line(0,cy,w,cy,RED_I);
-    /* urdimbre de colores encima del hilo rojo del medio; las dos tramas rojas, encima de la urdimbre */
-    [...Array(n)].forEach((_,i)=>{const px=cx-r+st*(i+1);line(px,cy-r,px,cy+r,COL3[i]);});
-    [cy-st,cy+st].forEach(py=>line(cx-r,py,cx+r,py,RED_I));}
+   01 el hilo se enmaraña en una madeja de lazos · 02 del hilo salen caminos que se van borrando y terminan en un punto vacío
+   03 el hilo rojo sostiene un tejido de verdad: urdimbre de colores y tramas rojas que pasan por encima y por debajo */
+const RED_I="#c4302b",RED_D="#7d1a14",COL3=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];
+function symbol(x,k,cx,cy,sz,col,w){x.save();x.lineCap=x.lineJoin="round";const lw=sz*.03,r=sz/2,bg=x.canvas.__bg||"#000";x.lineWidth=lw;
+  const line=(x0,y0,x1,y1,c,l)=>{x.strokeStyle=c;x.lineWidth=l||lw;x.beginPath();x.moveTo(x0,y0);x.lineTo(x1,y1);x.stroke();};
+  const halo=(draw,l)=>{x.save();x.strokeStyle=bg;x.lineWidth=(l||lw)*2.7;draw();x.restore();};
+  if(k===0){/* madeja: lazos que se montan unos sobre otros, en los dos rojos del enredo */
+    line(0,cy,cx-r*.7,cy,RED_I);line(cx+r*.7,cy,w,cy,RED_I);
+    const L=[[.78,.46,.2,0,0],[.62,.36,-.5,.06,-.06],[.5,.62,1.1,-.08,.05],[.74,.3,1.9,.04,.08],[.4,.52,-1.2,.1,-.1],[.62,.42,.75,-.05,-.03],[.32,.28,2.6,0,.03],[.7,.55,-.25,.03,.04],[.46,.2,.4,-.12,.12]];
+    L.forEach(([rx,ry,a,ox,oy],i)=>{const pts=[];for(let q=0;q<=64;q++){const t=q/64*Math.PI*2,ex=Math.cos(t)*rx*r,ey=Math.sin(t)*ry*r;pts.push([cx+ox*r+ex*Math.cos(a)-ey*Math.sin(a),cy+oy*r+ex*Math.sin(a)+ey*Math.cos(a)]);}
+      const go=()=>{x.beginPath();pts.forEach((p,q)=>q?x.lineTo(...p):x.moveTo(...p));x.stroke();};halo(go);x.strokeStyle=i%3===1?RED_D:RED_I;x.lineWidth=lw;go();});
+    /* el hilo sale de la madeja por la derecha, pasando por encima */
+    halo(()=>{x.beginPath();x.moveTo(cx+r*.2,cy+r*.12);x.quadraticCurveTo(cx+r*.5,cy,cx+r*.78,cy);x.stroke();});x.strokeStyle=RED_I;x.beginPath();x.moveTo(cx+r*.2,cy+r*.12);x.quadraticCurveTo(cx+r*.5,cy,cx+r*.78,cy);x.stroke();}
+  if(k===1){/* los hilos grises del limbo detrás; caminos rojos paralelos que se vuelven punteados y acaban en un punto vacío */
+    x.globalAlpha=.32;[-.75,-.45,-.15,.15,.45,.75].forEach(f=>{if(Math.abs(f)>.05)line(cx-r,cy+f*r,cx+r,cy+f*r,col,lw*.5);});x.globalAlpha=1;
+    line(0,cy,w,cy,RED_I);
+    [[-.85,-.82],[-.45,.62],[-.05,-.55],[.3,.86],[.45,-.9]].forEach(([o,d])=>{const ax=cx+o*r,ay=cy,ex=ax+Math.abs(d)*r*.62,ey=cy+d*r,mx=ax+(ex-ax)*.5,my=ay+(ey-ay)*.5;
+      line(ax,ay,mx,my,RED_I);x.save();x.setLineDash([lw*.2,lw*1.8]);line(mx,my,ex-(ex-ax)*.08,ey-(ey-ay)*.08,RED_I);x.restore();
+      x.fillStyle=bg;x.strokeStyle=col;x.lineWidth=lw*.8;x.beginPath();x.arc(ex,ey,lw*1.5,0,7);x.fill();x.stroke();});}
+  if(k===2){/* tejido: 7 hilos de urdimbre con flecos; el rojo del medio pasa por debajo de todos; 4 tramas rojas cruzan por encima y por debajo */
+    const n=7,xs=[...Array(n)].map((_,i)=>cx-r*.78+i*r*1.56/(n-1)),top=cy-r*.82,bot=cy+r*.82,wy=[-.58,-.29,.29,.58].map(f=>cy+f*r);
+    line(0,cy,w,cy,RED_I);
+    xs.forEach((px,i)=>{const c=COL3[i%4];line(px,top,px,bot,c);[[-1,-1],[1,1]].forEach(([s1])=>{const ye=s1<0?top:bot;line(px,ye,px-lw*.7,ye+s1*lw*1.8,c,lw*.5);line(px,ye,px+lw*.7,ye+s1*lw*1.8,c,lw*.5);});});
+    /* el cruce se lee por el orden de dibujo: la trama encima y, en cruces alternos, la urdimbre otra vez por encima */
+    wy.forEach((py,j)=>{line(cx-r*.95,py,cx+r*.95,py,RED_I);
+      xs.forEach((px,i)=>{if((i+j)%2===0)line(px,py-lw*1.4,px,py+lw*1.4,COL3[i%4]);});});}
   x.restore();}
 const drawBack=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.canvas.__bg=f.bg;
-  const sz=340,cx=w-70-sz/2,cy=h*.5;symbol(x,k,cx,cy,sz,f.fg,w);
+  const sz=470,cx=w-80-sz/2,cy=h*.5;symbol(x,k,cx,cy,sz,f.fg,w);
   /* número grande y pesado: Bricolage 800 con contorno del mismo color; tapa el hilo al pasar */
-  x.font=`800 650px ${F.brand}`;x.textAlign="left";x.textBaseline="alphabetic";x.fillStyle=x.strokeStyle=f.fg;x.lineWidth=24;x.lineJoin="round";
-  x.strokeText(f.n,44,cy+234);x.fillText(f.n,44,cy+234);
+  x.font=`800 470px ${F.brand}`;x.textAlign="left";x.textBaseline="alphabetic";x.fillStyle=x.strokeStyle=f.fg;x.lineWidth=18;x.lineJoin="round";
+  x.strokeText(f.n,66,cy+168);x.fillText(f.n,66,cy+168);
   x.fillStyle=f.mu;x.font=`600 24px ${F.body}`;track(x,"PUNTO DE PARTIDA",70,84,3.5);
   x.font=`600 32px ${F.body}`;x.textAlign="right";x.fillText(f.t,w-60,h-52);x.textAlign="left";});
 const backTex=(f,k)=>tapaTex(drawBack(f,k));
