@@ -118,16 +118,19 @@ const drawFicha=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
 const fichaTex=(f,k)=>tapaTex(drawFicha(f,k));
 /* pictogramas: una sola línea roja, delgada y continua, que entra por la izquierda y sale por la derecha a la misma altura
    en los tres respaldos (así el hilo pasa de una tapa a la otra).
-   01 el hilo se enreda en lazos · 02 del hilo salen caminos que no llegan a ningún lado · 03 el hilo va y vuelve: se vuelve trama */
+   01 el hilo se anuda en quiebres agudos · 02 el hilo tiembla y duda · 03 el hilo va y vuelve en calma: se vuelve trama */
 const RED_I="#c4302b";
 function symbol(x,k,cx,cy,sz,w){x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=RED_I;x.lineWidth=7;const r=sz/2;
   x.beginPath();x.moveTo(0,cy);
-  if(k===0){/* el hilo se enrosca en lazos que crecen y vuelven a cerrarse, cruzando su propio camino */const N=5,span=sz*1.3,x0=cx-span/2,A=span/(2*Math.PI*N);
-    x.lineTo(x0,cy);for(let q=0;q<=600;q++){const u=q/600,t=u*2*Math.PI*N,B=sz*.33*Math.sin(Math.PI*u);x.lineTo(x0+A*t-B*Math.sin(t),cy-B*Math.cos(t));}
+  if(k===0){/* nudo irregular: el hilo se tensa en tramos rectos y quiebres agudos, y se cruza a sí mismo */let sd=11;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+    x.lineJoin="miter";x.miterLimit=12;x.lineTo(cx-r*1.3,cy);
+    for(let i=0;i<17;i++){const a=i*2.45+R()*1.1,rr=r*(.38+R()*.62);x.lineTo(cx+Math.cos(a)*rr*1.3,cy+Math.sin(a)*rr*1.0);}
+    x.lineTo(cx+r*1.3,cy);x.lineTo(w,cy);x.stroke();}
+  if(k===1){/* la duda: el hilo tiembla, se devuelve y no sabe hacia dónde ir, pero sigue siendo uno solo */let sd=5;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+    const L=r*2.9,xa=cx-L/2;x.lineTo(xa,cy);
+    for(let q=0;q<=900;q++){const u=q/900,env=Math.sin(Math.PI*u);
+      x.lineTo(xa+u*L-env*r*.2*Math.sin(u*Math.PI*9),cy+env*r*(.36*Math.sin(u*Math.PI*4.6+1)+.2*Math.sin(u*Math.PI*12.3))+(Math.sin(u*Math.PI*140)*5+(R()-.5)*7)*env);}
     x.lineTo(w,cy);x.stroke();}
-  if(k===1){/* tres caminos paralelos que se abren del hilo y terminan en un punto vacío */x.lineTo(w,cy);x.stroke();
-    [[-.7,-.75],[-.15,.7],[.4,-.75]].forEach(([o,d])=>{const ax=cx+o*r,ex=ax+Math.abs(d)*r*.6,ey=cy+d*r;x.beginPath();x.moveTo(ax,cy);x.lineTo(ex,ey);x.stroke();
-      x.beginPath();x.arc(ex+(ex-ax)*.12,ey+(ey-cy)*.12,11,0,7);x.stroke();});}
   if(k===2){/* el hilo sube y teje cinco pasadas de ida y vuelta, luego baja y sigue */const n=5,s2=sz*.8/(n-1),x0=cx-r*.8,x1=cx+r*.8,top=cy-s2*(n-1)/2,rt=s2/2;
     x.lineTo(x0-s2,cy);x.lineTo(x0-s2,top+rt);x.arcTo(x0-s2,top,x0-s2+rt,top,rt);x.lineTo(x0,top);
     for(let i=0;i<n;i++){const y=top+i*s2,ltr=i%2===0;x.lineTo(ltr?x1:x0,y);if(i<n-1)x.arc(ltr?x1:x0,y+rt,rt,-Math.PI/2,Math.PI/2,!ltr);}
