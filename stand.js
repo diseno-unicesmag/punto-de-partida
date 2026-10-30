@@ -145,7 +145,7 @@ const drawBack=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.canvas._
 const backTex=(f,k)=>tapaTex(drawBack(f,k));
 /* fotos del bastidor 3: mismo formato que las frases (15 × 10,7 cm). Arriba el rótulo, en medio la foto, abajo de qué es:
    proceso de trabajo, materiales u obras. Provisionales hasta tener las fotos finales */
-const CAP=[["Proceso","Tiñendo lana virgen con tintes naturales"],["Obra","Cobija de cuadros en crochet"],["Proceso","Punto a punto: el crochet"],["Obra","Mochilas en lana guajira"],
+const CAP=[["Proceso","Tiñendo lana virgen con tintes naturales"],["Obra","Cobija de cuadros en crochet"],["Proceso","Punto a punto: el crochet"],["Obra","Mochilas de lana guajira hechas a pedido"],
   ["Proceso","Detalle del tejido de una mochila"],["Proceso","Bordado a mano en bastidor"],["Obra","Gobelino"],["Proceso","Detalle del gobelino"]];
 const PW_=QW,PH_=QH,COL3P=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];
 const drawPhoto=(k,im)=>(x,w,h)=>{x.fillStyle="#f6f4ee";x.fillRect(0,0,w,h);seed=k*17+3;for(let q=0;q<700;q++){x.fillStyle=`rgba(0,0,0,${rnd()*.025})`;x.fillRect(rnd()*w,rnd()*h,2,2);}
