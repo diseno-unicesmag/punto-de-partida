@@ -154,8 +154,8 @@ const drawBack=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.canvas._
 const backTex=(f,k)=>tapaTex(drawBack(f,k));
 /* fotos del bastidor 3: mismo formato que las frases (15 × 10,7 cm). Arriba el rótulo, en medio la foto, abajo de qué es:
    proceso de trabajo, materiales u obras. Provisionales hasta tener las fotos finales */
-const CAP=[["Proceso","Tiñendo lana virgen con tintes naturales"],["Proceso","Bordando a mano con lana virgen"],["Obra","Ropa bordada a mano con lana virgen"],["Obra","Mochilas de lana guajira hechas a pedido"],
-  ["Obra","Sombrero bordado con chaquiras"],["Obra","Monederos, llaveros y bolsitas en lana virgen"],["Obra","Gobelino"],["Proceso","Detalle del gobelino"]];
+const CAP=[["Proceso","Tiñendo lana virgen con tintes naturales"],["Proceso","Bordando a mano con lana virgen"],["Obra","Ropa bordada a mano con lana virgen"],["Obra","Mochilas en hilo guajiro hechas a pedido"],
+  ["Obra","Sombrero bordado con chaquiras"],["Obra","Monederos, llaveros y bolsitas en lana virgen"],["Obra","Cartera de anillas de lata recicladas e hilo guajiro"],["Obra","Aretes y anillos en chaquiras"]];
 const PW_=QW,PH_=QH,COL3P=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];
 const drawPhoto=(k,im)=>(x,w,h)=>{x.fillStyle="#f6f4ee";x.fillRect(0,0,w,h);seed=k*17+3;for(let q=0;q<700;q++){x.fillStyle=`rgba(0,0,0,${rnd()*.025})`;x.fillRect(rnd()*w,rnd()*h,2,2);}
   x.fillStyle="#e0218a";x.font=`600 19px ${F.body}`;track(x,"03 · LO QUE VOLVIÓ A TEJER",64,76,1.8);
@@ -163,7 +163,7 @@ const drawPhoto=(k,im)=>(x,w,h)=>{x.fillStyle="#f6f4ee";x.fillRect(0,0,w,h);seed
   const px=64,py=100,pw=w-128,ph=Math.round(pw*9/16);/* 16:9 */x.fillStyle="#ddd6c8";x.fillRect(px,py,pw,ph);
   if(im&&im.width){const r=pw/ph;let sw=im.width,sh=im.width/r;if(sh>im.height){sh=im.height;sw=sh*r;}x.drawImage(im,(im.width-sw)/2,(im.height-sh)/2,sw,sh,px,py,pw,ph);}
   const [cat,txt]=CAP[k];x.fillStyle="#1a1918";x.font=`700 19px ${F.body}`;const e=track(x,cat.toUpperCase(),64,h-50,2.2);
-  x.fillStyle="#3a3631";x.font=`500 24px ${F.body}`;x.fillText("·  "+txt,e+10,h-50);
+  x.fillStyle="#3a3631";let fz=24;do{x.font=`500 ${fz}px ${F.body}`;fz--;}while(fz>17&&x.measureText("·  "+txt).width>w-180-e);x.fillText("·  "+txt,e+10,h-50);
   COL3P.forEach((c,i)=>{x.fillStyle=c;x.beginPath();x.arc(w-72-i*24,h-58,7.5,0,7);x.fill();});
   punch(x,w/2,62,15);};
 const photoImg=k=>new Promise(res=>{const src=(window.IMG||{})["ph"+(k+1)];if(!src){res(null);return;}const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});
