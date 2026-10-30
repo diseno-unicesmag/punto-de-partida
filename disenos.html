@@ -55,7 +55,7 @@ td.n{font-weight:700}
 <div id="deck"></div>
 <script src="vendor/three.min.js?v=158"></script>
 <script src="img_data.js?v=13"></script>
-<script src="stand.js?v=18"></script>
+<script src="stand.js?v=19"></script>
 <script>
 (async function(){
 "use strict";
@@ -94,7 +94,7 @@ S.push(`<section class="s">${hd("Propalcotes","Los seis, frente y respaldo","<b>
   ${front.map((s,k)=>`<div>${img(s,440)}<div class="cap">0${k+1} · frente</div></div>`).join("")}
   ${back.map((s,k)=>`<div>${img(s,440)}<div class="cap">0${k+1} · respaldo</div></div>`).join("")}</div>${ft}${pg()}</section>`);
 /* 4-6 cada momento */
-const TXT=["Abre el recorrido. El respaldo lleva el nudo: el hilo rojo se enreda entre otros hilos.","El vacío y la duda. Del hilo salen caminos que terminan en nada.","Lo que volvió a tejer. Aquí el hilo ya no es rojo: llega a la trama hecho de colores."];
+const TXT=["Abre el recorrido. En el respaldo, el hilo rojo se enreda en un nudo.","El vacío y la duda. Del hilo salen caminos que terminan en nada.","El mismo hilo rojo, ahora sosteniendo una trama de colores."];
 [0,1,2].forEach(k=>S.push(`<section class="s">${hd("Propalcote 0"+(k+1)+" · bastidor "+(k+1),N[k],"<b>47 × 32 cm</b> · frente y respaldo<br>"+TXT[k])}
   <div class="grid" style="top:360px;grid-template-columns:1fr 1fr;gap:64px">
     <div>${img(front[k],808)}<div class="cap">Frente · lo que lee la gente que pasa</div></div>
