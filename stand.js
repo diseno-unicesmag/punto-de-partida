@@ -99,7 +99,7 @@ const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.mov
 const tagTex=n=>asTex(cvs(GW,GH,1,drawTag(n)));
 /* tapas de MDF (frente: número, título e historia; atrás: número y símbolo) */
 const FI=[{t:"Lo que pasó",n:"01",s:"Allá arriba la vida se tejía despacio: la tierra, los animales, la tienda abierta hasta tarde, las risas en la noche. Un día la guerra llegó a la puerta. Primero pidió, después mandó. Y el miedo fue dando vueltas hasta volverse un nudo.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
- {t:"Lo que no se ve",n:"02",s:"Salir no fue llegar. Se fueron con lo que cabía en las manos, y la ciudad los recibió sin mirarlos. Lo que no se ve es ese tiempo suspendido: la duda, el silencio, un hilo que tiembla sin saber hacia dónde ir.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
+ {t:"Lo que no se ve",n:"02",s:"Salir no fue llegar. Se fueron con lo que cabía en las manos, y la ciudad los recibió sin mirarlos. Quedó un tiempo suspendido: la duda, el silencio, un hilo que tiembla sin saber hacia dónde ir.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
  {t:"Lo que volvió a tejer",n:"03",s:"Pero el hilo no se cortó. En sus manos quedaba el oficio, y con él volvió a empezar, punto por punto. Lo que el miedo había enredado, hoy lo sostiene una trama: su trabajo, su casa, su familia.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a"}];
 /* el tablero va negro, con el propalcote de PRW × PRH centrado; el diseño se pinta aparte y se pega en su sitio */
 const TW=1280,TH2=Math.round(TW*TAPA/TAW),DW=1280,DH=Math.round(DW*PRH/PRW);const dc=document.createElement("canvas");dc.width=DW;dc.height=DH;const dctx=dc.getContext("2d");
@@ -179,7 +179,7 @@ function symbol(x,k,cx,cy,sz,w,v){v=v??SYMV[k];x.save();x.lineCap=x.lineJoin="ro
 const drawBack=(f,k,v)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
   symbol(x,k,w*.5,h*.5,Math.min(w*.42,h*.6),w,v);
   /* número pequeño arriba a la izquierda, con el rótulo debajo; el nombre del momento abajo a la derecha */
-  x.textAlign="left";x.textBaseline="alphabetic";x.fillStyle=f.fg;x.font=`800 76px ${F.brand}`;x.fillText(f.n,66,140);
+  x.textAlign="left";x.textBaseline="alphabetic";/* número en negra extra: Bricolage 800 engrosado con un contorno del mismo color */x.fillStyle=x.strokeStyle=f.fg;x.font=`800 84px ${F.brand}`;x.lineWidth=5;x.lineJoin="round";x.letterSpacing="7px";x.strokeText(f.n,66,140);x.fillText(f.n,66,140);x.letterSpacing="0px";
   x.fillStyle=f.mu;x.font=`600 22px ${F.body}`;track(x,"PUNTO DE PARTIDA",70,180,3.5);
   x.font=`600 30px ${F.body}`;x.textAlign="right";x.fillText(f.t,w-64,h-56);x.textAlign="left";});
 const backTex=(f,k)=>tapaTex(drawBack(f,k));
