@@ -54,8 +54,8 @@ td.n{font-weight:700}
 </head><body>
 <div id="deck"></div>
 <script src="vendor/three.min.js?v=158"></script>
-<script src="img_data.js?v=10"></script>
-<script src="stand.js?v=13"></script>
+<script src="img_data.js?v=11"></script>
+<script src="stand.js?v=14"></script>
 <script>
 (async function(){
 "use strict";
@@ -107,7 +107,7 @@ S.push(`<section class="s">${hd("Bastidor 2 · Lo que no se ve","Tres frases y c
   <div class="grid" style="top:330px;grid-template-columns:repeat(3,1fr);gap:40px">${q2.map(s=>img(s,500)).join("")}</div>
   <div class="grid" style="top:720px;grid-template-columns:repeat(5,auto);justify-content:center;gap:0 70px">${tags.map((s,i)=>`<div style="transform:rotate(${[-4,3,-2,4,-3][i]}deg)">${img(s,150)}</div>`).join("")}</div>${ft}${pg()}</section>`);
 /* 9 fotos */
-S.push(`<section class="s">${hd("Bastidor 3 · Lo que volvió a tejer","Proceso, materiales y obras","<b>15 × 10,7 cm</b> · 8 piezas, mismo formato que las frases<br>fotos provisionales: se cambian por las finales")}
+S.push(`<section class="s">${hd("Bastidor 3 · Lo que volvió a tejer","Proceso, materiales y obras","<b>15 × 10,7 cm</b> · 8 piezas, mismo formato que las frases<br>la 01 ya es la foto final; las demás son provisionales")}
   <div class="grid" style="top:330px;grid-template-columns:repeat(4,1fr);gap:48px 40px">${ph.map(s=>img(s,380)).join("")}</div>${ft}${pg()}</section>`);
 /* 10 impresión */
 const R=[["#0f0e0d","Propalcote 01 · frente y respaldo","47 × 32 cm","2","2 pliegos"],["#77736d","Propalcote 02 · frente y respaldo","47 × 32 cm","2","2 pliegos"],["#f4f2ee","Propalcote 03 · frente y respaldo","47 × 32 cm","2","2 pliegos"],
