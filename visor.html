@@ -21,6 +21,8 @@ header p{margin:0;font-size:13px;color:var(--muted)}
 .seg button:hover:not(.on),#views button:hover:not(.on){background:#00000010}
 #views{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px;backdrop-filter:blur(8px);max-width:calc(100vw - 32px);box-sizing:border-box}
 #views button{font-size:13px;padding:7px 13px}#views button.on{background:var(--rojo);color:#fff}
+#fs{position:fixed;right:24px;bottom:20px;width:46px;height:46px;border-radius:50%;background:var(--card);border:1px solid var(--line);backdrop-filter:blur(8px);display:grid;place-items:center;cursor:pointer;color:var(--ink);padding:0}
+#fs:hover{background:#fff}#fs svg{width:20px;height:20px}#fs .out{display:none}body.full #fs .in{display:none}body.full #fs .out{display:block}
 #info{position:fixed;right:24px;top:22px;width:240px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;backdrop-filter:blur(8px)}
 #info h3{font:600 11px var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
 dl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:0;font-size:13px}
@@ -47,6 +49,7 @@ button:focus-visible{outline:2px solid var(--rojo)}
   <div class="opt"><label><input type="checkbox" id="cDims">Cotas</label><label><input type="checkbox" id="cFold">Plegar</label></div></aside>
 <div id="cap"></div>
 <nav id="views"></nav>
+<button id="fs" title="Pantalla completa (F)" aria-label="Pantalla completa"><svg class="in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
 <script src="vendor/three.min.js?v=158"></script>
 <script src="img_data.js?v=10"></script>
 <script src="stand.js?v=10"></script>
@@ -82,7 +85,12 @@ $("cFold").onchange=e=>{foldT=e.target.checked?1:0;};
 let MODE=2;
 function setM(k){MODE=k;ST.setMode(k);[...$("modes").children].forEach(b=>b.classList.toggle("on",+b.dataset.m===k));$("cap").innerHTML=`<b>${CAP[k][0]}</b>${CAP[k][1]}`;R.toneMappingExposure=1.05;}
 [...$("modes").children].forEach(b=>b.onclick=()=>setM(+b.dataset.m));
-addEventListener("keydown",e=>{if(e.key==="1"||e.key==="2"||e.key==="3")setM(+e.key-1);});
+/* pantalla completa: botón abajo a la derecha o tecla F */
+const fsB=$("fs"),fsOn=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+const fsToggle=()=>{const d=document.documentElement;if(fsOn())(document.exitFullscreen||document.webkitExitFullscreen).call(document);else(d.requestFullscreen||d.webkitRequestFullscreen).call(d);};
+if(!(document.fullscreenEnabled||document.webkitFullscreenEnabled))fsB.style.display="none";
+fsB.onclick=fsToggle;["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>{document.body.classList.toggle("full",fsOn());fsB.title=fsOn()?"Salir de pantalla completa (F)":"Pantalla completa (F)";}));
+addEventListener("keydown",e=>{if(e.key==="1"||e.key==="2"||e.key==="3")setM(+e.key-1);if(e.key==="f"||e.key==="F")fsToggle();});
 /* cámara orbital */
 const V=(x,y,z)=>new T.Vector3(x,y,z);
 const orb={target:V(0,.8,0),r:3.6,th:.55,ph:1.2};let tw=null;
