@@ -52,7 +52,7 @@ button:focus-visible{outline:2px solid var(--rojo)}
 <button id="fs" title="Pantalla completa (F)" aria-label="Pantalla completa"><svg class="in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><svg class="out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
 <script src="vendor/three.min.js?v=158"></script>
 <script src="img_data.js?v=14"></script>
-<script src="stand.js?v=24"></script>
+<script src="stand.js?v=25"></script>
 <script>
 (async function(){
 "use strict";
@@ -75,7 +75,7 @@ const grid=new T.GridHelper(4,20,0xc9c4ba,0xd8d4cc);grid.position.y=.001;scene.a
 const cm=v=>String(Math.round(v*1000)/10).replace(".",",")+" cm";const $=id=>document.getElementById(id);
 $("med").innerHTML=[["Bastidor (×3)",m(W)+" × "+m(H)+" m"],["Vano de hilos",cm(OW).replace(" cm","")+" × "+cm(OY1-OY0)],["Listón",t*100+" × "+t*100+" cm"],["Tablero triplex (×6)",cm(TAW).replace(" cm","")+" × "+cm(TAPA)],["Propalcote (×6)",PRW*100+" × "+PRH*100+" cm"],["Patas",cm(LOW)],["Bisagras 2½″",HY.length*2+""],["Desplegado",m(3*W+2*HG)+" m"]].map(r=>`<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("");
 const CAP=[["Estructura","El armazón: listón de 4 × 4 cm y tableros de triplex. El recuadro marca dónde va cada propalcote."],
-  ["Pintado","Todo en negro mate. Las puntillas, los clavitos y las bisagras quedan plateados."],
+  ["Pintado","Todo en negro mate. Las puntillas, los clavitos y las bisagras son doradas."],
   ["Completo","Con los hilos, las frases, las etiquetas, las fotos y los propalcotes. El hilo rojo pasa de un bastidor a otro."]];
 /* cotas */
 const labs=$("labs");const LBL=ST.notes.filter(n=>n[2]==="dim").map(n=>{const d=document.createElement("div");d.className="lab";d.textContent=n[0];labs.appendChild(d);return {d,getPos:n[1]};});

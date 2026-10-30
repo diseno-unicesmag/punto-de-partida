@@ -13,7 +13,7 @@ const m=v=>v.toFixed(3).replace(/0$/,"").replace(".",",");
 const hole=(x,w,yy)=>{x.save();x.globalCompositeOperation="destination-out";x.beginPath();x.arc(w/2,yy,14,0,7);x.fill();x.restore();};
 const woodTex=tex(256,1024,(x,w,h)=>{x.fillStyle="#d9bb8b";x.fillRect(0,0,w,h);seed=3;for(let i=0;i<70;i++){x.strokeStyle=`rgba(${120+rnd()*40},${80+rnd()*30},40,${.06+rnd()*.12})`;x.lineWidth=1+rnd()*3;x.beginPath();const x0=rnd()*w;x.moveTo(x0,0);for(let y=0;y<=h;y+=32)x.lineTo(x0+Math.sin(y*.01+i)*6+rnd()*2,y);x.stroke();}});
 const LNM=new T.LineBasicMaterial({color:0x151515}),SKM=new T.MeshStandardMaterial({color:0xffffff,roughness:1,emissive:0x2a2a28});
-const M={wood:new T.MeshStandardMaterial({map:woodTex,roughness:.72}),hinge:new T.MeshStandardMaterial({color:0xd2d2ce,metalness:.45,roughness:.3}),
+const M={wood:new T.MeshStandardMaterial({map:woodTex,roughness:.72}),hinge:new T.MeshStandardMaterial({color:0xd9b44a,metalness:.8,roughness:.22}),screw:new T.MeshStandardMaterial({color:0x8a6d1f,metalness:.8,roughness:.4}),
   nail:new T.MeshStandardMaterial({color:0xd9d9d4,metalness:.45,roughness:.28}),string:new T.MeshStandardMaterial({color:0xe9e2d3,roughness:.9}),
   rojo:new T.MeshStandardMaterial({color:0xb3261e,roughness:.55,emissive:0x300000}),canto:new T.MeshStandardMaterial({color:0x34322f,roughness:.62})};
 /* ================= medidas (m) ================= */
@@ -210,8 +210,12 @@ function setFinish(k){FIN=k;M.wood.map=k?null:woodTex;M.wood.color.set(k?BLK:0xf
 setFinish(FIN);const stand=new T.Group();frames.forEach(f=>stand.add(f));scene.add(stand);
 /* bisagras alternas para plegar en acordeón */
 const HZ=[ZF+PO,-(ZF+PO)];/* eje de la bisagra, justo por fuera de la madera */
-const hinges=[];[0,1].forEach(k=>HY.forEach(y=>{const h=new T.Group();const l1=new T.Mesh(new T.BoxGeometry(.025,HL,.0015),M.hinge),l2=l1.clone();const lz=(k?1:-1)*(PO-.00075);l1.position.set(-.0125,0,lz);l2.position.set(.0125,0,lz);const pin=new T.Mesh(new T.CylinderGeometry(PO,PO,HL,12),M.hinge);
-  [l1,l2,pin].forEach(o=>o.userData.kind="solido");h.add(l1,l2,pin);h.traverse(o=>o.castShadow=true);h.userData={k,y};scene.add(h);hinges.push(h);}));
+/* cada bisagra: el eje (canuto) sobre la ranura, un ala atornillada en la cara de cada bastidor; el ala 2 gira con el bastidor vecino */
+const hinges=[];[0,1].forEach(k=>HY.forEach(y=>{const h=new T.Group();const lz=(k?1:-1)*(PO-.00075);
+  const leaf=sx=>{const g=new T.Group();const l=new T.Mesh(new T.BoxGeometry(.025,HL,.0015),M.hinge);l.position.set(sx*(.0125+.0005),0,lz);g.add(l);
+    [-.022,0,.022].forEach(yy=>{const sc=new T.Mesh(new T.CylinderGeometry(.0028,.0028,.001,12),M.screw);sc.rotation.x=Math.PI/2;sc.position.set(sx*.015,yy,lz+(k?-1:1)*.0008);g.add(sc);});return g;};
+  const p1=leaf(-1),p2=leaf(1);const pin=new T.Mesh(new T.CylinderGeometry(PO,PO,HL,16),M.hinge);
+  h.add(p1,p2,pin);h.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.kind="solido";}});h.userData={k,y,p2};scene.add(h);hinges.push(h);}));
 /* hilo rojo entre bastidores (se ubica en layout) */
 const cylG=new T.CylinderGeometry(.0016,.0016,1,6,1,true);const conn=[0,1].map(()=>[0,1,2,3,4].map(()=>{const m=new T.Mesh(cylG,M.rojo);m.castShadow=true;scene.add(m);return m;}));
 const OPEN={a0:.5,r1:-1.0,r2:1.0},FOLD={a0:.0,r1:-Math.PI+.001,r2:Math.PI-.001};
@@ -224,7 +228,7 @@ function layout(fold){const a0=OPEN.a0+(FOLD.a0-OPEN.a0)*fold,r1=OPEN.r1+(FOLD.r
   const M2=M1.clone().multiply(new T.Matrix4().makeTranslation(W+HG/2,0,HZ[1])).multiply(new T.Matrix4().makeRotationY(r2)).multiply(new T.Matrix4().makeTranslation(HG/2,0,-HZ[1]));
   [M0,M1,M2].forEach((m,i)=>{frames[i].matrixAutoUpdate=false;frames[i].matrix.copy(m);});
   const c=new T.Vector3();[0,1,2].forEach(i=>c.add(new T.Vector3(W/2,0,0).applyMatrix4(frames[i].matrix)));c.multiplyScalar(1/3);stand.position.set(-c.x,0,-c.z);stand.updateMatrixWorld(true);
-  hinges.forEach(h=>{const {k,y}=h.userData;h.position.copy(new T.Vector3(W+HG/2,y,HZ[k]).applyMatrix4(frames[k].matrixWorld));const q=new T.Quaternion();frames[k].matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());h.quaternion.copy(q);});
+  hinges.forEach(h=>{const {k,y,p2}=h.userData;h.position.copy(new T.Vector3(W+HG/2,y,HZ[k]).applyMatrix4(frames[k].matrixWorld));const q=new T.Quaternion();frames[k].matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());h.quaternion.copy(q);p2.rotation.y=k?r2:r1;});
   /* hilo rojo entre bastidores: por detrás, de la puntilla del medio a la del medio, rodeando la junta */
   conn.forEach((ms,k)=>{const A=frames[k].matrixWorld,B=frames[k+1].matrixWorld;const a=new T.Vector3(OX1+NI,yM,ZT).applyMatrix4(A),b=new T.Vector3(W,yM,ZT).applyMatrix4(A),c=new T.Vector3(0,yM,ZT).applyMatrix4(B),d=new T.Vector3(OX0-NI,yM,ZT).applyMatrix4(B);const p=[a,a,b,c,d,d];
     for(let s=0;s<5;s++)seg(ms[s],p[s],p[s+1]);ms.forEach(m=>m.visible=fold<.02&&MODE===2);
