@@ -118,12 +118,13 @@ const drawFicha=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
 const fichaTex=(f,k)=>tapaTex(drawFicha(f,k));
 /* pictogramas de los respaldos: siempre una sola línea roja, delgada y continua, que entra por la izquierda y sale por la
    derecha a media altura en los tres (así el hilo pasa de una tapa a la otra). Cada respaldo tiene varias opciones (SYMV elige):
-   01 · 0 lazos curvos · 1 nudo puntudo · 2 nudo de un trazo
-   02 · 0 caminos sin destino · 1 hilo tembloroso · 2 latido irregular
-   03 · 0 trama de ida y vuelta · 1 cadeneta */
+   01 · 0 lazos curvos · 1 nudo puntudo · 2 nudo de un trazo · 3 amarre curvo
+   02 · 0 caminos sin destino · 1 hilo tembloroso · 2 latido irregular · 3 hilo que duda
+   03 · 0 trama de ida y vuelta · 1 cadeneta · 2 línea recta
+   Vigente: 01 amarre curvo · 02 hilo que duda · 03 línea tranquila (de muy amarrado, a confundido, a tranquilo) */
 const RED_I="#c4302b";
-const SYMN=[["Lazos curvos","Nudo puntudo","Nudo de un trazo"],["Caminos sin destino","Hilo tembloroso","Latido irregular"],["Trama de ida y vuelta","Cadeneta"]];
-let SYMV=[1,1,0];/* opción vigente de cada respaldo */
+const SYMN=[["Lazos curvos","Nudo puntudo","Nudo de un trazo","Amarre curvo"],["Caminos sin destino","Hilo tembloroso","Latido irregular","Hilo que duda"],["Trama de ida y vuelta","Cadeneta","Línea tranquila"]];
+let SYMV=[3,3,2];/* opción vigente de cada respaldo */
 function symbol(x,k,cx,cy,sz,w,v){v=v??SYMV[k];x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=RED_I;x.lineWidth=7;const r=sz/2;let sd=11;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
   x.beginPath();x.moveTo(0,cy);
   if(k===0&&v===0){/* lazos que crecen y vuelven a cerrarse */const N=5,span=sz*1.3,x0=cx-span/2,A=span/(2*Math.PI*N);
@@ -157,6 +158,23 @@ function symbol(x,k,cx,cy,sz,w,v){v=v??SYMV[k];x.save();x.lineCap=x.lineJoin="ro
   if(k===2&&v===1){/* cadeneta: el primer punto del tejido; lazos iguales, en fila y en calma */const N=6,span=sz*1.4,x0=cx-span/2,A=span/(2*Math.PI*N),B=sz*.15,Hh=sz*.42;
     x.lineTo(x0,cy);for(let q=0;q<=840;q++){const u=q/840,t=u*2*Math.PI*N,e=Math.min(1,u*N*1.2,(1-u)*N*1.2);x.lineTo(x0+A*t-B*e*Math.sin(t),cy-Hh*e*(1-Math.cos(t))/2);}
     x.lineTo(w,cy);x.stroke();}
+  /* curva suave que pasa por todos los puntos (Catmull-Rom) */
+  const smooth=pts=>{for(let i=0;i<pts.length-1;i++){const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)];
+    x.bezierCurveTo(p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6,p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6,p2[0],p2[1]);}};
+  if(k===0&&v===3){/* amarre curvo: el hilo da muchas vueltas apretadas, todas curvas, como un nudo hecho entre muchos hilos */sd=23;
+    const pts=[[cx-r*1.35,cy]];for(let i=0;i<26;i++){const a=i*2.3+R()*.9,rr=r*(.3+R()*.55);pts.push([cx+Math.cos(a)*rr*1.5,cy+Math.sin(a)*rr*1.05]);}pts.push([cx+r*1.35,cy]);
+    x.lineTo(...pts[0]);smooth(pts);x.lineTo(w,cy);x.stroke();}
+  if(k===1&&v===3){/* hilo que duda: deambula sin rumbo con un temblor fino, se devuelve dos veces sobre sí mismo y sigue */sd=19;
+    const L=r*3,xa=cx-L/2,n=16,pts=[[xa,cy]];let dy=0;
+    for(let i=1;i<n;i++){const u=i/n,env=Math.pow(Math.sin(Math.PI*u),.7);dy=dy*.35+(R()-.5)*r*1.1;pts.push([xa+u*L+(R()-.5)*r*.08,cy+dy*env]);
+      if(i===5||i===11){const [px,py]=pts[pts.length-1],rl=r*(.09+R()*.05);pts.push([px+rl,py-rl],[px,py-rl*2],[px-rl,py-rl],[px+rl*.6,py+rl*.3]);}}
+    pts.push([xa+L,cy]);
+    /* la curva suave por los puntos, muestreada fino, y encima un temblor leve, como pulso de mano */
+    const cr=(p0,p1,p2,p3,t)=>{const t2=t*t,t3=t2*t;return .5*((2*p1)+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t2+(-p0+3*p1-3*p2+p3)*t3);};
+    x.lineTo(...pts[0]);const m=pts.length;for(let i=0;i<m-1;i++){const P0=pts[Math.max(0,i-1)],P1=pts[i],P2=pts[i+1],P3=pts[Math.min(m-1,i+2)];
+      for(let q=1;q<=14;q++){const t=q/14,edge=(i===0&&q<5)||(i===m-2&&q>9)?0:1;x.lineTo(cr(P0[0],P1[0],P2[0],P3[0],t),cr(P0[1],P1[1],P2[1],P3[1],t)+(R()-.5)*4.5*edge);}}
+    x.lineTo(w,cy);x.stroke();}
+  if(k===2&&v===2){/* línea tranquila: el hilo, por fin, derecho y en calma */x.lineTo(w,cy);x.stroke();}
   x.restore();}
 const drawBack=(f,k,v)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
   symbol(x,k,w*.5,h*.5,Math.min(w*.42,h*.6),w,v);
