@@ -77,8 +77,9 @@ const drawQuote=(s,ts,k,n,of)=>(x,w,h)=>{const c=QS[k];torn(x,w,h,c.bg);
   x.fillStyle=c.ac;x.font=`600 21px ${F.body}`;track(x,c.lab,64,82,2.6);
   x.textAlign="right";x.fillStyle=c.mu;x.font=`600 21px ${F.body}`;x.fillText(String(n).padStart(2,"0")+" / "+String(of).padStart(2,"0"),w-64,82);x.textAlign="left";
   x.fillStyle=c.ac;x.font=`800 190px ${F.brand}`;x.fillText("“",50,268);
-  let z=60,L;for(;z>32;z-=2){x.font=`500 ${z}px ${F.body}`;L=lines(x,s,w-190);if(L.length*z*1.26<=h-310)break;}
-  x.fillStyle=c.fg;const top=180+Math.max(0,(h-310-L.length*z*1.26)/2);L.forEach((l,i)=>x.fillText(l,130,top+z*.95+i*z*1.26));
+  x.textAlign="right";x.fillText("”",w-50,h-44);x.textAlign="left";
+  let z=58,L;for(;z>30;z-=2){x.font=`500 ${z}px ${F.body}`;L=lines(x,s,w-270);if(L.length*z*1.26<=h-330)break;}
+  x.fillStyle=c.fg;const top=180+Math.max(0,(h-330-L.length*z*1.26)/2);L.forEach((l,i)=>x.fillText(l,135,top+z*.95+i*z*1.26));
   x.fillStyle=c.mu;x.globalAlpha=.5;x.fillRect(64,h-98,w-128,2);x.globalAlpha=1;
   x.font=`500 22px ${F.body}`;x.fillText("Entrevista · minuto "+ts,64,h-56);x.textAlign="right";x.fillText("Punto de partida",w-64,h-56);x.textAlign="left";
   punch(x,w/2,62,15);};
@@ -142,15 +143,20 @@ const drawBack=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);x.canvas._
   x.font=`600 34px ${F.body}`;x.fillStyle=f.mu;x.textAlign="center";x.fillText(f.t,cx,cy+sz/2+86);
   x.textAlign="left";x.font=`600 28px ${F.body}`;x.fillText("PUNTO DE PARTIDA",70,84);});
 const backTex=(f,k)=>tapaTex(drawBack(f,k));
-const CAP=["Primeras puntadas","Crochet: cobija de cuadros","Detalle del crochet","Mochilas en lana guajira","Detalle de una mochila","Bordado a mano","Gobelino","Detalle del gobelino"];
-/* fotos del bastidor 3 (11 × 14,4 cm): marco blanco tipo instantánea, foto cuadrada y pie escrito a mano */
-const PW_=660,PH_=864,COL3P=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];
-const drawPhoto=(k,im)=>(x,w,h)=>{x.fillStyle="#faf8f3";x.fillRect(0,0,w,h);const m=36,ps=w-2*m,py=104;x.fillStyle="#ddd6c8";x.fillRect(m,py,ps,ps);
-  if(im&&im.width){const s2=Math.min(im.width,im.height);x.drawImage(im,(im.width-s2)/2,(im.height-s2)/2,s2,s2,m,py,ps,ps);}
-  x.fillStyle="#2a2620";let z=60;for(;z>38;z-=2){x.font=`700 ${z}px ${F.hand}`;if(x.measureText(CAP[k]).width<=ps)break;}x.fillText(CAP[k],m,py+ps+82);
-  x.fillStyle="#8a8378";x.font=`700 20px ${F.body}`;const e=track(x,String(k+1).padStart(2,"0"),m,h-44,1.5);x.font=`600 18px ${F.body}`;track(x," · 03 · LO QUE VOLVIÓ A TEJER",e,h-44,1.4);
-  COL3P.forEach((c,i)=>{x.fillStyle=c;x.beginPath();x.arc(w-m-8-i*22,h-50,7,0,7);x.fill();});
-  punch(x,w/2,52,14);};
+/* fotos del bastidor 3: mismo formato que las frases (15 × 10,7 cm). Arriba el rótulo, en medio la foto, abajo de qué es:
+   proceso de trabajo, materiales u obras. Provisionales hasta tener las fotos finales */
+const CAP=[["Materiales","Ovillos de lana"],["Obra","Cobija de cuadros en crochet"],["Proceso","Punto a punto: el crochet"],["Obra","Mochilas en lana guajira"],
+  ["Proceso","Detalle del tejido de una mochila"],["Proceso","Bordado a mano en bastidor"],["Obra","Gobelino"],["Proceso","Detalle del gobelino"]];
+const PW_=QW,PH_=QH,COL3P=["#e8b400","#2f6fd6","#2e9e4f","#e0218a"];
+const drawPhoto=(k,im)=>(x,w,h)=>{x.fillStyle="#f6f4ee";x.fillRect(0,0,w,h);seed=k*17+3;for(let q=0;q<700;q++){x.fillStyle=`rgba(0,0,0,${rnd()*.025})`;x.fillRect(rnd()*w,rnd()*h,2,2);}
+  x.fillStyle="#e0218a";x.font=`600 19px ${F.body}`;track(x,"03 · LO QUE VOLVIÓ A TEJER",64,82,1.8);
+  x.textAlign="right";x.fillStyle="#8a857d";x.fillText(String(k+1).padStart(2,"0")+" / 08",w-64,82);x.textAlign="left";
+  const px=64,py=112,pw=w-128,ph=h-112-118;x.fillStyle="#ddd6c8";x.fillRect(px,py,pw,ph);
+  if(im&&im.width){const r=pw/ph;let sw=im.width,sh=im.width/r;if(sh>im.height){sh=im.height;sw=sh*r;}x.drawImage(im,(im.width-sw)/2,(im.height-sh)/2,sw,sh,px,py,pw,ph);}
+  const [cat,txt]=CAP[k];x.fillStyle="#1a1918";x.font=`700 19px ${F.body}`;const e=track(x,cat.toUpperCase(),64,h-56,2.2);
+  x.fillStyle="#3a3631";x.font=`500 24px ${F.body}`;x.fillText("·  "+txt,e+10,h-56);
+  COL3P.forEach((c,i)=>{x.fillStyle=c;x.beginPath();x.arc(w-72-i*24,h-64,7.5,0,7);x.fill();});
+  punch(x,w/2,62,15);};
 const photoImg=k=>new Promise(res=>{const src=(window.IMG||{})["ph"+(k+1)];if(!src){res(null);return;}const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});
 function photoTex(k){const c=document.createElement("canvas");c.width=PW_;c.height=PH_;const x=c.getContext("2d");drawPhoto(k,null)(x,PW_,PH_);const t=asTex(c);
   photoImg(k).then(im=>{if(im){x.clearRect(0,0,PW_,PH_);drawPhoto(k,im)(x,PW_,PH_);t.needsUpdate=true;}});return t;}
@@ -190,8 +196,8 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
     P.t.slice().sort((a,b)=>a.x-b.x).forEach((a,k)=>segs.push([a,near(P.b,"x",a.x),PAL[Math.floor(k/2)%PAL.length]]));
     P.l.slice().sort((a,b)=>a.y-b.y).forEach((a,k)=>{const isR=Math.abs(a.y-yM)<.001;segs.push([a.clone().setZ(ZT+.003),near(P.r,"y",a.y).clone().setZ(ZT+.003),isR?RED:PAL[(Math.floor(k/3)+3)%PAL.length]]);});
     /* regadas sin patrón; de arriba abajo conservan el orden de antes (01 arriba) */
-    const pos=scatter(8,.11,.144,SC[2]),ord=[0,1,2,3,4,5,7,6];g.userData.photos=[];
-    pos.forEach((p,j)=>{const k=ord[j];g.userData.photos[k]=hang(g,photoTex(k),.11,.144,p.x,p.y+.072-.012+p.L,(rnd()-.5)*.12,.025,p.L);});}
+    const pos=scatter(8,CW,CH,SC[2]),ord=[0,1,2,3,4,5,7,6];g.userData.photos=[];
+    pos.forEach((p,j)=>{const k=ord[j];g.userData.photos[k]=hang(g,photoTex(k),CW,CH,p.x,p.y+CH/2-.012+p.L,(rnd()-.5)*.12,.025,p.L);});}
   threads(g,segs,i===2?.0013:.0015);
   g.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});return g;}
 const frames=[0,1,2].map(frame);

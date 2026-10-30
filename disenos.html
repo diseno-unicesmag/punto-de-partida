@@ -55,7 +55,7 @@ td.n{font-weight:700}
 <div id="deck"></div>
 <script src="vendor/three.min.js?v=158"></script>
 <script src="img_data.js?v=10"></script>
-<script src="stand.js?v=10"></script>
+<script src="stand.js?v=11"></script>
 <script>
 (async function(){
 "use strict";
@@ -68,7 +68,7 @@ const N=["Lo que pasó","Lo que no se ve","Lo que volvió a tejer"];
 const front=[0,1,2].map(k=>png(A.front(k,1.6),.93)),back=[0,1,2].map(k=>png(A.back(k,1.6),.93));
 const q1=[...Array(8)].map((_,i)=>png(A.quote("dark",i,1.2))),q2=[...Array(3)].map((_,i)=>png(A.quote("gray",i,1.2)));
 const tags=[...Array(5)].map((_,i)=>png(A.tag(i,1.5)));
-const ph=await Promise.all([...Array(8)].map((_,k)=>A.photo(k,1.2).then(c=>png(c))));
+const ph=await Promise.all([...Array(8)].map((_,k)=>A.photo(k,1.2).then(c=>png(c,.92))));
 let P=0;const TOTAL=11;const pg=()=>`<div class="pg">${String(++P).padStart(2,"0")} / ${TOTAL}</div>`;
 const ft=`<div class="ft">Punto de partida · Museo al aire libre</div>`;
 const hd=(k,t,side)=>`<div class="hd"><div><div class="k">${k}</div><h2>${t}</h2></div><div class="spec" style="text-align:right">${side||""}</div></div>`;
@@ -107,16 +107,16 @@ S.push(`<section class="s">${hd("Bastidor 2 · Lo que no se ve","Tres frases y c
   <div class="grid" style="top:330px;grid-template-columns:repeat(3,1fr);gap:40px">${q2.map(s=>img(s,500)).join("")}</div>
   <div class="grid" style="top:720px;grid-template-columns:repeat(5,auto);justify-content:center;gap:0 70px">${tags.map((s,i)=>`<div style="transform:rotate(${[-4,3,-2,4,-3][i]}deg)">${img(s,150)}</div>`).join("")}</div>${ft}${pg()}</section>`);
 /* 9 fotos */
-S.push(`<section class="s">${hd("Bastidor 3 · Lo que volvió a tejer","Ocho fotos de sus trabajos","<b>11 × 14,4 cm</b> · 8 piezas<br>fotos provisionales: se cambian por las finales")}
-  <div class="grid" style="top:262px;grid-template-columns:repeat(4,1fr);gap:26px 40px">${ph.map((s,i)=>`<div style="transform:rotate(${[-2,1.5,-1,2,1.5,-2,1,-1.5][i]}deg)">${img(s,236)}</div>`).join("")}</div>${ft}${pg()}</section>`);
+S.push(`<section class="s">${hd("Bastidor 3 · Lo que volvió a tejer","Proceso, materiales y obras","<b>15 × 10,7 cm</b> · 8 piezas, mismo formato que las frases<br>fotos provisionales: se cambian por las finales")}
+  <div class="grid" style="top:330px;grid-template-columns:repeat(4,1fr);gap:48px 40px">${ph.map(s=>img(s,380)).join("")}</div>${ft}${pg()}</section>`);
 /* 10 impresión */
 const R=[["#0f0e0d","Propalcote 01 · frente y respaldo","47 × 32 cm","2","2 pliegos"],["#77736d","Propalcote 02 · frente y respaldo","47 × 32 cm","2","2 pliegos"],["#f4f2ee","Propalcote 03 · frente y respaldo","47 × 32 cm","2","2 pliegos"],
-  ["#0f0e0d","Frases · bastidor 1","15 × 10,7 cm","8","2 pliegos"],["#6f6b66","Frases · bastidor 2","15 × 10,7 cm","3","(con las de arriba)"],["#efe6d2","Etiquetas de destino","5,5 × 9 cm","5","(con las frases)"],["#faf8f3","Fotos","11 × 14,4 cm","8","1 pliego"]];
+  ["#0f0e0d","Frases · bastidor 1","15 × 10,7 cm","8","3 pliegos"],["#6f6b66","Frases · bastidor 2","15 × 10,7 cm","3","(en los mismos 3)"],["#faf8f3","Fotos","15 × 10,7 cm","8","(en los mismos 3)"],["#efe6d2","Etiquetas de destino","5,5 × 9 cm","5","(en los mismos 3)"]];
 S.push(`<section class="s">${hd("Para imprimir","Piezas, medidas y pliegos","Pliego de <b>35 × 50 cm</b><br>≈ <b>9 pliegos</b> en total")}
   <div class="grid" style="top:330px;grid-template-columns:1fr;justify-items:stretch"><table><tr><th>Pieza</th><th>Medida final</th><th>Cantidad</th><th>Pliegos</th></tr>
   ${R.map(r=>`<tr><td><span class="chip" style="background:${r[0]}"></span>${r[1]}</td><td>${r[2]}</td><td class="n">${r[3]}</td><td>${r[4]}</td></tr>`).join("")}
   <tr><td><b>Total</b></td><td></td><td class="n">30 piezas</td><td><b>≈ 9 pliegos</b></td></tr></table>
-  <p class="spec" style="margin-top:26px">Las frases y las etiquetas caben juntas en dos pliegos (9 frases por pliego). Las 8 fotos salen exactas en un pliego. Cada pieza se recorta a su medida y se le abre el agujero de arriba.</p></div>${ft}${pg()}</section>`);
+  <p class="spec" style="margin-top:26px">Frases y fotos tienen la misma medida: caben 9 por pliego, así que las 19 tarjetas y las 5 etiquetas salen en 3 pliegos. Cada pieza se recorta a su medida y se le abre el agujero de arriba.</p></div>${ft}${pg()}</section>`);
 /* 11 siguiente paso */
 const STEP=["Imprimir los pliegos","Recortar y perforar","Armar los tres marcos","Clavar las puntillas","Tejer los hilos","Colgar frases, etiquetas y fotos","Pegar los propalcotes y clavar los tableros","Poner las bisagras y probar el plegado"];
 S.push(`<section class="s dark"><div class="thread" style="top:300px;height:4px"></div>${hd("Siguiente paso","De la pantalla al taller","Modelo 3D: diseno-unicesmag.github.io/punto-de-partida/visor.html")}
