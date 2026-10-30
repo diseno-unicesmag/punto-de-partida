@@ -165,7 +165,10 @@ const hung=[];
 function hang(g,map,w,h,ax,ay,rot,amp,len){const anchor=new T.Group();anchor.position.set(ax,ay,ZT+.004);/* cuelga del hilo, por delante */const piv=new T.Group();anchor.add(piv);const L=len||.022;
   const s=new T.Mesh(new T.CylinderGeometry(.0009,.0009,L,5),M.string);s.position.y=-L/2;piv.add(s);
   const ring=new T.Mesh(new T.TorusGeometry(.0045,.0011,6,14),M.string);ring.position.set(0,-L,.001);piv.add(ring);
-  const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshStandardMaterial({map,roughness:.85,side:T.DoubleSide,transparent:true,alphaTest:.5}));m.position.set(0,-L-h/2+.012,.003);m.castShadow=true;piv.add(m);
+  const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshStandardMaterial({map,roughness:.85,transparent:true,alphaTest:.5}));m.position.set(0,-L-h/2+.012,.003);m.castShadow=true;piv.add(m);
+  /* el respaldo de cada pieza es el papel en blanco (se imprime por una sola cara): misma silueta, con su agujero */
+  {const src=map.image,mk=document.createElement("canvas");mk.width=src.width;mk.height=src.height;const mx=mk.getContext("2d");mx.drawImage(src,0,0);mx.globalCompositeOperation="source-in";mx.fillStyle="#f7f5f0";mx.fillRect(0,0,mk.width,mk.height);
+   const bk=new T.Mesh(m.geometry,new T.MeshStandardMaterial({map:asTex(mk),roughness:.9,emissive:0x3a3936,transparent:true,alphaTest:.5}));bk.rotation.y=Math.PI;bk.position.z=-.0004;bk.castShadow=true;m.add(bk);}
   piv.userData={base:rot||0,amp:amp||.03,ph:rnd()*6.28,f:.9+rnd()*.5};anchor.userData.kind="colgante";g.add(anchor);hung.push({anchor,piv,card:m});return anchor;}
 /* ================= bastidor ================= */
 function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh(new T.BoxGeometry(w,h,t),M.wood);m.position.set(x,y,0);m.castShadow=m.receiveShadow=true;m.userData.kind="solido";g.add(m);};
