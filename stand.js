@@ -116,28 +116,50 @@ const drawFicha=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
   x.font=`500 46px ${F.body}`;x.fillStyle=f.fg;wrap(x,f.s,w-300,64,70,318);
 });
 const fichaTex=(f,k)=>tapaTex(drawFicha(f,k));
-/* pictogramas: una sola línea roja, delgada y continua, que entra por la izquierda y sale por la derecha a la misma altura
-   en los tres respaldos (así el hilo pasa de una tapa a la otra).
-   01 el hilo se anuda en quiebres agudos · 02 el hilo tiembla y duda · 03 el hilo va y vuelve en calma: se vuelve trama */
+/* pictogramas de los respaldos: siempre una sola línea roja, delgada y continua, que entra por la izquierda y sale por la
+   derecha a media altura en los tres (así el hilo pasa de una tapa a la otra). Cada respaldo tiene varias opciones (SYMV elige):
+   01 · 0 lazos curvos · 1 nudo puntudo · 2 nudo de un trazo
+   02 · 0 caminos sin destino · 1 hilo tembloroso · 2 latido irregular
+   03 · 0 trama de ida y vuelta · 1 cadeneta */
 const RED_I="#c4302b";
-function symbol(x,k,cx,cy,sz,w){x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=RED_I;x.lineWidth=7;const r=sz/2;
+const SYMN=[["Lazos curvos","Nudo puntudo","Nudo de un trazo"],["Caminos sin destino","Hilo tembloroso","Latido irregular"],["Trama de ida y vuelta","Cadeneta"]];
+let SYMV=[1,1,0];/* opción vigente de cada respaldo */
+function symbol(x,k,cx,cy,sz,w,v){v=v??SYMV[k];x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=RED_I;x.lineWidth=7;const r=sz/2;let sd=11;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
   x.beginPath();x.moveTo(0,cy);
-  if(k===0){/* nudo irregular: el hilo se tensa en tramos rectos y quiebres agudos, y se cruza a sí mismo */let sd=11;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+  if(k===0&&v===0){/* lazos que crecen y vuelven a cerrarse */const N=5,span=sz*1.3,x0=cx-span/2,A=span/(2*Math.PI*N);
+    x.lineTo(x0,cy);for(let q=0;q<=600;q++){const u=q/600,t=u*2*Math.PI*N,B=sz*.33*Math.sin(Math.PI*u);x.lineTo(x0+A*t-B*Math.sin(t),cy-B*Math.cos(t));}
+    x.lineTo(w,cy);x.stroke();}
+  if(k===0&&v===1){/* nudo irregular: tramos rectos y quiebres agudos que se cruzan */
     x.lineJoin="miter";x.miterLimit=12;x.lineTo(cx-r*1.3,cy);
     for(let i=0;i<17;i++){const a=i*2.45+R()*1.1,rr=r*(.38+R()*.62);x.lineTo(cx+Math.cos(a)*rr*1.3,cy+Math.sin(a)*rr*1.0);}
     x.lineTo(cx+r*1.3,cy);x.lineTo(w,cy);x.stroke();}
-  if(k===1){/* la duda: el hilo tiembla, se devuelve y no sabe hacia dónde ir, pero sigue siendo uno solo */let sd=5;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};
+  if(k===0&&v===2){/* nudo de un trazo (trébol): el hilo llega, da tres vueltas que se cruzan y sigue por el mismo punto */
+    const sc=sz*.6/5.06,P=t=>[cx+sc*(Math.sin(t)+2*Math.sin(2*t)),cy-sc*(3+Math.cos(t)-2*Math.cos(2*t))];
+    x.lineTo(...P(Math.PI));for(let q=0;q<=720;q++){x.lineTo(...P(Math.PI+q/720*2*Math.PI));}x.lineTo(w,cy);x.stroke();}
+  if(k===1&&v===0){/* tres caminos paralelos que terminan en un punto vacío */x.lineTo(w,cy);x.stroke();
+    [[-.7,-.75],[-.15,.7],[.4,-.75]].forEach(([o,d])=>{const ax=cx+o*r,ex=ax+Math.abs(d)*r*.6,ey=cy+d*r;x.beginPath();x.moveTo(ax,cy);x.lineTo(ex,ey);x.stroke();
+      x.beginPath();x.arc(ex+(ex-ax)*.12,ey+(ey-cy)*.12,11,0,7);x.stroke();});}
+  if(k===1&&v===1){/* el hilo tiembla, se devuelve y no sabe hacia dónde ir */sd=5;
     const L=r*2.9,xa=cx-L/2;x.lineTo(xa,cy);
     for(let q=0;q<=900;q++){const u=q/900,env=Math.sin(Math.PI*u);
       x.lineTo(xa+u*L-env*r*.2*Math.sin(u*Math.PI*9),cy+env*r*(.36*Math.sin(u*Math.PI*4.6+1)+.2*Math.sin(u*Math.PI*12.3))+(Math.sin(u*Math.PI*140)*5+(R()-.5)*7)*env);}
     x.lineTo(w,cy);x.stroke();}
-  if(k===2){/* el hilo sube y teje cinco pasadas de ida y vuelta, luego baja y sigue */const n=5,s2=sz*.8/(n-1),x0=cx-r*.8,x1=cx+r*.8,top=cy-s2*(n-1)/2,rt=s2/2;
+  if(k===1&&v===2){/* latido irregular: picos verticales de distinta altura y a destiempo, como un pulso que no se calma */
+    x.lineJoin="miter";x.miterLimit=10;const L=r*2.8,xa=cx-L/2;x.lineTo(xa,cy);let px=xa;
+    const B=[[.07,.25,-.1],[.1,.95,-.55],[.05,.4,-.2],[.13,.7,-.9],[.06,.3,-.15],[.09,1,-.4],[.07,.5,-.7],[.1,.2,-.1]];
+    const gap=(L-B.reduce((a,b)=>a+b[0]*r*2.2,0))/(B.length+1);
+    B.forEach(([wd,up,dn])=>{px+=gap*(.6+R()*.8);const ww=wd*r*2.2;x.lineTo(px,cy);x.lineTo(px+ww*.3,cy-up*r);x.lineTo(px+ww*.62,cy-dn*r);x.lineTo(px+ww,cy);px+=ww;});
+    x.lineTo(xa+L,cy);x.lineTo(w,cy);x.stroke();}
+  if(k===2&&v===0){/* el hilo sube y teje cinco pasadas de ida y vuelta, luego baja y sigue */const n=5,s2=sz*.8/(n-1),x0=cx-r*.8,x1=cx+r*.8,top=cy-s2*(n-1)/2,rt=s2/2;
     x.lineTo(x0-s2,cy);x.lineTo(x0-s2,top+rt);x.arcTo(x0-s2,top,x0-s2+rt,top,rt);x.lineTo(x0,top);
     for(let i=0;i<n;i++){const y=top+i*s2,ltr=i%2===0;x.lineTo(ltr?x1:x0,y);if(i<n-1)x.arc(ltr?x1:x0,y+rt,rt,-Math.PI/2,Math.PI/2,!ltr);}
     const yb=top+(n-1)*s2;x.lineTo(x1+s2-rt,yb);x.arcTo(x1+s2,yb,x1+s2,yb-rt,rt);x.lineTo(x1+s2,cy);x.lineTo(w,cy);x.stroke();}
+  if(k===2&&v===1){/* cadeneta: el primer punto del tejido; lazos iguales, en fila y en calma */const N=6,span=sz*1.4,x0=cx-span/2,A=span/(2*Math.PI*N),B=sz*.15,Hh=sz*.42;
+    x.lineTo(x0,cy);for(let q=0;q<=840;q++){const u=q/840,t=u*2*Math.PI*N,e=Math.min(1,u*N*1.2,(1-u)*N*1.2);x.lineTo(x0+A*t-B*e*Math.sin(t),cy-Hh*e*(1-Math.cos(t))/2);}
+    x.lineTo(w,cy);x.stroke();}
   x.restore();}
-const drawBack=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
-  symbol(x,k,w*.5,h*.5,Math.min(w*.42,h*.6),w);
+const drawBack=(f,k,v)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
+  symbol(x,k,w*.5,h*.5,Math.min(w*.42,h*.6),w,v);
   /* número pequeño arriba a la izquierda, con el rótulo debajo; el nombre del momento abajo a la derecha */
   x.textAlign="left";x.textBaseline="alphabetic";x.fillStyle=f.fg;x.font=`800 76px ${F.brand}`;x.fillText(f.n,66,140);
   x.fillStyle=f.mu;x.font=`600 22px ${F.body}`;track(x,"PUNTO DE PARTIDA",70,180,3.5);
@@ -252,5 +274,5 @@ const wp=(f,x,y,z)=>()=>new T.Vector3(x,y,z).applyMatrix4(frames[f].matrixWorld)
 /* rótulos técnicos: [texto, posición en el mundo, clase] */
 const notes=[[m(H)+" m",mid(0),"dim"],[m(W)+" m",mid(1),"dim"],["Tablero: "+m(TAPA)+" m de alto",mid(2),"dim"],[m(OY1-OY0)+" m de hilo",mid(3),"dim"],[m(IN)+" m por dentro",mid(4),"dim"],
   ["Listón de madera "+t*100+" × "+t*100+" cm",wp(2,W+.12,.9,0)],["Puntillas atrás cada 5 cm",wp(0,W/2,OY1+NI,-t/2-.04)],["Puntillas atrás cada 10 cm, solo a los lados",wp(1,OX0-NI,yM+.2,-t/2-.04)],["Puntillas atrás cada 2,5 cm",wp(2,W/2,OY1+NI,-t/2-.04)],["Bisagra de 2½″ (4 en total)",wp(1,W+.02,HY[1],-.05)],["Tablero de triplex 9 mm · "+m(TAW)+" × "+m(TAPA)+" m, con propalcote de "+PRW*100+" × "+PRH*100+" cm",wp(2,W/2,TY0+TAPA/2-.01,.06)]];
-return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,HG,CZ,AIR,setFinish,setMode,get mode(){return MODE;},art:{FI,FR1,FR2,DEST,CAP,DW,DH,QW,QH,GW,GH,PW:PW_,PH:PH_,front:(k,sc)=>cvs(DW,DH,sc||1,drawFicha(FI[k],k)),back:(k,sc)=>cvs(DW,DH,sc||1,drawBack(FI[k],k)),quote:(set,i,sc)=>{const A=set==='dark'?FR1:FR2;return cvs(QW,QH,sc||1,drawQuote(A[i][0],A[i][1],set,i+1,A.length));},tag:(i,sc)=>cvs(GW,GH,sc||1,drawTag(i)),photo:async(k,sc)=>{const im=await photoImg(k);return cvs(PW_,PH_,sc||1,drawPhoto(k,im));}},get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
+return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,HG,CZ,AIR,setFinish,setMode,get mode(){return MODE;},art:{FI,FR1,FR2,DEST,CAP,DW,DH,QW,QH,GW,GH,PW:PW_,PH:PH_,front:(k,sc)=>cvs(DW,DH,sc||1,drawFicha(FI[k],k)),back:(k,sc,v)=>cvs(DW,DH,sc||1,drawBack(FI[k],k,v)),SYMN,get SYMV(){return SYMV;},quote:(set,i,sc)=>{const A=set==='dark'?FR1:FR2;return cvs(QW,QH,sc||1,drawQuote(A[i][0],A[i][1],set,i+1,A.length));},tag:(i,sc)=>cvs(GW,GH,sc||1,drawTag(i)),photo:async(k,sc)=>{const im=await photoImg(k);return cvs(PW_,PH_,sc||1,drawPhoto(k,im));}},get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
 };

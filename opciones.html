@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Punto de partida · Opciones de respaldo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Work+Sans:wght@400;500;600&family=Caveat:wght@500;700&display=swap">
+<style>
+/* Comparador de los pictogramas de los respaldos: una fila por respaldo, todas sus opciones lado a lado.
+   Abajo, la combinación elegida en fila, para ver el hilo continuo de una tapa a la otra */
+:root{--ink:#161514;--muted:#7a746b;--paper:#f3f1ec;--line:#d9d4ca;--rojo:#b3261e;--brand:"Bricolage Grotesque",sans-serif;--body:"Work Sans",sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body)}
+main{max-width:1500px;margin:0 auto;padding:56px 32px 80px}
+.k{font:600 14px var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--rojo)}
+h1{font:800 clamp(36px,5vw,64px)/1 var(--brand);letter-spacing:-.025em;margin:8px 0 12px}
+.lede{font:400 18px/1.5 var(--body);color:var(--muted);max-width:760px;margin:0}
+h2{font:800 28px var(--brand);margin:56px 0 18px;padding-top:24px;border-top:2px solid var(--line)}
+.row{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:28px}
+figure{margin:0;cursor:pointer}
+figure img{width:100%;display:block;border-radius:2px;box-shadow:0 14px 26px -12px rgba(0,0,0,.35);outline:3px solid transparent;outline-offset:6px;transition:outline-color .2s}
+figure.on img{outline-color:var(--rojo)}
+figcaption{margin-top:14px;font:600 14px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+figure.on figcaption{color:var(--rojo)}
+.strip{display:flex;gap:0;margin-top:8px;overflow-x:auto}
+.strip img{width:calc(100%/3);min-width:260px;display:block}
+.note{font:500 15px var(--body);color:var(--muted);margin-top:14px}
+</style>
+</head><body>
+<main>
+  <div class="k">Punto de partida · Propalcotes</div>
+  <h1>Opciones de respaldo</h1>
+  <p class="lede">Todas son una sola línea roja a media altura, así que se pueden combinar. Toca una opción en cada fila para ver la combinación abajo.</p>
+  <div id="rows"></div>
+  <h2>La combinación, en fila</h2>
+  <div class="strip" id="strip"></div>
+  <p class="note" id="sel"></p>
+</main>
+<script src="vendor/three.min.js?v=158"></script>
+<script src="img_data.js?v=14"></script>
+<script src="stand.js?v=26"></script>
+<script>
+(async function(){
+if(document.fonts&&document.fonts.ready){try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))]);}catch(_){}}
+const ST=buildStand(THREE,new THREE.Scene());const A=ST.art;
+const N=["01 · Lo que pasó","02 · Lo que no se ve","03 · Lo que volvió a tejer"];
+const pick=[...A.SYMV];
+const src=(k,v)=>A.back(k,.8,v).toDataURL("image/jpeg",.9);
+const IM=A.SYMN.map((names,k)=>names.map((_,v)=>src(k,v)));
+const rows=document.getElementById("rows"),strip=document.getElementById("strip"),sel=document.getElementById("sel");
+function draw(){
+  rows.innerHTML=A.SYMN.map((names,k)=>`<h2>${N[k]}</h2><div class="row">${names.map((n,v)=>`<figure data-k="${k}" data-v="${v}" class="${pick[k]===v?"on":""}"><img src="${IM[k][v]}" alt="${n}"><figcaption>${String.fromCharCode(65+v)} · ${n}${A.SYMV[k]===v?" (actual)":""}</figcaption></figure>`).join("")}</div>`).join("");
+  strip.innerHTML=pick.map((v,k)=>`<img src="${IM[k][v]}" alt="">`).join("");
+  sel.textContent="Elegidas: "+pick.map((v,k)=>"0"+(k+1)+" "+String.fromCharCode(65+v)+" ("+A.SYMN[k][v]+")").join(" · ");
+}
+rows.addEventListener("click",e=>{const f=e.target.closest("figure");if(!f)return;pick[+f.dataset.k]=+f.dataset.v;draw();});
+draw();
+})();
+</script>
+</body></html>
