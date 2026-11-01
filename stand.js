@@ -38,7 +38,8 @@ const FD=Math.ceil((3*t+6*LT)*100)/100;/* fondo plegado, tablero contra tablero 
 let MODE=2;
 const HY=[.62,H-.22];/* altura de las bisagras */
 /* puntillas: cada 5 cm en el 1, cada 10 cm y solo en los largueros en el 2, cada 2,5 cm en el 3 (la trama es tupida) */
-const STEP=[.05,.10,.025];
+/* window.PDP_B3STEP=.05 prueba el bastidor 3 con la misma separación del 1 (menos tupido) */
+const STEP=[.05,.10,window.PDP_B3STEP||.025];const B3G=STEP[2]>.03?[1,2]:[2,3];/* hilos por color: verticales, horizontales */
 const CW=.15,CH=.107;
 const SC=[1632,0,1933];/* semillas del reparto: cambiarlas da otra distribución */
 /* reparto orgánico: muestreo de mejor candidato con semilla fija; nada se solapa (cuenta el hilito de cada pieza) y queda aire entre piezas */
@@ -237,8 +238,8 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
     BR.forEach((b,k)=>{const a=new T.Vector3(b[0],yM,ZT),e=new T.Vector3(b[0]+Math.abs(b[1])/sl,yM+b[1],ZT);segs.push([a,e,RED]);tags.push(hang(g,tagTex(k),.055,.09,e.x,e.y,(k%2?.08:-.08),.16));});
     g.userData.tags=tags;const c0=OX0+.015+CW/2,c2=OX1-.015-CW/2;g.userData.cards=[hang(g,quoteTex(FR2[0][0],FR2[0][1],"gray",1,3),CW,CH,c0,yM+.40,-.03,.03),hang(g,quoteTex(FR2[1][0],FR2[1][1],"gray",2,3),CW,CH,c2,yM-.10,.03,.03),hang(g,quoteTex(FR2[2][0],FR2[2][1],"gray",3,3),CW,CH,c0,yM-.30,-.03,.03)];}
   if(i===2){const PAL=[0xf2c200,0x2f6fd6,0x2e9e4f,0xe0218a];/* amarillo, azul, verde, fucsia: verticales de a 2, horizontales de a 3 */
-    P.t.slice().sort((a,b)=>a.x-b.x).forEach((a,k)=>segs.push([a,near(P.b,"x",a.x),PAL[Math.floor(k/2)%PAL.length]]));
-    P.l.slice().sort((a,b)=>a.y-b.y).forEach((a,k)=>{const isR=Math.abs(a.y-yM)<.001;segs.push([a.clone().setZ(ZT+.003),near(P.r,"y",a.y).clone().setZ(ZT+.003),isR?RED:PAL[(Math.floor(k/3)+3)%PAL.length]]);});
+    P.t.slice().sort((a,b)=>a.x-b.x).forEach((a,k)=>segs.push([a,near(P.b,"x",a.x),PAL[Math.floor(k/B3G[0])%PAL.length]]));
+    P.l.slice().sort((a,b)=>a.y-b.y).forEach((a,k)=>{const isR=Math.abs(a.y-yM)<.001;segs.push([a.clone().setZ(ZT+.003),near(P.r,"y",a.y).clone().setZ(ZT+.003),isR?RED:PAL[(Math.floor(k/B3G[1])+3)%PAL.length]]);});
     /* regadas sin patrón; de arriba abajo conservan el orden de antes (01 arriba) */
     /* fotos en zigzag irregular, de la 01 arriba a la 08 abajo: centro x, borde superior y, giro, largo del cordón (m) */
     const P3=[[.17,1.53,-.07,.022],[.42,1.47,.05,.036],[.30,1.32,-.03,.016],[.13,1.17,.08,.03],[.44,1.13,-.06,.04],[.27,.97,.04,.018],[.45,.84,.07,.028],[.16,.76,-.05,.02]];
