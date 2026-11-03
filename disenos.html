@@ -55,7 +55,7 @@ td.n{font-weight:700}
 <div id="deck"></div>
 <script src="vendor/three.min.js?v=158"></script>
 <script src="img_data.js?v=14"></script>
-<script src="stand.js?v=32"></script>
+<script src="stand.js?v=33"></script>
 <script>
 (async function(){
 "use strict";
@@ -89,13 +89,13 @@ S.push(`<section class="s">${hd("Sistema gráfico","Tres momentos, un hilo")}
     <div><div class="n">El personaje y la trama</div><div class="dots"><i style="background:#b3261e"></i><i style="background:#e8b400"></i><i style="background:#2f6fd6"></i><i style="background:#2e9e4f"></i><i style="background:#e0218a"></i></div><div style="font:500 20px var(--body);color:var(--muted);margin-top:12px">el hilo rojo y los colores del bastidor 3</div></div>
   </div>${ft}${pg()}</section>`);
 /* 3 los seis propalcotes */
-S.push(`<section class="s">${hd("Propalcotes","Los seis, frente y respaldo","<b>45 × 30 cm</b> · 6 piezas<br>van centrados sobre el tablero negro")}
+S.push(`<section class="s">${hd("Propalcotes","Los seis, frente y respaldo","<b>46,5 × 31,5 cm</b> · 6 piezas<br>van centrados sobre el tablero negro")}
   <div class="grid" style="top:268px;grid-template-columns:repeat(3,1fr);gap:30px 48px">
   ${front.map((s,k)=>`<div>${img(s,440)}<div class="cap">0${k+1} · frente</div></div>`).join("")}
   ${back.map((s,k)=>`<div>${img(s,440)}<div class="cap">0${k+1} · respaldo</div></div>`).join("")}</div>${ft}${pg()}</section>`);
 /* 4-6 cada momento */
 const TXT=["Abre el recorrido. En el respaldo, el hilo rojo se aprieta en un amarre de muchas vueltas.","El vacío y la duda. En el respaldo, el hilo deambula y tiembla sin saber hacia dónde ir.","El hilo, por fin, derecho y en calma: una sola línea tranquila."];
-[0,1,2].forEach(k=>S.push(`<section class="s">${hd("Propalcote 0"+(k+1)+" · bastidor "+(k+1),N[k],"<b>45 × 30 cm</b> · frente y respaldo<br>"+TXT[k])}
+[0,1,2].forEach(k=>S.push(`<section class="s">${hd("Propalcote 0"+(k+1)+" · bastidor "+(k+1),N[k],"<b>46,5 × 31,5 cm</b> · frente y respaldo<br>"+TXT[k])}
   <div class="grid" style="top:360px;grid-template-columns:1fr 1fr;gap:64px">
     <div>${img(front[k],808)}<div class="cap">Frente · lo que lee la gente que pasa</div></div>
     <div>${img(back[k],808)}<div class="cap">Respaldo · número e ícono</div></div></div>${ft}${pg()}</section>`));
@@ -110,7 +110,7 @@ S.push(`<section class="s">${hd("Bastidor 2 · Lo que no se ve","Tres frases y c
 S.push(`<section class="s">${hd("Bastidor 3 · Lo que volvió a tejer","Su proceso y sus obras","<b>15 × 10,7 cm</b> · 8 piezas, mismo formato que las frases<br>las 8 son las fotos finales")}
   <div class="grid" style="top:330px;grid-template-columns:repeat(4,1fr);gap:48px 40px">${ph.map(s=>img(s,380)).join("")}</div>${ft}${pg()}</section>`);
 /* 10 impresión */
-const R=[["#0f0e0d","Propalcote 01 · frente y respaldo","45 × 30 cm","2","2 hojas"],["#77736d","Propalcote 02 · frente y respaldo","45 × 30 cm","2","2 hojas"],["#f4f2ee","Propalcote 03 · frente y respaldo","45 × 30 cm","2","2 hojas"],
+const R=[["#0f0e0d","Propalcote 01 · frente y respaldo","46,5 × 31,5 cm","2","2 hojas"],["#77736d","Propalcote 02 · frente y respaldo","46,5 × 31,5 cm","2","2 hojas"],["#f4f2ee","Propalcote 03 · frente y respaldo","46,5 × 31,5 cm","2","2 hojas"],
   ["#0f0e0d","Frases · bastidor 1","15 × 10,7 cm","8","4 hojas"],["#6f6b66","Frases · bastidor 2","15 × 10,7 cm","3","(en las mismas 4)"],["#faf8f3","Fotos","15 × 10,7 cm","8","(en las mismas 4)"],["#efe6d2","Etiquetas de destino","5,5 × 9 cm","5","(en las mismas 4)"],["#c4302b","Íconos para el respaldo","15 × 10,7 cm","9","(en las mismas 4)"]];
 S.push(`<section class="s">${hd("Para imprimir","Piezas, medidas y pliegos","Hoja de <b>31,5 × 46,5 cm</b> (área imprimible del pliego de 35 × 50)<br><b>10 hojas</b> en total")}
   <div class="grid" style="top:330px;grid-template-columns:1fr;justify-items:stretch"><table><tr><th>Pieza</th><th>Medida final</th><th>Cantidad</th><th>Pliegos</th></tr>

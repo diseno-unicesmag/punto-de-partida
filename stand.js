@@ -21,7 +21,7 @@ const M={wood:new T.MeshStandardMaterial({map:woodTex,roughness:.72}),hinge:new 
 const t=.04,IN=.50,W=IN+2*t,H=1.60,MID=.54;const OX0=t,OX1=W-t,OY0=MID+t/2,OY1=H-t;const OW=OX1-OX0;const ZF=t/2;
 const yM=(OY0+OY1)/2;/* altura del hilo rojo: clavo del medio */
 /* propalcote: área visible máxima de impresión (47 × 32 cm), centrada en el tablero */
-const PRW=.45,PRH=.30;/* cabe con marcas de corte en el área imprimible de 46,5 × 31,5 cm */
+const PRW=.465,PRH=.315;/* el área imprimible completa del pliego de 35 × 50 cm */
 /* tablero de triplex de 9 mm: deja ver MAR de marco a los lados y abajo, y GAP de travesaño medio arriba (la franja de las puntillas de atrás);
    el borde alrededor del propalcote es parejo, y de ahí sale dónde va el travesaño bajo (LOW = largo de las patas) */
 const MAR=.01,GAP=.02,LT=.009,TAW=W-2*MAR,BOR=(TAW-PRW)/2,TAPA=PRH+2*BOR,TY0=OY0-GAP-TAPA,LOW=TY0-MAR;
@@ -101,7 +101,7 @@ const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.mov
    y, en vez de la frase, un ícono de línea roja continua con un elemento del relato. Cuelgan detrás de los hilos,
    justo a espaldas de la tarjeta de frente que cuentan, así que de frente quedan tapadas */
 const QI=[QS.dark,QS.gray,{bg:"#f6f4ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a",lab:"03 · LO QUE VOLVIÓ A TEJER"}];
-const ICN=[["La tienda","El toque de queda","Entre dos lomas"],["Lo que pudieron cargar","Hacia dónde","La ciudad"],["La lana","La aguja","Su obra"]];
+const ICN=[["La tienda","El toque de queda","Entre dos lomas"],["Lo que pudieron cargar","La incertidumbre","La ciudad"],["La lana","La aguja","Su obra"]];
 /* a espaldas de qué pieza del frente va cada ícono: frases del 1, frases del 2, fotos del 3 */
 const ICAT=[[0,1,4],[0,1,2],[0,1,3]];
 function icon(x,k,j,cx,cy,s,L,R){x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=RED_I;x.lineWidth=7;x.beginPath();
@@ -146,7 +146,7 @@ function hangBack(g,map,front){const piv=front.children[0],L=piv.children[0].geo
   const a=hang(b,map,CW,CH,0,front.position.y,-piv.userData.base,piv.userData.amp,L);return a;}
 const tagTex=n=>asTex(cvs(GW,GH,1,drawTag(n)));
 /* tapas de MDF (frente: número, título e historia; atrás: número y símbolo) */
-const FI=[{t:"Lo que pasó",n:"01",s:"En la vereda la vida iba despacio. Había una tienda, animales que cuidar y noches de juego con los primos. Un día llegaron hombres armados y la casa dejó de ser suya. El miedo se fue apretando, vuelta a vuelta, hasta volverse un nudo.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
+const FI=[{t:"Lo que pasó",n:"01",s:"En la vereda la vida iba despacio. Había una tienda que atender, animales que cuidar y noches de juego con la familia. Un día llegaron hombres armados y la casa dejó de ser suya. El miedo fue dando vueltas hasta volverse un nudo.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
  {t:"Lo que no se ve",n:"02",s:"Se fueron con lo poco que pudieron cargar. En la ciudad nadie los conocía ni preguntó de dónde venían. Fueron días de no saber qué hacer ni hacia dónde ir, como un hilo que tiembla y no encuentra su camino.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
  {t:"Lo que volvió a tejer",n:"03",s:"Pero el hilo no se rompió. Ella volvió a lo que sus manos sabían hacer: teñir la lana, bordar, tejer. Punto por punto armó otra vez su vida, y hoy esa trama sostiene a su familia.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a"}];
 /* el tablero va negro, con el propalcote de PRW × PRH centrado; el diseño se pinta aparte y se pega en su sitio */
