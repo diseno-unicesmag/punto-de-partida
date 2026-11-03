@@ -78,14 +78,14 @@ const QW=900,QH=642;
 const fitQ=(x,s,w,h)=>{let z=60,L;for(;z>30;z-=2){x.font=`400 ${z}px ${F.serif}`;L=lines(x,s,w-310);if(L.length*z*1.26<=h-360)break;}return [z,L];};
 let Z4=0;const z4=(x,w,h)=>{if(!Z4){Z4=99;[...FR1,...FR2].forEach(([q])=>{const [z,L]=fitQ(x,q,w,h);if(L.length>=4)Z4=Math.min(Z4,z);});}return Z4;};
 const drawQuote=(s,ts,k,n,of)=>(x,w,h)=>{const c=QS[k];torn(x,w,h,c.bg);
-  x.fillStyle=c.ac;x.font=`600 21px ${F.body}`;track(x,c.lab,64,82,2.6);
-  x.textAlign="right";x.fillStyle=c.mu;x.font=`600 21px ${F.body}`;x.fillText(String(n).padStart(2,"0")+" / "+String(of).padStart(2,"0"),w-64,82);x.textAlign="left";
+  x.fillStyle=c.ac;x.font=`600 19px ${F.body}`;track(x,c.lab,64,76,1.8);
+  x.textAlign="right";x.fillStyle=c.mu;x.font=`600 19px ${F.body}`;x.fillText(String(n).padStart(2,"0")+" / "+String(of).padStart(2,"0"),w-64,76);x.textAlign="left";
   x.fillStyle=c.ac;x.font=`600 200px ${F.serif}`;x.fillText("“",50,298);/* texto 5 mm más abajo (6 px = 1 mm) */
   x.textAlign="right";x.fillText("”",w-50,h-44);x.textAlign="left";
   let [z,L]=fitQ(x,s,w,h);if(L.length>=4){z=z4(x,w,h);x.font=`400 ${z}px ${F.serif}`;L=lines(x,s,w-310);}
   x.fillStyle=c.fg;const top=210+Math.max(0,(h-360-L.length*z*1.26)/2);L.forEach((l,i)=>x.fillText(l,135,top+z*.95+i*z*1.26));
   x.fillStyle=c.mu;x.globalAlpha=.5;x.fillRect(64,h-98,w-128,2);x.globalAlpha=1;
-  x.font=`500 22px ${F.body}`;x.fillText("Entrevista · minuto "+ts,64,h-56);x.textAlign="right";x.fillText("Punto de partida",w-64,h-56);x.textAlign="left";
+  x.font=`500 19px ${F.body}`;x.fillText("Entrevista · minuto "+ts,64,h-56);x.textAlign="right";x.fillText("Punto de partida",w-64,h-56);x.textAlign="left";
   punch(x,w/2,62,15);};
 const quoteTex=(s,ts,k,n,of)=>asTex(cvs(QW,QH,1,drawQuote(s,ts,k,n,of)));
 /* etiquetas de destino del bastidor 2 (5,5 × 9 cm): el destino tachado, en duda o borroneado */
@@ -145,11 +145,11 @@ function icon(x,k,j,cx,cy,s,L,R){x.save();x.lineCap=x.lineJoin="round";x.strokeS
     x.moveTo(x0+.04*s,cy+.4*s);for(let q=1;q<=10;q++)x.lineTo(x0+.04*s+q*(1.92*s/10),cy+(q%2?.22:.4)*s);}
   x.stroke();x.restore();}
 const drawIcon=(k,j)=>(x,w,h)=>{const c=QI[k];torn(x,w,h,c.bg);
-  x.fillStyle=c.ac;x.font=`600 21px ${F.body}`;track(x,c.lab,64,82,2.6);
-  x.textAlign="right";x.fillStyle=c.mu;x.fillText(String(j+1).padStart(2,"0")+" / 03",w-64,82);x.textAlign="left";
+  x.fillStyle=c.ac;x.font=`600 19px ${F.body}`;track(x,c.lab,64,76,1.8);
+  x.textAlign="right";x.fillStyle=c.mu;x.fillText(String(j+1).padStart(2,"0")+" / 03",w-64,76);x.textAlign="left";
   icon(x,k,j,w/2,h*.5,105,64,w-64);
   x.fillStyle=c.mu;x.globalAlpha=.5;x.fillRect(64,h-98,w-128,2);x.globalAlpha=1;
-  x.font=`500 22px ${F.body}`;x.fillStyle=c.fg;x.fillText(ICN[k][j],64,h-56);x.fillStyle=c.mu;x.textAlign="right";x.fillText("Punto de partida",w-64,h-56);x.textAlign="left";
+  x.font=`500 19px ${F.body}`;x.fillStyle=c.fg;x.fillText(ICN[k][j],64,h-56);x.fillStyle=c.mu;x.textAlign="right";x.fillText("Punto de partida",w-64,h-56);x.textAlign="left";
   punch(x,w/2,62,15);};
 const iconTex=(k,j)=>asTex(cvs(QW,QH,1,drawIcon(k,j)));
 /* cuelga una tarjeta del hilo por detrás: igual que hang(), girada media vuelta y detrás del plano de los hilos */
