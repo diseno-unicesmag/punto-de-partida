@@ -86,15 +86,15 @@ const drawQuote=(s,ts,k,n,of)=>(x,w,h)=>{const c=QS[k];torn(x,w,h,c.bg);
   punch(x,w/2,62,15);};
 const quoteTex=(s,ts,k,n,of)=>asTex(cvs(QW,QH,1,drawQuote(s,ts,k,n,of)));
 /* etiquetas de destino del bastidor 2 (5,5 × 9 cm): el destino tachado, en duda o borroneado */
-const DEST=[["Vereda",1],["¿?",0],["",2],["Dónde?",1],["¿?",2]];
+const DEST=[["Vereda",1],["¿?",0],["",2],["…",0],["",2]];
 const GW=330,GH=540;
 const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.moveTo(ct,0);x.lineTo(w-ct,0);x.lineTo(w,ct);x.lineTo(w,h);x.lineTo(0,h);x.lineTo(0,ct);x.closePath();x.fill();
   seed=n*31+7;for(let k=0;k<500;k++){x.fillStyle=`rgba(90,70,40,${rnd()*.05})`;x.fillRect(rnd()*w,rnd()*h,2,2);}
   x.fillStyle="#3a3631";x.font=`600 22px ${F.body}`;track(x,"DESTINO",40,158,4);x.fillStyle="#3a3631";x.globalAlpha=.35;x.fillRect(40,176,w-80,2);x.globalAlpha=1;
   const d=n<0?["",0]:DEST[n%DEST.length];/* n<0: etiqueta en blanco, de repuesto */x.font=`700 70px ${F.hand}`;x.fillStyle="#2f2b26";if(d[0])x.fillText(d[0],40,272);
-  /* tachones a mano: 1 dos trazos que cruzan la palabra con leve curva; 2 un garabato de lazos apretados que la borra */
+  /* tachones a mano: 1 una raya que cruza la palabra; 2 un garabato de lazos que la borra */
   const tw=d[0]?x.measureText(d[0]).width:w-100;x.strokeStyle="#2a2620";x.lineCap=x.lineJoin="round";seed=n*13+5;
-  if(d[1]===1){[[0,5.5],[1,3.5]].forEach(([p,lw])=>{const y0=258+p*9,y1=246+p*7;x.lineWidth=lw;x.beginPath();x.moveTo(30+rnd()*6,y0);x.quadraticCurveTo(40+tw/2,y0-10+rnd()*6,48+tw+rnd()*8,y1);x.stroke();});}
+  if(d[1]===1){x.lineWidth=6;x.beginPath();x.moveTo(34,252);x.lineTo(Math.min(w-30,48+tw),240);x.stroke();}
   if(d[1]===2){x.lineWidth=4;x.beginPath();const x0=40,x1=Math.min(w-38,48+Math.max(tw,150)),N=Math.round((x1-x0)/22);x.moveTo(x0,262);
     for(let q=0;q<=N*12;q++){const u=q/(N*12),t=u*N*2*Math.PI,ax=x0+u*(x1-x0),r=15+Math.sin(u*7+n)*6+Math.sin(u*23)*3;x.lineTo(ax-r*1.3*Math.sin(t*.93),252-r*.85*Math.cos(t)+Math.sin(u*5+n)*6);}x.stroke();}
   x.strokeStyle="#9c8f74";x.lineWidth=2;x.setLineDash([3,9]);[352,422].forEach(y=>{x.beginPath();x.moveTo(40,y);x.lineTo(w-40,y);x.stroke();});x.setLineDash([]);
