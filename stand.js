@@ -5,7 +5,7 @@ window.buildStand=function(T,scene){
 /* ================= utilidades ================= */
 const tex=(w,h,draw)=>{const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");draw(x,w,h);const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=8;return t;};
 function wrap(x,s,mx,lh,X,Y){const words=s.split(" ");let line="",y=Y;for(const w of words){const t=line?line+" "+w:w;if(x.measureText(t).width>mx&&line){x.fillText(line,X,y);line=w;y+=lh;}else line=t;}if(line)x.fillText(line,X,y);return y;}
-const F={serif:'"Fraunces",Georgia,serif',brand:'"Bricolage Grotesque","Segoe UI",sans-serif',body:'"Work Sans","Segoe UI",sans-serif',hand:'"Caveat","Segoe Print",cursive'};
+const F={serif:'"Source Serif 4",Georgia,serif',brand:'"Bricolage Grotesque","Segoe UI",sans-serif',body:'"Work Sans","Segoe UI",sans-serif',hand:'"Caveat","Segoe Print",cursive'};
 let seed=9;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
 const ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 /* metros con coma decimal: 1.6 → «1,60», .375 → «0,375» */
@@ -77,9 +77,9 @@ const QW=900,QH=642;
 const drawQuote=(s,ts,k,n,of)=>(x,w,h)=>{const c=QS[k];torn(x,w,h,c.bg);
   x.fillStyle=c.ac;x.font=`600 21px ${F.body}`;track(x,c.lab,64,82,2.6);
   x.textAlign="right";x.fillStyle=c.mu;x.font=`600 21px ${F.body}`;x.fillText(String(n).padStart(2,"0")+" / "+String(of).padStart(2,"0"),w-64,82);x.textAlign="left";
-  x.fillStyle=c.ac;x.font=`800 190px ${F.brand}`;x.fillText("“",50,268);
+  x.fillStyle=c.ac;x.font=`600 200px ${F.serif}`;x.fillText("“",50,268);
   x.textAlign="right";x.fillText("”",w-50,h-44);x.textAlign="left";
-  let z=58,L;for(;z>30;z-=2){x.font=`500 ${z}px ${F.body}`;L=lines(x,s,w-270);if(L.length*z*1.26<=h-330)break;}
+  let z=60,L;for(;z>30;z-=2){x.font=`400 ${z}px ${F.serif}`;L=lines(x,s,w-310);if(L.length*z*1.26<=h-330)break;}
   x.fillStyle=c.fg;const top=180+Math.max(0,(h-330-L.length*z*1.26)/2);L.forEach((l,i)=>x.fillText(l,135,top+z*.95+i*z*1.26));
   x.fillStyle=c.mu;x.globalAlpha=.5;x.fillRect(64,h-98,w-128,2);x.globalAlpha=1;
   x.font=`500 22px ${F.body}`;x.fillText("Entrevista · minuto "+ts,64,h-56);x.textAlign="right";x.fillText("Punto de partida",w-64,h-56);x.textAlign="left";
@@ -101,7 +101,7 @@ const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.mov
    y, en vez de la frase, un ícono de línea roja continua con un elemento del relato. Cuelgan detrás de los hilos,
    justo a espaldas de la tarjeta de frente que cuentan, así que de frente quedan tapadas */
 const QI=[QS.dark,QS.gray,{bg:"#f6f4ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a",lab:"03 · LO QUE VOLVIÓ A TEJER"}];
-const ICN=[["La tienda","El toque de queda","En la mitad"],["Lo que pudieron cargar","Hacia dónde","La ciudad"],["La lana","La aguja","Su obra"]];
+const ICN=[["La tienda","El toque de queda","Entre dos lomas"],["Lo que pudieron cargar","Hacia dónde","La ciudad"],["La lana","La aguja","Su obra"]];
 /* a espaldas de qué pieza del frente va cada ícono: frases del 1, frases del 2, fotos del 3 */
 const ICAT=[[0,1,4],[0,1,2],[0,1,3]];
 function icon(x,k,j,cx,cy,s,L,R){x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=RED_I;x.lineWidth=7;x.beginPath();
@@ -109,8 +109,12 @@ function icon(x,k,j,cx,cy,s,L,R){x.save();x.lineCap=x.lineJoin="round";x.strokeS
     x.moveTo(L,yb);x.lineTo(x0,yb);x.lineTo(x0,yw);x.lineTo(cx,pk);x.lineTo(x1,yw);x.lineTo(x1,yb);x.lineTo(d1,yb);x.lineTo(d1,dt);x.lineTo(d0,dt);x.lineTo(d0,yb);x.lineTo(R,yb);}
   if(k===0&&j===1){const r=s*1.05;x.moveTo(L,cy);x.lineTo(cx-r,cy);x.arc(cx,cy,r,Math.PI,3*Math.PI);x.moveTo(cx+r,cy);x.lineTo(R,cy);
     x.moveTo(cx,cy-r*.72);x.lineTo(cx,cy+r*.48);x.stroke();x.beginPath();x.fillStyle=RED_I;x.arc(cx,cy,9,0,7);x.fill();x.beginPath();}
-  if(k===0&&j===2){/* dos lomas y la casa en la mitad */const yb=cy+.75*s,h=1.45*s,a=1.1*s,g=.38*s,r=.2*s;x.moveTo(L,yb);x.lineTo(cx-g-2*a,yb);x.bezierCurveTo(cx-g-1.65*a,yb-h,cx-g-.35*a,yb-h,cx-g,yb);
-    x.lineTo(cx,yb);x.arc(cx,yb-r,r,Math.PI/2,Math.PI/2+2*Math.PI);x.lineTo(cx+g,yb);x.bezierCurveTo(cx+g+.35*a,yb-h,cx+g+1.65*a,yb-h,cx+g+2*a,yb);x.lineTo(R,yb);}
+  if(k===0&&j===2){/* entre dos lomas: el ejército en una, la guerrilla en la otra y la casa en la mitad */const yb=cy+.8*s,h=1.5*s,a=1.05*s,g=.42*s,hw=.26*s,hh=.26*s;
+    x.moveTo(L,yb);x.lineTo(cx-g-2*a,yb);x.bezierCurveTo(cx-g-1.65*a,yb-h,cx-g-.35*a,yb-h,cx-g,yb);
+    x.lineTo(cx-hw,yb);x.lineTo(cx-hw,yb-hh);x.lineTo(cx,yb-hh-.24*s);x.lineTo(cx+hw,yb-hh);x.lineTo(cx+hw,yb);
+    x.lineTo(cx+g,yb);x.bezierCurveTo(cx+g+.35*a,yb-h,cx+g+1.65*a,yb-h,cx+g+2*a,yb);x.lineTo(R,yb);
+    /* una bandera en cada cima: los dos bandos */
+    [[cx-g-a,1],[cx+g+a,-1]].forEach(([px,d])=>{const py=yb-h*.75;x.moveTo(px,py);x.lineTo(px,py-.5*s);x.lineTo(px+d*.32*s,py-.38*s);x.lineTo(px,py-.26*s);});}
   if(k===1&&j===0){/* maleta: cuerpo con esquinas redondeadas y asa */const yb=cy+.9*s,yt=cy-.45*s,x0=cx-1.15*s,x1=cx+1.15*s,rc=.18*s,h0=cx-.32*s,h1=cx+.32*s,ht=cy-.9*s;
     x.moveTo(L,yb);x.lineTo(x0+rc,yb);x.arcTo(x0,yb,x0,yb-rc,rc);x.lineTo(x0,yt+rc);x.arcTo(x0,yt,x0+rc,yt,rc);x.lineTo(h0,yt);x.lineTo(h0,ht+.1*s);x.arcTo(h0,ht,h0+.1*s,ht,.1*s);x.lineTo(h1-.1*s,ht);x.arcTo(h1,ht,h1,ht+.1*s,.1*s);x.lineTo(h1,yt);
     x.lineTo(x1-rc,yt);x.arcTo(x1,yt,x1,yt+rc,rc);x.lineTo(x1,yb-rc);x.arcTo(x1,yb,x1-rc,yb,rc);x.lineTo(R,yb);x.moveTo(cx-.6*s,yt);x.lineTo(cx-.6*s,yb);x.moveTo(cx+.6*s,yt);x.lineTo(cx+.6*s,yb);}
@@ -157,7 +161,7 @@ const drawFicha=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
   x.font=`600 26px ${F.body}`;["01","02","03"].forEach((n,j)=>{x.fillStyle=j===k?f.ac:f.mu;x.globalAlpha=j===k?1:.45;x.fillText(n,w-70-(2-j)*64,92);});x.globalAlpha=1;x.textAlign="left";
   x.fillStyle=f.ac;x.font=`600 24px ${F.body}`;track(x,"PUNTO DE PARTIDA",70,92,3.5);
   x.fillStyle=f.fg;let ts=112;do{x.font=`800 ${ts}px ${F.brand}`;ts-=4;}while(x.measureText(f.t).width>w-200);x.fillText(f.t,64,224);
-  /* la historia se narra en serif (Fraunces) */x.font=`400 45px ${F.serif}`;x.fillStyle=f.fg;wrap(x,f.s,w-290,62,70,312);
+  /* la historia se narra en serif (Source Serif 4), la misma de las frases */x.font=`400 46px ${F.serif}`;x.fillStyle=f.fg;wrap(x,f.s,w-290,62,70,312);
 });
 const fichaTex=(f,k)=>tapaTex(drawFicha(f,k));
 /* pictogramas de los respaldos: siempre una sola línea roja, delgada y continua, que entra por la izquierda y sale por la
