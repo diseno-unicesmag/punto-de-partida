@@ -97,12 +97,49 @@ const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.mov
   x.strokeStyle="#9c8f74";x.lineWidth=2;x.setLineDash([3,9]);[352,422].forEach(y=>{x.beginPath();x.moveTo(40,y);x.lineTo(w-40,y);x.stroke();});x.setLineDash([]);
   x.fillStyle="#8a7f6a";x.font=`600 17px ${F.body}`;track(x,"02 · LO QUE NO SE VE",40,h-36,1.6);
   punch(x,w/2,64,15,"#d7c9a6");};
-/* respaldo de tarjetas y etiquetas (propuesta): el color de su momento y su pictograma de una sola línea roja, sin texto literal */
-const drawCardBack=(k,tag)=>(x,w,h)=>{const bg=tag?"#efe6d2":["#0f0e0d","#6f6b66","#f6f4ee"][k],mu=tag?"#8a7f6a":["#8f897f","#d9d3c9","#8a857d"][k];
-  if(tag){const ct=48;x.fillStyle=bg;x.beginPath();x.moveTo(ct,0);x.lineTo(w-ct,0);x.lineTo(w,ct);x.lineTo(w,h);x.lineTo(0,h);x.lineTo(0,ct);x.closePath();x.fill();}else{x.fillStyle=bg;x.fillRect(0,0,w,h);}
-  symbol(x,k,w/2,tag?h*.58:h*.57,tag?w*.62:Math.min(w*.46,h*.6),w);
-  x.fillStyle=mu;x.font=`600 ${tag?17:20}px ${F.body}`;track(x,"0"+(k+1),tag?40:64,h-(tag?36:52),2);
-  if(tag)punch(x,w/2,64,15,"#d7c9a6");else punch(x,w/2,62,15);};
+/* tarjetas de íconos para el respaldo de los bastidores: mismo formato que las frases (15 × 10,7 cm), el color de su momento
+   y, en vez de la frase, un ícono de línea roja continua con un elemento del relato. Cuelgan detrás de los hilos,
+   justo a espaldas de la tarjeta de frente que cuentan, así que de frente quedan tapadas */
+const QI=[QS.dark,QS.gray,{bg:"#f6f4ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a",lab:"03 · LO QUE VOLVIÓ A TEJER"}];
+const ICN=[["La tienda","El toque de queda","En la mitad"],["Lo que pudieron cargar","Hacia dónde","La ciudad"],["La lana","La aguja","Su obra"]];
+/* a espaldas de qué pieza del frente va cada ícono: frases del 1, frases del 2, fotos del 3 */
+const ICAT=[[0,1,4],[0,1,2],[0,1,3]];
+function icon(x,k,j,cx,cy,s,L,R){x.save();x.lineCap=x.lineJoin="round";x.strokeStyle=RED_I;x.lineWidth=7;x.beginPath();
+  if(k===0&&j===0){const yb=cy+.95*s,x0=cx-.95*s,x1=cx+.95*s,yw=cy-.05*s,pk=cy-1.05*s,d0=cx-.28*s,d1=cx+.28*s,dt=cy+.3*s;
+    x.moveTo(L,yb);x.lineTo(x0,yb);x.lineTo(x0,yw);x.lineTo(cx,pk);x.lineTo(x1,yw);x.lineTo(x1,yb);x.lineTo(d1,yb);x.lineTo(d1,dt);x.lineTo(d0,dt);x.lineTo(d0,yb);x.lineTo(R,yb);}
+  if(k===0&&j===1){const r=s*1.05;x.moveTo(L,cy);x.lineTo(cx-r,cy);x.arc(cx,cy,r,Math.PI,3*Math.PI);x.moveTo(cx+r,cy);x.lineTo(R,cy);
+    x.moveTo(cx,cy-r*.72);x.lineTo(cx,cy+r*.48);x.stroke();x.beginPath();x.fillStyle=RED_I;x.arc(cx,cy,9,0,7);x.fill();x.beginPath();}
+  if(k===0&&j===2){/* dos lomas y la casa en la mitad */const yb=cy+.75*s,h=1.45*s,a=1.1*s,g=.38*s,r=.2*s;x.moveTo(L,yb);x.lineTo(cx-g-2*a,yb);x.bezierCurveTo(cx-g-1.65*a,yb-h,cx-g-.35*a,yb-h,cx-g,yb);
+    x.lineTo(cx,yb);x.arc(cx,yb-r,r,Math.PI/2,Math.PI/2+2*Math.PI);x.lineTo(cx+g,yb);x.bezierCurveTo(cx+g+.35*a,yb-h,cx+g+1.65*a,yb-h,cx+g+2*a,yb);x.lineTo(R,yb);}
+  if(k===1&&j===0){/* maleta: cuerpo con esquinas redondeadas y asa */const yb=cy+.9*s,yt=cy-.45*s,x0=cx-1.15*s,x1=cx+1.15*s,rc=.18*s,h0=cx-.32*s,h1=cx+.32*s,ht=cy-.9*s;
+    x.moveTo(L,yb);x.lineTo(x0+rc,yb);x.arcTo(x0,yb,x0,yb-rc,rc);x.lineTo(x0,yt+rc);x.arcTo(x0,yt,x0+rc,yt,rc);x.lineTo(h0,yt);x.lineTo(h0,ht+.1*s);x.arcTo(h0,ht,h0+.1*s,ht,.1*s);x.lineTo(h1-.1*s,ht);x.arcTo(h1,ht,h1,ht+.1*s,.1*s);x.lineTo(h1,yt);
+    x.lineTo(x1-rc,yt);x.arcTo(x1,yt,x1,yt+rc,rc);x.lineTo(x1,yb-rc);x.arcTo(x1,yb,x1-rc,yb,rc);x.lineTo(R,yb);x.moveTo(cx-.6*s,yt);x.lineTo(cx-.6*s,yb);x.moveTo(cx+.6*s,yt);x.lineTo(cx+.6*s,yb);}
+  if(k===1&&j===1){/* el hilo sube, se vuelve pregunta y se queda ahí, sin seguir */const yb=cy+.95*s,r=.5*s,hy=cy-.45*s;x.moveTo(L,yb);x.lineTo(cx-1.3*s,yb);x.bezierCurveTo(cx-.7*s,yb,cx-r,hy+.5*s,cx-r,hy);
+    x.arc(cx,hy,r,Math.PI,2.2*Math.PI);x.quadraticCurveTo(cx,hy+.75*r,cx,hy+1.35*r);x.lineTo(cx,cy+.35*s);x.stroke();x.beginPath();x.fillStyle=RED_I;x.arc(cx,cy+.72*s,9,0,7);x.fill();x.beginPath();}
+  if(k===1&&j===2){const yb=cy+.9*s,B=[[.42,.9],[.42,1.55],[.36,1.15],[.48,1.9],[.38,1.3],[.4,.75]];let px=cx-B.reduce((a,b)=>a+b[0],0)*s/2;
+    x.moveTo(L,yb);x.lineTo(px,yb);B.forEach(([wd,ht])=>{x.lineTo(px,yb-ht*s);px+=wd*s;x.lineTo(px,yb-ht*s);});x.lineTo(px,yb);x.lineTo(R,yb);}
+  if(k===2&&j===0){const r=s*.95,yb=cy+r;x.moveTo(L,yb);x.lineTo(cx,yb);x.arc(cx,cy,r,Math.PI/2,Math.PI/2+2*Math.PI);
+    x.quadraticCurveTo(cx-.95*r,cy+.1*r,cx-.15*r,cy-.98*r);x.quadraticCurveTo(cx+.35*r,cy-.1*r,cx+.45*r,cy+.89*r);x.quadraticCurveTo(cx+.95*r,cy+.2*r,cx+.82*r,cy-.5*r);
+    x.bezierCurveTo(cx+1.4*r,cy-.2*r,cx+1.2*r,yb,R,yb);}
+  if(k===2&&j===1){/* aguja con su ojo, y el hilo que entra por él y sigue */const T0=[cx+.15*s,cy+1.05*s],E=[cx+.7*s,cy-.95*s],dx=E[0]-T0[0],dy=E[1]-T0[1],Ln=Math.hypot(dx,dy),ux=dx/Ln,uy=dy/Ln,ang=Math.atan2(uy,ux);
+    const ec=[E[0]-ux*.16*s,E[1]-uy*.16*s];x.moveTo(...T0);x.lineTo(E[0]-ux*.32*s,E[1]-uy*.32*s);x.ellipse(ec[0],ec[1],.16*s,.07*s,ang,Math.PI,3*Math.PI);x.stroke();x.beginPath();
+    x.moveTo(L,cy+.7*s);x.bezierCurveTo(cx-1.1*s,cy+.7*s,cx-.4*s,ec[1]+.1*s,ec[0],ec[1]);x.bezierCurveTo(ec[0]+.6*s,ec[1]-.2*s,cx+1.6*s,cy+.2*s,cx+1.1*s,cy+.75*s);x.bezierCurveTo(cx+.9*s,cy+1.0*s,cx+1.7*s,cy+.95*s,R,cy+.7*s);}
+  if(k===2&&j===2){/* mochila tejida: cuerpo, borde, cargadera larga y una franja en zigzag */const yt=cy-.25*s,yb=cy+1.15*s,x0=cx-1.0*s,x1=cx+1.0*s,ps=.14*s;
+    x.moveTo(L,yt);x.lineTo(x0,yt);x.lineTo(x0+.05*s,yb-.3*s);x.quadraticCurveTo(x0+.08*s,yb,cx,yb);x.quadraticCurveTo(x1-.08*s,yb,x1-.05*s,yb-.3*s);x.lineTo(x1,yt);
+    x.lineTo(x1-ps,yt);x.bezierCurveTo(x1-ps,cy-1.75*s,x0+ps,cy-1.75*s,x0+ps,yt);x.lineTo(x1,yt);x.lineTo(R,yt);
+    x.moveTo(x0+.04*s,cy+.4*s);for(let q=1;q<=10;q++)x.lineTo(x0+.04*s+q*(1.92*s/10),cy+(q%2?.22:.4)*s);}
+  x.stroke();x.restore();}
+const drawIcon=(k,j)=>(x,w,h)=>{const c=QI[k];torn(x,w,h,c.bg);
+  x.fillStyle=c.ac;x.font=`600 21px ${F.body}`;track(x,c.lab,64,82,2.6);
+  x.textAlign="right";x.fillStyle=c.mu;x.fillText(String(j+1).padStart(2,"0")+" / 03",w-64,82);x.textAlign="left";
+  icon(x,k,j,w/2,h*.5,105,64,w-64);
+  x.fillStyle=c.mu;x.globalAlpha=.5;x.fillRect(64,h-98,w-128,2);x.globalAlpha=1;
+  x.font=`500 22px ${F.body}`;x.fillStyle=c.fg;x.fillText(ICN[k][j],64,h-56);x.fillStyle=c.mu;x.textAlign="right";x.fillText("Punto de partida",w-64,h-56);x.textAlign="left";
+  punch(x,w/2,62,15);};
+const iconTex=(k,j)=>asTex(cvs(QW,QH,1,drawIcon(k,j)));
+/* cuelga una tarjeta del hilo por detrás: igual que hang(), girada media vuelta y detrás del plano de los hilos */
+function hangBack(g,map,front){const piv=front.children[0],L=piv.children[0].geometry.parameters.height,b=new T.Group();b.position.set(front.position.x,0,2*ZT);b.rotation.y=Math.PI;g.add(b);
+  const a=hang(b,map,CW,CH,0,front.position.y,-piv.userData.base,piv.userData.amp,L);return a;}
 const tagTex=n=>asTex(cvs(GW,GH,1,drawTag(n)));
 /* tapas de MDF (frente: número, título e historia; atrás: número y símbolo) */
 const FI=[{t:"Lo que pasó",n:"01",s:"Allá arriba la vida se tejía despacio: la tierra, los animales, la tienda abierta hasta tarde, las risas en la noche. Un día la guerra llegó a la puerta. Primero pidió, después mandó. Y el miedo fue dando vueltas hasta volverse un nudo.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
@@ -250,6 +287,8 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
     /* fotos en zigzag irregular, de la 01 arriba a la 08 abajo: centro x, borde superior y, giro, largo del cordón (m) */
     const P3=[[.17,1.53,-.07,.022],[.42,1.47,.05,.036],[.30,1.32,-.03,.016],[.13,1.17,.08,.03],[.44,1.13,-.06,.04],[.27,.97,.04,.018],[.45,.84,.07,.028],[.16,.76,-.05,.02]];
     g.userData.photos=P3.map(([x,y,r,L],k)=>hang(g,photoTex(k),CW,CH,x,y+L-.012,r,.022,L));}
+  /* íconos por detrás, a espaldas de su pieza del frente */
+  {const fr=i===2?g.userData.photos:g.userData.cards;g.userData.icons=ICAT[i].map((fi,j)=>hangBack(g,iconTex(i,j),fr[fi]));}
   threads(g,segs,i===2?.0013:.0015);
   g.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});return g;}
 const frames=[0,1,2].map(frame);
@@ -299,5 +338,5 @@ const wp=(f,x,y,z)=>()=>new T.Vector3(x,y,z).applyMatrix4(frames[f].matrixWorld)
 /* rótulos técnicos: [texto, posición en el mundo, clase] */
 const notes=[[m(H)+" m",mid(0),"dim"],[m(W)+" m",mid(1),"dim"],["Tablero: "+m(TAPA)+" m de alto",mid(2),"dim"],[m(OY1-OY0)+" m de hilo",mid(3),"dim"],[m(IN)+" m por dentro",mid(4),"dim"],
   ["Listón de madera "+t*100+" × "+t*100+" cm",wp(2,W+.12,.9,0)],["Puntillas atrás cada 5 cm",wp(0,W/2,OY1+NI,-t/2-.04)],["Puntillas atrás cada 10 cm, solo a los lados",wp(1,OX0-NI,yM+.2,-t/2-.04)],["Puntillas atrás cada 2,5 cm",wp(2,W/2,OY1+NI,-t/2-.04)],["Bisagra de 2½″ (4 en total)",wp(1,W+.02,HY[1],-.05)],["Tablero de triplex 9 mm · "+m(TAW)+" × "+m(TAPA)+" m, con propalcote de "+PRW*100+" × "+PRH*100+" cm",wp(2,W/2,TY0+TAPA/2-.01,.06)]];
-return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,HG,CZ,AIR,setFinish,setMode,get mode(){return MODE;},art:{FI,FR1,FR2,DEST,CAP,DW,DH,QW,QH,GW,GH,PW:PW_,PH:PH_,front:(k,sc)=>cvs(DW,DH,sc||1,drawFicha(FI[k],k)),back:(k,sc,v)=>cvs(DW,DH,sc||1,drawBack(FI[k],k,v)),SYMN,get SYMV(){return SYMV;},quote:(set,i,sc)=>{const A=set==='dark'?FR1:FR2;return cvs(QW,QH,sc||1,drawQuote(A[i][0],A[i][1],set,i+1,A.length));},tag:(i,sc)=>cvs(GW,GH,sc||1,drawTag(i)),cardBack:(k,tag,sc)=>tag?cvs(GW,GH,sc||1,drawCardBack(k,1)):cvs(QW,QH,sc||1,drawCardBack(k,0)),photo:async(k,sc)=>{const im=await photoImg(k);return cvs(PW_,PH_,sc||1,drawPhoto(k,im));}},get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
+return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,HG,CZ,AIR,setFinish,setMode,get mode(){return MODE;},art:{FI,FR1,FR2,DEST,CAP,DW,DH,QW,QH,GW,GH,PW:PW_,PH:PH_,front:(k,sc)=>cvs(DW,DH,sc||1,drawFicha(FI[k],k)),back:(k,sc,v)=>cvs(DW,DH,sc||1,drawBack(FI[k],k,v)),SYMN,get SYMV(){return SYMV;},quote:(set,i,sc)=>{const A=set==='dark'?FR1:FR2;return cvs(QW,QH,sc||1,drawQuote(A[i][0],A[i][1],set,i+1,A.length));},tag:(i,sc)=>cvs(GW,GH,sc||1,drawTag(i)),icon:(k,j,sc)=>cvs(QW,QH,sc||1,drawIcon(k,j)),ICN,photo:async(k,sc)=>{const im=await photoImg(k);return cvs(PW_,PH_,sc||1,drawPhoto(k,im));}},get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
 };
