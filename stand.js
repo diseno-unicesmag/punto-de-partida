@@ -62,7 +62,7 @@ function nails(g,step,sides){const xs=[],ys=[];if(!sides){for(let x=W/2;x<OX1-.0
   g.userData.nails={step,n:all.length,tb:xs.length,lr:ys.length};
   const near=(arr,k,v)=>arr.reduce((m,p)=>Math.abs(p[k]-v)<Math.abs(m[k]-v)?p:m);return {P,near};}
 /* ================= textos ================= */
-const FR1=[["Al principio ellos pedían y pagaban, después ya no, ellos ya solo pedían, ya no pagaban, hasta que se acabó la tienda.","01:20"],["Permiso teníamos solamente hasta las 6 de la tarde. Después ya no podíamos andar.","01:45"],["Llegaban a nuestras casas 2, 3 de la mañana para que nos levantemos y ellos poder descansar.","02:28"],["Tenían personas secuestradas y las llevaban a la casa.","03:40"],["De una loma el ejército, de la otra loma guerrilla y nosotros en la mitad.","04:01"],["Nos metíamos debajo la cama, debajo las mesas.","04:14"],["Los dejaban que amanezcan, amarrados a un árbol y sin nada de ropa, y les ponían un letrero arriba: por sapos.","05:15"],["Nos decían que si nosotros decíamos algo (…) que nos mataban, o si no, que nos quitaban los niños pequeños.","05:37"]];
+const FR1=[["Al principio ellos pedían y pagaban, después ya no, solo pedían, ya no pagaban, hasta que se acabó la tienda.","01:20"],["Permiso teníamos solamente hasta las 6 de la tarde. Después ya no podíamos andar.","01:45"],["Llegaban a nuestras casas 2, 3 de la mañana para que nos levantemos y ellos poder descansar.","02:28"],["Tenían personas secuestradas y las llevaban a la casa.","03:40"],["De una loma el ejército, de la otra loma guerrilla y nosotros en la mitad.","04:01"],["Nos metíamos debajo la cama, debajo las mesas.","04:14"],["Los dejaban que amanezcan, amarrados a un árbol y sin nada de ropa, y les ponían un letrero arriba: por sapos.","05:15"],["Nos decían que si nosotros decíamos algo (…) que nos mataban, o si no, que nos quitaban los niños pequeños.","05:37"]];
 const FR2=[["Decidimos mejor salir de la vereda y venirnos acá a la ciudad.","05:55"],["Uno llega sin saber qué hacer, dónde irse.","06:10"],["Es muy distinta la vida de ciudad a la vida de campo.","06:22"]];
 function torn(x,w,h,fill){x.fillStyle=fill;x.fillRect(0,0,w,h);seed=Math.floor(w+h);for(let k=0;k<900;k++){x.fillStyle=fill!=="#f6f4ee"?`rgba(255,255,255,${rnd()*.03})`:`rgba(0,0,0,${rnd()*.03})`;x.fillRect(rnd()*w,rnd()*h,2,2);}}
 /* tarjetas: se dibujan a un tamaño lógico y se pueden pintar a más resolución para imprimir (ART, al final) */
@@ -74,12 +74,15 @@ function track(x,s,X,Y,sp){let xx=X;for(const ch of s){x.fillText(ch,xx,Y);xx+=x
 /* frases de la entrevista: negro en el 1 (lo oscuro), gris en el 2 (el limbo). 15 × 10,7 cm */
 const QS={dark:{bg:"#0f0e0d",fg:"#ffffff",mu:"#8f897f",ac:"#e5534b",lab:"01 · LO QUE PASÓ"},gray:{bg:"#6f6b66",fg:"#ffffff",mu:"#d9d3c9",ac:"#ffffff",lab:"02 · LO QUE NO SE VE"}};
 const QW=900,QH=642;
+/* tamaño de las frases: cada una el mayor que quepa; las de 4 líneas o más comparten un mismo tamaño (el menor de ellas) */
+const fitQ=(x,s,w,h)=>{let z=60,L;for(;z>30;z-=2){x.font=`400 ${z}px ${F.serif}`;L=lines(x,s,w-310);if(L.length*z*1.26<=h-360)break;}return [z,L];};
+let Z4=0;const z4=(x,w,h)=>{if(!Z4){Z4=99;[...FR1,...FR2].forEach(([q])=>{const [z,L]=fitQ(x,q,w,h);if(L.length>=4)Z4=Math.min(Z4,z);});}return Z4;};
 const drawQuote=(s,ts,k,n,of)=>(x,w,h)=>{const c=QS[k];torn(x,w,h,c.bg);
   x.fillStyle=c.ac;x.font=`600 21px ${F.body}`;track(x,c.lab,64,82,2.6);
   x.textAlign="right";x.fillStyle=c.mu;x.font=`600 21px ${F.body}`;x.fillText(String(n).padStart(2,"0")+" / "+String(of).padStart(2,"0"),w-64,82);x.textAlign="left";
   x.fillStyle=c.ac;x.font=`600 200px ${F.serif}`;x.fillText("“",50,298);/* texto 5 mm más abajo (6 px = 1 mm) */
   x.textAlign="right";x.fillText("”",w-50,h-44);x.textAlign="left";
-  let z=60,L;for(;z>30;z-=2){x.font=`400 ${z}px ${F.serif}`;L=lines(x,s,w-310);if(L.length*z*1.26<=h-360)break;}
+  let [z,L]=fitQ(x,s,w,h);if(L.length>=4){z=z4(x,w,h);x.font=`400 ${z}px ${F.serif}`;L=lines(x,s,w-310);}
   x.fillStyle=c.fg;const top=210+Math.max(0,(h-360-L.length*z*1.26)/2);L.forEach((l,i)=>x.fillText(l,135,top+z*.95+i*z*1.26));
   x.fillStyle=c.mu;x.globalAlpha=.5;x.fillRect(64,h-98,w-128,2);x.globalAlpha=1;
   x.font=`500 22px ${F.body}`;x.fillText("Entrevista · minuto "+ts,64,h-56);x.textAlign="right";x.fillText("Punto de partida",w-64,h-56);x.textAlign="left";
