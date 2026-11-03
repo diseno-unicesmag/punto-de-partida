@@ -5,7 +5,7 @@ window.buildStand=function(T,scene){
 /* ================= utilidades ================= */
 const tex=(w,h,draw)=>{const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");draw(x,w,h);const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=8;return t;};
 function wrap(x,s,mx,lh,X,Y){const words=s.split(" ");let line="",y=Y;for(const w of words){const t=line?line+" "+w:w;if(x.measureText(t).width>mx&&line){x.fillText(line,X,y);line=w;y+=lh;}else line=t;}if(line)x.fillText(line,X,y);return y;}
-const F={brand:'"Bricolage Grotesque","Segoe UI",sans-serif',body:'"Work Sans","Segoe UI",sans-serif',hand:'"Caveat","Segoe Print",cursive'};
+const F={serif:'"Fraunces",Georgia,serif',brand:'"Bricolage Grotesque","Segoe UI",sans-serif',body:'"Work Sans","Segoe UI",sans-serif',hand:'"Caveat","Segoe Print",cursive'};
 let seed=9;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
 const ease=k=>k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 /* metros con coma decimal: 1.6 → «1,60», .375 → «0,375» */
@@ -21,7 +21,7 @@ const M={wood:new T.MeshStandardMaterial({map:woodTex,roughness:.72}),hinge:new 
 const t=.04,IN=.50,W=IN+2*t,H=1.60,MID=.54;const OX0=t,OX1=W-t,OY0=MID+t/2,OY1=H-t;const OW=OX1-OX0;const ZF=t/2;
 const yM=(OY0+OY1)/2;/* altura del hilo rojo: clavo del medio */
 /* propalcote: área visible máxima de impresión (47 × 32 cm), centrada en el tablero */
-const PRW=.47,PRH=.32;
+const PRW=.45,PRH=.30;/* cabe con marcas de corte en el área imprimible de 46,5 × 31,5 cm */
 /* tablero de triplex de 9 mm: deja ver MAR de marco a los lados y abajo, y GAP de travesaño medio arriba (la franja de las puntillas de atrás);
    el borde alrededor del propalcote es parejo, y de ahí sale dónde va el travesaño bajo (LOW = largo de las patas) */
 const MAR=.01,GAP=.02,LT=.009,TAW=W-2*MAR,BOR=(TAW-PRW)/2,TAPA=PRH+2*BOR,TY0=OY0-GAP-TAPA,LOW=TY0-MAR;
@@ -142,9 +142,9 @@ function hangBack(g,map,front){const piv=front.children[0],L=piv.children[0].geo
   const a=hang(b,map,CW,CH,0,front.position.y,-piv.userData.base,piv.userData.amp,L);return a;}
 const tagTex=n=>asTex(cvs(GW,GH,1,drawTag(n)));
 /* tapas de MDF (frente: número, título e historia; atrás: número y símbolo) */
-const FI=[{t:"Lo que pasó",n:"01",s:"Allá arriba la vida se tejía despacio: la tierra, los animales, la tienda abierta hasta tarde, las risas en la noche. Un día la guerra llegó a la puerta. Primero pidió, después mandó. Y el miedo fue dando vueltas hasta volverse un nudo.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
- {t:"Lo que no se ve",n:"02",s:"Salir no fue llegar. Se fueron con lo que cabía en las manos, y la ciudad los recibió sin mirarlos. Quedó un tiempo suspendido: la duda, el silencio, un hilo que tiembla sin saber hacia dónde ir.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
- {t:"Lo que volvió a tejer",n:"03",s:"Pero el hilo no se cortó. En sus manos quedaba el oficio, y con él volvió a empezar, punto por punto. Lo que el miedo había enredado, hoy lo sostiene una trama: su trabajo, su casa, su familia.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a"}];
+const FI=[{t:"Lo que pasó",n:"01",s:"En la vereda la vida iba despacio. Había una tienda, animales que cuidar y noches de juego con los primos. Un día llegaron hombres armados y la casa dejó de ser suya. El miedo se fue apretando, vuelta a vuelta, hasta volverse un nudo.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
+ {t:"Lo que no se ve",n:"02",s:"Se fueron con lo poco que pudieron cargar. En la ciudad nadie los conocía ni preguntó de dónde venían. Fueron días de no saber qué hacer ni hacia dónde ir, como un hilo que tiembla y no encuentra su camino.",bg:"#77736d",fg:"#ffffff",mu:"#e4dfd6",ac:"#ffffff"},
+ {t:"Lo que volvió a tejer",n:"03",s:"Pero el hilo no se rompió. Ella volvió a lo que sus manos sabían hacer: teñir la lana, bordar, tejer. Punto por punto armó otra vez su vida, y hoy esa trama sostiene a su familia.",bg:"#f4f2ee",fg:"#1a1918",mu:"#8a857d",ac:"#e0218a"}];
 /* el tablero va negro, con el propalcote de PRW × PRH centrado; el diseño se pinta aparte y se pega en su sitio */
 const TW=1280,TH2=Math.round(TW*TAPA/TAW),DW=1280,DH=Math.round(DW*PRH/PRW);const dc=document.createElement("canvas");dc.width=DW;dc.height=DH;const dctx=dc.getContext("2d");
 const TAPAS=[];const BLK="#34322f";/* negro con cuerpo: se leen luces, sombras y aristas */
@@ -157,7 +157,7 @@ const drawFicha=(f,k)=>((x,w,h)=>{x.fillStyle=f.bg;x.fillRect(0,0,w,h);
   x.font=`600 26px ${F.body}`;["01","02","03"].forEach((n,j)=>{x.fillStyle=j===k?f.ac:f.mu;x.globalAlpha=j===k?1:.45;x.fillText(n,w-70-(2-j)*64,92);});x.globalAlpha=1;x.textAlign="left";
   x.fillStyle=f.ac;x.font=`600 24px ${F.body}`;track(x,"PUNTO DE PARTIDA",70,92,3.5);
   x.fillStyle=f.fg;let ts=112;do{x.font=`800 ${ts}px ${F.brand}`;ts-=4;}while(x.measureText(f.t).width>w-200);x.fillText(f.t,64,224);
-  x.font=`500 46px ${F.body}`;x.fillStyle=f.fg;wrap(x,f.s,w-300,64,70,318);
+  /* la historia se narra en serif (Fraunces) */x.font=`400 45px ${F.serif}`;x.fillStyle=f.fg;wrap(x,f.s,w-290,62,70,312);
 });
 const fichaTex=(f,k)=>tapaTex(drawFicha(f,k));
 /* pictogramas de los respaldos: siempre una sola línea roja, delgada y continua, que entra por la izquierda y sale por la
