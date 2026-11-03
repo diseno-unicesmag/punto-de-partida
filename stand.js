@@ -95,7 +95,12 @@ const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.mov
   /* tachones a mano: 1 una raya que cruza la palabra; 2 un garabato de lazos que la borra */
   const tw=d[0]?x.measureText(d[0]).width:w-100;x.strokeStyle="#2a2620";x.lineCap=x.lineJoin="round";seed=n*13+5;
   if(d[1]===1){x.lineWidth=6;x.beginPath();x.moveTo(34,252);x.lineTo(Math.min(w-30,48+tw),240);x.stroke();}
-  if(d[1]===2){x.lineWidth=4;x.beginPath();const x0=40,x1=Math.min(w-38,48+Math.max(tw,150)),N=Math.round((x1-x0)/22);x.moveTo(x0,262);
+  /* 5.º destino: tachón brusco de rayas en zigzag, con el mismo grosor de los demás */
+  if(d[1]===2&&n===4){x.lineWidth=6;x.lineJoin="miter";x.miterLimit=6;x.beginPath();const x0=40,x1=Math.min(w-40,250);x.moveTo(x0,250);
+    /* ida y vuelta de rayas rápidas e inclinadas, de distinto largo: se ve rayado con fuerza */
+    for(let q=1;q<=13;q++){const u=q/13;x.lineTo(x0+u*(x1-x0)+(rnd()-.5)*14,(q%2?228:274)+(rnd()-.5)*14);}
+    for(let q=1;q<=7;q++){const u=1-q/7;x.lineTo(x0+u*(x1-x0)+(rnd()-.5)*18,(q%2?236:266)+(rnd()-.5)*10);}x.stroke();}
+  else if(d[1]===2){x.lineWidth=6;x.beginPath();const x0=40,x1=Math.min(w-38,48+Math.max(tw,150)),N=Math.round((x1-x0)/22);x.moveTo(x0,262);
     for(let q=0;q<=N*12;q++){const u=q/(N*12),t=u*N*2*Math.PI,ax=x0+u*(x1-x0),r=15+Math.sin(u*7+n)*6+Math.sin(u*23)*3;x.lineTo(ax-r*1.3*Math.sin(t*.93),252-r*.85*Math.cos(t)+Math.sin(u*5+n)*6);}x.stroke();}
   x.strokeStyle="#9c8f74";x.lineWidth=2;x.setLineDash([3,9]);[352,422].forEach(y=>{x.beginPath();x.moveTo(40,y);x.lineTo(w-40,y);x.stroke();});x.setLineDash([]);
   x.fillStyle="#8a7f6a";x.font=`600 17px ${F.body}`;track(x,"02 · LO QUE NO SE VE",40,h-36,1.6);
