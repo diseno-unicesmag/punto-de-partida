@@ -97,6 +97,12 @@ const drawTag=n=>(x,w,h)=>{const ct=48;x.fillStyle="#efe6d2";x.beginPath();x.mov
   x.strokeStyle="#9c8f74";x.lineWidth=2;x.setLineDash([3,9]);[352,422].forEach(y=>{x.beginPath();x.moveTo(40,y);x.lineTo(w-40,y);x.stroke();});x.setLineDash([]);
   x.fillStyle="#8a7f6a";x.font=`600 17px ${F.body}`;track(x,"02 · LO QUE NO SE VE",40,h-36,1.6);
   punch(x,w/2,64,15,"#d7c9a6");};
+/* respaldo de tarjetas y etiquetas (propuesta): el color de su momento y su pictograma de una sola línea roja, sin texto literal */
+const drawCardBack=(k,tag)=>(x,w,h)=>{const bg=tag?"#efe6d2":["#0f0e0d","#6f6b66","#f6f4ee"][k],mu=tag?"#8a7f6a":["#8f897f","#d9d3c9","#8a857d"][k];
+  if(tag){const ct=48;x.fillStyle=bg;x.beginPath();x.moveTo(ct,0);x.lineTo(w-ct,0);x.lineTo(w,ct);x.lineTo(w,h);x.lineTo(0,h);x.lineTo(0,ct);x.closePath();x.fill();}else{x.fillStyle=bg;x.fillRect(0,0,w,h);}
+  symbol(x,k,w/2,tag?h*.58:h*.57,tag?w*.62:Math.min(w*.46,h*.6),w);
+  x.fillStyle=mu;x.font=`600 ${tag?17:20}px ${F.body}`;track(x,"0"+(k+1),tag?40:64,h-(tag?36:52),2);
+  if(tag)punch(x,w/2,64,15,"#d7c9a6");else punch(x,w/2,62,15);};
 const tagTex=n=>asTex(cvs(GW,GH,1,drawTag(n)));
 /* tapas de MDF (frente: número, título e historia; atrás: número y símbolo) */
 const FI=[{t:"Lo que pasó",n:"01",s:"Allá arriba la vida se tejía despacio: la tierra, los animales, la tienda abierta hasta tarde, las risas en la noche. Un día la guerra llegó a la puerta. Primero pidió, después mandó. Y el miedo fue dando vueltas hasta volverse un nudo.",bg:"#0d0c0b",fg:"#ffffff",mu:"#a9a39a",ac:"#e5534b"},
@@ -293,5 +299,5 @@ const wp=(f,x,y,z)=>()=>new T.Vector3(x,y,z).applyMatrix4(frames[f].matrixWorld)
 /* rótulos técnicos: [texto, posición en el mundo, clase] */
 const notes=[[m(H)+" m",mid(0),"dim"],[m(W)+" m",mid(1),"dim"],["Tablero: "+m(TAPA)+" m de alto",mid(2),"dim"],[m(OY1-OY0)+" m de hilo",mid(3),"dim"],[m(IN)+" m por dentro",mid(4),"dim"],
   ["Listón de madera "+t*100+" × "+t*100+" cm",wp(2,W+.12,.9,0)],["Puntillas atrás cada 5 cm",wp(0,W/2,OY1+NI,-t/2-.04)],["Puntillas atrás cada 10 cm, solo a los lados",wp(1,OX0-NI,yM+.2,-t/2-.04)],["Puntillas atrás cada 2,5 cm",wp(2,W/2,OY1+NI,-t/2-.04)],["Bisagra de 2½″ (4 en total)",wp(1,W+.02,HY[1],-.05)],["Tablero de triplex 9 mm · "+m(TAW)+" × "+m(TAPA)+" m, con propalcote de "+PRW*100+" × "+PRH*100+" cm",wp(2,W/2,TY0+TAPA/2-.01,.06)]];
-return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,HG,CZ,AIR,setFinish,setMode,get mode(){return MODE;},art:{FI,FR1,FR2,DEST,CAP,DW,DH,QW,QH,GW,GH,PW:PW_,PH:PH_,front:(k,sc)=>cvs(DW,DH,sc||1,drawFicha(FI[k],k)),back:(k,sc,v)=>cvs(DW,DH,sc||1,drawBack(FI[k],k,v)),SYMN,get SYMV(){return SYMV;},quote:(set,i,sc)=>{const A=set==='dark'?FR1:FR2;return cvs(QW,QH,sc||1,drawQuote(A[i][0],A[i][1],set,i+1,A.length));},tag:(i,sc)=>cvs(GW,GH,sc||1,drawTag(i)),photo:async(k,sc)=>{const im=await photoImg(k);return cvs(PW_,PH_,sc||1,drawPhoto(k,im));}},get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
+return {T,tex,rnd,ease,clamp,m,M,t,IN,W,H,MID,LOW,NI,NL,OX0,OX1,OY0,OY1,OW,ZF,yM,LT,TY0,TAPA,TAW,PRW,PRH,FD,HY,HG,CZ,AIR,setFinish,setMode,get mode(){return MODE;},art:{FI,FR1,FR2,DEST,CAP,DW,DH,QW,QH,GW,GH,PW:PW_,PH:PH_,front:(k,sc)=>cvs(DW,DH,sc||1,drawFicha(FI[k],k)),back:(k,sc,v)=>cvs(DW,DH,sc||1,drawBack(FI[k],k,v)),SYMN,get SYMV(){return SYMV;},quote:(set,i,sc)=>{const A=set==='dark'?FR1:FR2;return cvs(QW,QH,sc||1,drawQuote(A[i][0],A[i][1],set,i+1,A.length));},tag:(i,sc)=>cvs(GW,GH,sc||1,drawTag(i)),cardBack:(k,tag,sc)=>tag?cvs(GW,GH,sc||1,drawCardBack(k,1)):cvs(QW,QH,sc||1,drawCardBack(k,0)),photo:async(k,sc)=>{const im=await photoImg(k);return cvs(PW_,PH_,sc||1,drawPhoto(k,im));}},get fin(){return FIN;},nails:frames.map(f=>f.userData.nails),frames,stand,hinges,conn,hung,dimG,DIMS,layout,buildDims,notes};
 };
