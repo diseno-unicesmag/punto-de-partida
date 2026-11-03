@@ -77,10 +77,10 @@ const QW=900,QH=642;
 const drawQuote=(s,ts,k,n,of)=>(x,w,h)=>{const c=QS[k];torn(x,w,h,c.bg);
   x.fillStyle=c.ac;x.font=`600 21px ${F.body}`;track(x,c.lab,64,82,2.6);
   x.textAlign="right";x.fillStyle=c.mu;x.font=`600 21px ${F.body}`;x.fillText(String(n).padStart(2,"0")+" / "+String(of).padStart(2,"0"),w-64,82);x.textAlign="left";
-  x.fillStyle=c.ac;x.font=`600 200px ${F.serif}`;x.fillText("“",50,268);
+  x.fillStyle=c.ac;x.font=`600 200px ${F.serif}`;x.fillText("“",50,298);/* texto 5 mm más abajo (6 px = 1 mm) */
   x.textAlign="right";x.fillText("”",w-50,h-44);x.textAlign="left";
-  let z=60,L;for(;z>30;z-=2){x.font=`400 ${z}px ${F.serif}`;L=lines(x,s,w-310);if(L.length*z*1.26<=h-330)break;}
-  x.fillStyle=c.fg;const top=180+Math.max(0,(h-330-L.length*z*1.26)/2);L.forEach((l,i)=>x.fillText(l,135,top+z*.95+i*z*1.26));
+  let z=60,L;for(;z>30;z-=2){x.font=`400 ${z}px ${F.serif}`;L=lines(x,s,w-310);if(L.length*z*1.26<=h-360)break;}
+  x.fillStyle=c.fg;const top=210+Math.max(0,(h-360-L.length*z*1.26)/2);L.forEach((l,i)=>x.fillText(l,135,top+z*.95+i*z*1.26));
   x.fillStyle=c.mu;x.globalAlpha=.5;x.fillRect(64,h-98,w-128,2);x.globalAlpha=1;
   x.font=`500 22px ${F.body}`;x.fillText("Entrevista · minuto "+ts,64,h-56);x.textAlign="right";x.fillText("Punto de partida",w-64,h-56);x.textAlign="left";
   punch(x,w/2,62,15);};
