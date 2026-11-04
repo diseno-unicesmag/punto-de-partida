@@ -52,6 +52,7 @@ input[type=range]{width:100%;accent-color:var(--rojo)}
   <div class="nav"><button id="prev">← Anterior</button><button id="next" class="go">Siguiente →</button></div>
   <input type="range" id="rng" min="0" value="0" aria-label="Paso">
   <div class="opts">
+    <div style="display:flex;gap:16px;color:var(--muted)"><span><span style="display:inline-block;width:18px;height:4px;border-radius:2px;background:#1f6fe0;vertical-align:middle;margin-right:6px"></span>Este paso</span><span><span style="display:inline-block;width:18px;height:4px;border-radius:2px;background:#1fa35a;opacity:.6;vertical-align:middle;margin-right:6px"></span>El que sigue</span></div>
     <label><input type="checkbox" id="cAll">Mostrar todos los hilos del bastidor</label>
     <label><input type="checkbox" id="cNum" checked>Números en todas las puntillas</label>
   </div>
@@ -98,7 +99,7 @@ function planB1(segs){const L=NAILS[0],id=p=>L.findIndex(q=>Math.abs(q.p.x-p.x)<
   const match=Q=>{/* Q en orden de vuelta; empareja vecinos: hay dos maneras, se queda con la más corta */
     if(!Q.length)return {c:0,P:[]};let best=null;for(const o of [0,1]){let c=0,P=[];for(let k=o;k<Q.length+o;k+=2){const u=Q[k%Q.length],v=Q[(k+1)%Q.length];c+=fw(u,v);P.push([u,v]);}if(!best||c<best.c)best={c,P};}return best;};
   const steps=[];let bord=0,real=0;
-  [0x7d1a14,0xb3261e].forEach(col=>{const E=segs.filter(s=>s.c===col).map(s=>({u:id(s.a),v:id(s.b),k:"hilo"}));
+  [0xb3261e,0x7d1a14].forEach(col=>/* primero el rojo vivo, luego el oscuro */{const E=segs.filter(s=>s.c===col).map(s=>({u:id(s.a),v:id(s.b),k:"hilo"}));
     const X=-1;if(col===0xb3261e)E.push({u:mr,v:X,k:"conn"});/* el rojo vivo termina pasando al bastidor 2 */
     const deg=new Map();E.forEach(e=>[e.u,e.v].forEach(n=>deg.set(n,(deg.get(n)||0)+1)));
     const odd=[...deg].filter(([n,d])=>d%2&&n!==X).map(([n])=>n).sort((a,b)=>pos[a]-pos[b]);
@@ -133,7 +134,7 @@ function planB1(segs){const L=NAILS[0],id=p=>L.findIndex(q=>Math.abs(q.p.x-p.x)<
   return steps;}
 let cami=0;[0,1,2].forEach(i=>{let segs=frames[i].userData.segs.map(s=>({a:s[0],b:s[1],c:s[2]}));
   /* al revés del frente; en el 2 el hilo rojo va primero porque los caminos se amarran sobre él y sobre los grises */
-  if(i===0){planB1(segs).forEach(s=>{if(s.conn)return;STEPS.push(s);});}else{
+  if(i===0){planB1(segs).forEach(s=>STEPS.push(s.conn?{f:0,conn:true,ph:true}:s));}else{
   if(i===1){const red=segs[0],grey=segs.slice(1,9).sort((u,v)=>v.a.y-u.a.y),cam=segs.slice(9);segs=[red,...grey,...cam];}
   if(i===2){const hz=segs.filter(s=>Math.abs(s.a.y-s.b.y)<.001).sort((u,v)=>u.a.y-v.a.y),vt=segs.filter(s=>Math.abs(s.a.y-s.b.y)>=.001).sort((u,v)=>u.a.x-v.a.x);segs=[...hz,...vt].reverse();}
   segs.forEach(s=>{let na=nameAt(i,s.a),nb=nameAt(i,s.b);
@@ -143,8 +144,10 @@ let cami=0;[0,1,2].forEach(i=>{let segs=frames[i].userData.segs.map(s=>({a:s[0],
     if(!na){st.title="Camino "+(++cami);st.na="hilo rojo";st.det=`Camino: sale del hilo rojo del medio a ${cmf(W-s.a.x)} cm del borde izquierdo y se amarra al hilo gris de ${cmf(s.b.y)} cm del piso, a ${cmf(W-s.b.x)} cm del borde izquierdo (mirando desde atrás). Ahí cuelga una etiqueta de destino.`;st.nb="hilo gris";}
     STEPS.push(st);});}
   if(i<2){const mr=NAILS[i].find(n=>n.tag==="IZ"&&Math.abs(n.p.y-yM)<.002),ml=NAILS[i+1].find(n=>n.tag==="DE"&&Math.abs(n.p.y-yM)<.002);
-    STEPS.push({f:i,conn:true,a:mr.p,b:null,c:0xb3261e,na:mr.name,nb:`${ml.name} (B${i+2})`,det:`Hilo rojo que une los bastidores: sale de ${mr.name} del bastidor ${i+1} (el larguero de la bisagra), pasa por la junta y se amarra en ${ml.name} del bastidor ${i+2}, la puntilla del medio (${cmf(yM)} cm del piso).`});
-    if(i===0)STEPS[STEPS.length-1].det=`Es el mismo hilo rojo vivo, sin cortar: desde ${mr.name} pasa por la junta de la bisagra y llega a ${ml.name} del bastidor 2, la puntilla del medio (${cmf(yM)} cm del piso). Ahí amarra y corta.`;}});
+    const cs={f:i,conn:true,a:mr.p,b:null,c:0xb3261e,na:mr.name,nb:`${ml.name} (B${i+2})`,det:`Hilo rojo que une los bastidores: sale de ${mr.name} del bastidor ${i+1} (el larguero de la bisagra), pasa por la junta y se amarra en ${ml.name} del bastidor ${i+2}, la puntilla del medio (${cmf(yM)} cm del piso).`};
+    /* en el 1 el paso a B2 va justo al terminar el rojo vivo, antes del oscuro */
+    if(i===0){cs.det=`Es el mismo hilo rojo vivo, sin cortar: desde ${mr.name} pasa por la junta de la bisagra y llega a ${ml.name} del bastidor 2, la puntilla del medio (${cmf(yM)} cm del piso). Ahí amarra y corta. Luego sigue el rojo oscuro.`;Object.assign(STEPS.find(s=>s.ph),cs);}
+    else STEPS.push(cs);}});
 const FIRST=[0,1,2].map(i=>STEPS.findIndex(s=>s.f===i));const COUNT=[0,1,2].map(i=>STEPS.filter(s=>s.f===i).length);
 /* ---------- dibujo de la guía: marcadores al frente del marco, hilos en el plano del frente ---------- */
 const ZG=-(t/2+ST.NL+.003);const guide=frames.map(f=>{const g=new T.Group();f.add(g);return g;});
@@ -153,8 +156,8 @@ const hiMat=new T.MeshBasicMaterial({color:0xb3261e,side:T.DoubleSide}),hiG=new 
 NAILS.forEach((L,i)=>L.forEach(n=>{const d=new T.Mesh(mk,mkMat);d.position.set(n.p.x,n.p.y,ZG);const r=new T.Mesh(mkRing,ringMat);r.position.set(n.p.x,n.p.y,ZG+.0002);guide[i].add(d,r);}));
 const hiA=new T.Mesh(hiG,hiMat),hiB=new T.Mesh(hiG,new T.MeshBasicMaterial({color:0x1b1a18,side:T.DoubleSide}));
 const cyl=new T.CylinderGeometry(1,1,1,8,1,true),up=new T.Vector3(0,1,0);
-function rods(s,r,color){const g=new T.Group(),p=s.path||[s.a,s.b];for(let k=1;k<p.length;k++)g.add(rod(p[k-1],p[k],r,color));return g;}
-function rod(a,b,r,color){const A=new T.Vector3(a.x,a.y,ZG-.001),B=new T.Vector3(b.x,b.y,ZG-.001),d=B.clone().sub(A);const m=new T.Mesh(cyl,new T.MeshBasicMaterial({color}));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(up,d.clone().normalize());m.scale.set(r,d.length(),r);return m;}
+function rods(s,r,color,op,dz){const g=new T.Group(),p=s.path||[s.a,s.b];for(let k=1;k<p.length;k++)g.add(rod(p[k-1],p[k],r,color,op,dz));return g;}
+function rod(a,b,r,color,op,dz){const z=ZG-.001-(dz||0),A=new T.Vector3(a.x,a.y,z),B=new T.Vector3(b.x,b.y,z),d=B.clone().sub(A);const m=new T.Mesh(cyl,new T.MeshBasicMaterial(op?{color,transparent:true,opacity:op,depthWrite:false}:{color}));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(up,d.clone().normalize());m.scale.set(r,d.length(),r);return m;}
 const drawn=new T.Group();
 /* ---------- cámara de frente, ortográfica ---------- */
 const cam=new T.OrthographicCamera(-1,1,1,-1,.01,20);
@@ -179,7 +182,9 @@ function go(k){cur=Math.max(0,Math.min(STEPS.length-1,k));const st=STEPS[cur];rn
   if(st.f!==frame){frame=st.f;guide.forEach((g,i)=>g.visible=i===frame);fitCam(frame);buildLabels(frame);[...tabs.children].forEach((b,i)=>b.classList.toggle("on",i===frame));}
   drawn.removeFromParent();drawn.clear();guide[frame].add(drawn);
   const all=$("cAll").checked;STEPS.forEach((s,j)=>{if(s.f!==frame||s.conn)return;if(j<cur||(all&&j!==cur))drawn.add(rods(s,j<cur?(s.borde?.0011:.0016):.0011,j<cur?s.c:0xc9c4ba));});
-  if(!st.conn){drawn.add(rods(st,.0032,st.c));}
+  /* azul: el tramo de este paso; verde medio transparente: el que sigue */
+  const nx=STEPS[cur+1];if(nx&&nx.f===frame&&!nx.conn)drawn.add(rods(nx,.0026,0x1fa35a,.6,.0015));
+  if(!st.conn){drawn.add(rods(st,.0032,0x1f6fe0,0,.003));}
   hiA.position.set(st.a.x,st.a.y,ZG-.002);drawn.add(hiA);if(st.b&&!st.conn){hiB.position.set(st.b.x,st.b.y,ZG-.002);drawn.add(hiB);}
   const n=cur-FIRST[frame]+1,[cn,hex]=COL[st.c];
   $("cnt").textContent=`Bastidor ${frame+1} · ${NAMES[frame]} — paso ${n} de ${COUNT[frame]}`+(st.hilo?` · ${st.hilo}`:"");
