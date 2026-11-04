@@ -304,6 +304,7 @@ function frame(i){const g=new T.Group();const bar=(w,h,x,y)=>{const m=new T.Mesh
     g.userData.photos=P3.map(([x,y,r,L],k)=>hang(g,photoTex(k),CW,CH,x,y+L-.012,r,.022,L));}
   /* íconos por detrás, a espaldas de su pieza del frente */
   {const fr=i===2?g.userData.photos:g.userData.cards;g.userData.icons=ICAT[i].map((fi,j)=>hangBack(g,iconTex(i,j),fr[fi]));}
+  g.userData.segs=segs;g.userData.P=P;/* para la guía paso a paso (hilos.html) */
   threads(g,segs,i===2?.0013:.0015);
   g.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});return g;}
 const frames=[0,1,2].map(frame);

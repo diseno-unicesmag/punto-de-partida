@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Punto de partida · Hilos paso a paso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Work+Sans:wght@400;500;600;700&family=Caveat:wght@500;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap">
+<style>
+/* Guía para amarrar los hilos: un bastidor de frente, un hilo por paso, de qué puntilla a qué puntilla y en qué color */
+:root{--ink:#1b1a18;--muted:#6f6a62;--rojo:#b3261e;--bg:#e9e7e2;--card:#fff;--line:#d4d0c8;--brand:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;--body:"Work Sans","Segoe UI",system-ui,sans-serif;color-scheme:light}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);overflow:hidden;user-select:none;-webkit-user-select:none}
+canvas#gl{position:fixed;left:0;top:0;width:calc(100% - 380px);height:100%;display:block}
+#labs{position:fixed;left:0;top:0;width:calc(100% - 380px);height:100%;pointer-events:none;overflow:hidden}
+.n{position:absolute;transform:translate(-50%,-50%);font:600 10px var(--body);color:#5b564f;white-space:nowrap}
+.n.big{font:700 15px var(--body);color:#fff;background:var(--rojo);padding:3px 9px;border-radius:99px;box-shadow:0 2px 8px #0004;z-index:2}
+.n.big.b{background:#1b1a18}
+.n.row{font:700 12px var(--body);color:var(--ink)}
+aside{position:fixed;right:0;top:0;bottom:0;width:380px;box-sizing:border-box;background:var(--card);border-left:1px solid var(--line);padding:22px 24px;display:flex;flex-direction:column;gap:18px;overflow:auto}
+.k{font:600 11px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--rojo)}
+h1{font:800 26px/1 var(--brand);letter-spacing:-.02em;margin:4px 0 0}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tabs button{font:600 13px var(--body);color:var(--ink);background:#f1efea;border:1px solid var(--line);border-radius:10px;padding:9px 6px;cursor:pointer;line-height:1.25}
+.tabs button small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}.tabs button.on small{color:#fffa}
+.step{border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.cnt{font:600 13px var(--body);color:var(--muted)}
+.from{display:flex;align-items:center;gap:10px;margin:10px 0 6px;font:800 40px/1 var(--brand);letter-spacing:-.02em}
+.from .ar{font-size:26px;color:var(--muted);font-weight:600}
+.col{display:flex;align-items:center;gap:10px;font:600 16px var(--body)}
+.sw{width:26px;height:26px;border-radius:6px;border:1px solid #0002}
+.det{font:500 13px/1.5 var(--body);color:var(--muted);margin-top:10px}
+.nav{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nav button{font:700 15px var(--body);border:0;border-radius:12px;padding:13px;cursor:pointer;background:#f1efea;color:var(--ink)}
+.nav button.go{background:var(--rojo);color:#fff}
+input[type=range]{width:100%;accent-color:var(--rojo)}
+.opts{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.opts label{display:flex;align-items:center;gap:8px;cursor:pointer}.opts input{accent-color:var(--rojo);margin:0}
+.leg{font:500 12px/1.55 var(--body);color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+.leg b{color:var(--ink)}
+@media (max-width:820px){canvas#gl,#labs{width:100%;height:58%}aside{top:58%;width:100%;border-left:0;border-top:1px solid var(--line);padding:14px 16px;gap:12px}.from{font-size:30px}}
+</style>
+</head><body>
+<canvas id="gl"></canvas>
+<div id="labs"></div>
+<aside>
+  <div><span class="k">Punto de partida · guía de montaje</span><h1>Hilos paso a paso</h1></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="step">
+    <div class="cnt" id="cnt"></div>
+    <div class="from" id="from"></div>
+    <div class="col" id="col"></div>
+    <div class="det" id="det"></div>
+  </div>
+  <div class="nav"><button id="prev">← Anterior</button><button id="next" class="go">Siguiente →</button></div>
+  <input type="range" id="rng" min="0" value="0" aria-label="Paso">
+  <div class="opts">
+    <label><input type="checkbox" id="cAll">Mostrar todos los hilos del bastidor</label>
+    <label><input type="checkbox" id="cNum" checked>Números en todas las puntillas</label>
+  </div>
+  <div class="leg"><b>Visto de frente.</b> Puntillas: <b>A</b> fila de arriba y <b>B</b> fila de abajo, contadas de izquierda a derecha; <b>I</b> larguero izquierdo y <b>D</b> larguero derecho, contadas de abajo hacia arriba. Las puntillas están clavadas atrás: al amarrar por detrás, la izquierda y la derecha se invierten.<br><br>Orden: primero el bastidor 1 (los rojos), luego el 2 y al final el 3. Teclas ← → para avanzar.</div>
+</aside>
+<script src="vendor/three.min.js?v=158"></script>
+<script src="img_data.js?v=14"></script>
+<script src="stand.js?v=43"></script>
+<script>
+(async function(){
+"use strict";
+if(document.fonts&&document.fonts.ready){try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,2500))]);}catch(_){}}
+const T=THREE,$=id=>document.getElementById(id);
+const cv=$("gl");const R=new T.WebGLRenderer({canvas:cv,antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.outputColorSpace=T.SRGBColorSpace;
+const scene=new T.Scene();scene.background=new T.Color(0xe9e7e2);
+scene.add(new T.HemisphereLight(0xffffff,0xb9b3a8,1.6));const sun=new T.DirectionalLight(0xffffff,1.2);sun.position.set(1,3,4);scene.add(sun);
+const ST=buildStand(T,scene);const {W,H,t,OX0,OX1,OY0,OY1,NI,yM,frames,stand,hung}=ST;
+ST.setMode(1);/* pintado: sin hilos ni tarjetas; los hilos los dibuja la guía */
+frames.forEach(f=>f.traverse(o=>{if(o.userData.kind==="hilo"||o.userData.kind==="colgante")o.visible=false;}));
+stand.updateMatrixWorld(true);
+/* ---------- nombres de puntillas, vistos de frente ---------- */
+const COL={0xb3261e:["rojo vivo","#b3261e"],0x7d1a14:["rojo oscuro","#7d1a14"],0x9a9e99:["gris","#9a9e99"],0xf2c200:["amarillo","#e8b400"],0x2f6fd6:["azul","#2f6fd6"],0x2e9e4f:["verde","#2e9e4f"],0xe0218a:["fucsia","#e0218a"]};
+const NAMES=["El enredo","Lo que no se ve","Lo que volvió a tejer"];
+const cmf=v=>(Math.round(v*1000)/10).toString().replace(".",",");
+function nailsOf(i){const P=frames[i].userData.P;const L=[];
+  const add=(arr,tag,key)=>arr.slice().sort((a,b)=>a[key]-b[key]).forEach((p,k)=>L.push({p,name:tag+(k+1),tag,k}));
+  add(P.t,"A","x");add(P.b,"B","x");add(P.l,"I","y");add(P.r,"D","y");return L;}
+const NAILS=[0,1,2].map(nailsOf);
+const nameAt=(i,p)=>{const n=NAILS[i].find(q=>Math.abs(q.p.x-p.x)<.002&&Math.abs(q.p.y-p.y)<.002);return n?n.name:null;};
+/* ---------- pasos ---------- */
+const STEPS=[];
+let cami=0;[0,1,2].forEach(i=>{let segs=frames[i].userData.segs.map(s=>({a:s[0],b:s[1],c:s[2]}));
+  if(i===1){const red=segs[0],grey=segs.slice(1,9).sort((u,v)=>u.a.y-v.a.y),cam=segs.slice(9);segs=[red,...grey,...cam];}
+  if(i===2){const hz=segs.filter(s=>Math.abs(s.a.y-s.b.y)<.001).sort((u,v)=>u.a.y-v.a.y),vt=segs.filter(s=>Math.abs(s.a.y-s.b.y)>=.001).sort((u,v)=>u.a.x-v.a.x);segs=[...hz,...vt];}
+  segs.forEach(s=>{let na=nameAt(i,s.a),nb=nameAt(i,s.b);
+    /* que cada hilo se lea de izquierda a derecha o de arriba abajo */
+    if(na&&nb&&(s.a.x>s.b.x+.001||(Math.abs(s.a.x-s.b.x)<.001&&s.a.y<s.b.y))){[s.a,s.b]=[s.b,s.a];[na,nb]=[nb,na];}
+    const st={f:i,a:s.a,b:s.b,c:s.c,na,nb};
+    if(!na){st.title="Camino "+(++cami);st.na="hilo rojo";st.det=`Camino: sale del hilo rojo del medio a ${cmf(s.a.x)} cm del borde izquierdo y se amarra al hilo gris de ${cmf(s.b.y)} cm del piso, a ${cmf(s.b.x)} cm del borde izquierdo. Ahí cuelga una etiqueta de destino.`;st.nb="hilo gris";}
+    STEPS.push(st);});
+  if(i<2){const mr=NAILS[i].find(n=>n.tag==="D"&&Math.abs(n.p.y-yM)<.002),ml=NAILS[i+1].find(n=>n.tag==="I"&&Math.abs(n.p.y-yM)<.002);
+    STEPS.push({f:i,conn:true,a:mr.p,b:null,c:0xb3261e,na:mr.name,nb:`I${ml.k+1} (B${i+2})`,det:`Hilo rojo que une los bastidores: sale de ${mr.name} del bastidor ${i+1}, pasa por detrás de la bisagra y se amarra en ${"I"+(ml.k+1)} del bastidor ${i+2}, la puntilla del medio (${cmf(yM)} cm del piso).`});}});
+const FIRST=[0,1,2].map(i=>STEPS.findIndex(s=>s.f===i));const COUNT=[0,1,2].map(i=>STEPS.filter(s=>s.f===i).length);
+/* ---------- dibujo de la guía: marcadores al frente del marco, hilos en el plano del frente ---------- */
+const ZG=t/2+.004;const guide=frames.map(f=>{const g=new T.Group();f.add(g);return g;});
+const mk=new T.CircleGeometry(.0042,20),mkMat=new T.MeshBasicMaterial({color:0xf4f2ee}),mkRing=new T.RingGeometry(.0042,.0056,20),ringMat=new T.MeshBasicMaterial({color:0x1b1a18});
+const hiMat=new T.MeshBasicMaterial({color:0xb3261e}),hiG=new T.RingGeometry(.007,.0105,28);
+NAILS.forEach((L,i)=>L.forEach(n=>{const d=new T.Mesh(mk,mkMat);d.position.set(n.p.x,n.p.y,ZG);const r=new T.Mesh(mkRing,ringMat);r.position.set(n.p.x,n.p.y,ZG-.0002);guide[i].add(d,r);}));
+const hiA=new T.Mesh(hiG,hiMat),hiB=new T.Mesh(hiG,new T.MeshBasicMaterial({color:0x1b1a18}));
+const cyl=new T.CylinderGeometry(1,1,1,8,1,true),up=new T.Vector3(0,1,0);
+function rod(a,b,r,color){const A=new T.Vector3(a.x,a.y,ZG+.001),B=new T.Vector3(b.x,b.y,ZG+.001),d=B.clone().sub(A);const m=new T.Mesh(cyl,new T.MeshBasicMaterial({color}));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(up,d.clone().normalize());m.scale.set(r,d.length(),r);return m;}
+const drawn=new T.Group();
+/* ---------- cámara de frente, ortográfica ---------- */
+const cam=new T.OrthographicCamera(-1,1,1,-1,.01,20);
+function fitCam(i){const w=cv.clientWidth,h=cv.clientHeight,asp=w/h;const f=frames[i],q=new T.Quaternion();f.matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());
+  const yc=(OY0+OY1)/2,c=new T.Vector3(W/2,yc,0).applyMatrix4(f.matrixWorld),n=new T.Vector3(0,0,1).applyQuaternion(q);
+  const hh=(OY1-OY0)/2+.13,hw=W/2+.08;let half=Math.max(hh,hw/asp);cam.left=-half*asp;cam.right=half*asp;cam.top=half;cam.bottom=-half;cam.updateProjectionMatrix();
+  cam.position.copy(c).addScaledVector(n,3);cam.up.set(0,1,0);cam.lookAt(c);}
+/* ---------- etiquetas ---------- */
+const labs=$("labs");let tags=[];
+function buildLabels(i){labs.innerHTML="";tags=NAILS[i].map(n=>{const d=document.createElement("div");d.className="n";d.textContent=n.k+1;labs.appendChild(d);
+  const off=n.tag==="A"?[0,-14]:n.tag==="B"?[0,14]:n.tag==="I"?[-15,0]:[15,0];return {d,p:n.p,off};});
+  [["A",W/2,OY1+NI,[0,-30]],["B",W/2,OY0-NI,[0,30]],["I",OX0-NI,yM,[-34,0]],["D",OX1+NI,yM,[34,0]]].forEach(([s,x,y,off])=>{const d=document.createElement("div");d.className="n row";d.textContent=s;labs.appendChild(d);tags.push({d,p:new T.Vector3(x,y,0),off,row:1});});
+  ["a","b"].forEach(k=>{const d=document.createElement("div");d.className="n big"+(k==="b"?" b":"");labs.appendChild(d);tags.push({d,big:k});});}
+function placeLabels(i,st){const f=frames[i],w=cv.clientWidth,h=cv.clientHeight;const num=$("cNum").checked;
+  tags.forEach(L=>{let p=L.p,off=L.off;if(L.big){p=L.big==="a"?st.a:st.b;if(!p||!(L.big==="a"?st.na:st.nb)||(st.conn&&L.big==="b")){L.d.style.display="none";return;}L.d.style.display="";L.d.textContent=L.big==="a"?st.na:st.nb;off=[0,-26];}
+    else L.d.style.display=(num||L.row)?"":"none";
+    const v=new T.Vector3(p.x,p.y,ZG).applyMatrix4(f.matrixWorld).project(cam);L.d.style.left=((v.x+1)/2*w+off[0])+"px";L.d.style.top=((1-v.y)/2*h+off[1])+"px";});}
+/* ---------- estado ---------- */
+let cur=0,frame=-1;const rng=$("rng");rng.max=STEPS.length-1;
+const tabs=$("tabs");[0,1,2].forEach(i=>{const b=document.createElement("button");b.innerHTML=`Bastidor ${i+1}<small>${COUNT[i]} pasos</small>`;b.onclick=()=>go(FIRST[i]);tabs.appendChild(b);});
+function go(k){cur=Math.max(0,Math.min(STEPS.length-1,k));const st=STEPS[cur];rng.value=cur;
+  if(st.f!==frame){frame=st.f;guide.forEach((g,i)=>g.visible=i===frame);fitCam(frame);buildLabels(frame);[...tabs.children].forEach((b,i)=>b.classList.toggle("on",i===frame));}
+  drawn.removeFromParent();drawn.clear();guide[frame].add(drawn);
+  const all=$("cAll").checked;STEPS.forEach((s,j)=>{if(s.f!==frame||s.conn)return;if(j<cur||(all&&j!==cur))drawn.add(rod(s.a,s.b,j<cur?.0016:.0011,j<cur?s.c:0xc9c4ba));});
+  if(!st.conn){drawn.add(rod(st.a,st.b,.0032,st.c));}
+  hiA.position.set(st.a.x,st.a.y,ZG+.002);drawn.add(hiA);if(st.b&&!st.conn){hiB.position.set(st.b.x,st.b.y,ZG+.002);drawn.add(hiB);}
+  const n=cur-FIRST[frame]+1,[cn,hex]=COL[st.c];
+  $("cnt").textContent=`Bastidor ${frame+1} · ${NAMES[frame]} — hilo ${n} de ${COUNT[frame]}`;
+  $("from").innerHTML=st.title?st.title:st.conn?`${st.na}<span class="ar">→</span>B${frame+2}`:`${st.na}<span class="ar">→</span>${st.nb}`;
+  $("col").innerHTML=`<span class="sw" style="background:${hex}"></span>${cn[0].toUpperCase()+cn.slice(1)}`;
+  $("det").textContent=st.det||`Amarrar en ${st.na}, tensar recto y amarrar en ${st.nb}.`;}
+$("prev").onclick=()=>go(cur-1);$("next").onclick=()=>go(cur+1);rng.oninput=e=>go(+e.target.value);
+$("cAll").onchange=()=>go(cur);$("cNum").onchange=()=>go(cur);
+addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();go(cur+1);}if(e.key==="ArrowLeft"){e.preventDefault();go(cur-1);}});
+function size(){const w=cv.clientWidth,h=cv.clientHeight;R.setSize(w,h,false);if(frame>=0)fitCam(frame);}addEventListener("resize",size);size();
+go(0);
+function loop(now){const s=1+.18*Math.sin(now/220);hiA.scale.setScalar(s);hiB.scale.setScalar(s);R.render(scene,cam);placeLabels(frame,STEPS[cur]);requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+})();
+</script>
+</body></html>
