@@ -41,7 +41,7 @@ input[type=range]{width:100%;accent-color:var(--rojo)}
 <canvas id="gl"></canvas>
 <div id="labs"></div>
 <aside>
-  <div><span class="k">Punto de partida · guía de montaje</span><h1>Hilos paso a paso</h1></div>
+  <div><span class="k">Punto de partida · guía de montaje</span><h1>Hilos paso a paso</h1><div style="font:500 13px var(--body);color:var(--muted);margin-top:6px">Vista desde atrás, donde se amarra</div></div>
   <div class="tabs" id="tabs"></div>
   <div class="step">
     <div class="cnt" id="cnt"></div>
@@ -55,7 +55,7 @@ input[type=range]{width:100%;accent-color:var(--rojo)}
     <label><input type="checkbox" id="cAll">Mostrar todos los hilos del bastidor</label>
     <label><input type="checkbox" id="cNum" checked>Números en todas las puntillas</label>
   </div>
-  <div class="leg"><b>Visto de frente.</b> Puntillas: <b>A</b> fila de arriba y <b>B</b> fila de abajo, contadas de izquierda a derecha; <b>I</b> larguero izquierdo y <b>D</b> larguero derecho, contadas de abajo hacia arriba. Las puntillas están clavadas atrás: al amarrar por detrás, la izquierda y la derecha se invierten.<br><br>Orden: primero el bastidor 1 (los rojos), luego el 2 y al final el 3. Teclas ← → para avanzar.</div>
+  <div class="leg"><b>Visto desde atrás</b>, que es donde están las puntillas y donde se amarra. Puntillas: <b>AR</b> fila de arriba y <b>AB</b> fila de abajo, contadas de izquierda a derecha; <b>IZ</b> larguero izquierdo y <b>DE</b> larguero derecho, contadas de abajo hacia arriba (los mismos nombres de la guía de hilos en PDF).<br><br>El orden va al revés del frente: lo primero que se amarra queda pegado a la madera, y desde el frente se ve encima. Primero el bastidor 1, luego el 2 y al final el 3. Teclas ← → para avanzar.</div>
 </aside>
 <script src="vendor/three.min.js?v=158"></script>
 <script src="img_data.js?v=14"></script>
@@ -77,44 +77,47 @@ const COL={0xb3261e:["rojo vivo","#b3261e"],0x7d1a14:["rojo oscuro","#7d1a14"],0
 const NAMES=["El enredo","Lo que no se ve","Lo que volvió a tejer"];
 const cmf=v=>(Math.round(v*1000)/10).toString().replace(".",",");
 function nailsOf(i){const P=frames[i].userData.P;const L=[];
-  const add=(arr,tag,key)=>arr.slice().sort((a,b)=>a[key]-b[key]).forEach((p,k)=>L.push({p,name:tag+(k+1),tag,k}));
-  add(P.t,"A","x");add(P.b,"B","x");add(P.l,"I","y");add(P.r,"D","y");return L;}
+  const add=(arr,tag,key)=>arr.slice().sort((a,b)=>key==="nx"?b.x-a.x:a[key]-b[key]).forEach((p,k)=>L.push({p,name:tag+(k+1),tag,k}));
+  /* desde atrás la izquierda es el lado de x mayor: AR/AB se cuentan de x mayor a menor; IZ es el larguero de x mayor */
+  add(P.t,"AR","nx");add(P.b,"AB","nx");add(P.r,"IZ","y");add(P.l,"DE","y");return L;}
 const NAILS=[0,1,2].map(nailsOf);
 const nameAt=(i,p)=>{const n=NAILS[i].find(q=>Math.abs(q.p.x-p.x)<.002&&Math.abs(q.p.y-p.y)<.002);return n?n.name:null;};
 /* ---------- pasos ---------- */
 const STEPS=[];
 let cami=0;[0,1,2].forEach(i=>{let segs=frames[i].userData.segs.map(s=>({a:s[0],b:s[1],c:s[2]}));
-  if(i===1){const red=segs[0],grey=segs.slice(1,9).sort((u,v)=>u.a.y-v.a.y),cam=segs.slice(9);segs=[red,...grey,...cam];}
-  if(i===2){const hz=segs.filter(s=>Math.abs(s.a.y-s.b.y)<.001).sort((u,v)=>u.a.y-v.a.y),vt=segs.filter(s=>Math.abs(s.a.y-s.b.y)>=.001).sort((u,v)=>u.a.x-v.a.x);segs=[...hz,...vt];}
+  /* al revés del frente; en el 2 el hilo rojo va primero porque los caminos se amarran sobre él y sobre los grises */
+  if(i===0)segs.reverse();
+  if(i===1){const red=segs[0],grey=segs.slice(1,9).sort((u,v)=>v.a.y-u.a.y),cam=segs.slice(9);segs=[red,...grey,...cam];}
+  if(i===2){const hz=segs.filter(s=>Math.abs(s.a.y-s.b.y)<.001).sort((u,v)=>u.a.y-v.a.y),vt=segs.filter(s=>Math.abs(s.a.y-s.b.y)>=.001).sort((u,v)=>u.a.x-v.a.x);segs=[...hz,...vt].reverse();}
   segs.forEach(s=>{let na=nameAt(i,s.a),nb=nameAt(i,s.b);
-    /* que cada hilo se lea de izquierda a derecha o de arriba abajo */
-    if(na&&nb&&(s.a.x>s.b.x+.001||(Math.abs(s.a.x-s.b.x)<.001&&s.a.y<s.b.y))){[s.a,s.b]=[s.b,s.a];[na,nb]=[nb,na];}
+    /* que cada hilo se lea de izquierda a derecha (desde atrás) o de arriba abajo */
+    if(na&&nb&&(s.a.x<s.b.x-.001||(Math.abs(s.a.x-s.b.x)<.001&&s.a.y<s.b.y))){[s.a,s.b]=[s.b,s.a];[na,nb]=[nb,na];}
     const st={f:i,a:s.a,b:s.b,c:s.c,na,nb};
-    if(!na){st.title="Camino "+(++cami);st.na="hilo rojo";st.det=`Camino: sale del hilo rojo del medio a ${cmf(s.a.x)} cm del borde izquierdo y se amarra al hilo gris de ${cmf(s.b.y)} cm del piso, a ${cmf(s.b.x)} cm del borde izquierdo. Ahí cuelga una etiqueta de destino.`;st.nb="hilo gris";}
+    if(!na){st.title="Camino "+(++cami);st.na="hilo rojo";st.det=`Camino: sale del hilo rojo del medio a ${cmf(W-s.a.x)} cm del borde izquierdo y se amarra al hilo gris de ${cmf(s.b.y)} cm del piso, a ${cmf(W-s.b.x)} cm del borde izquierdo (mirando desde atrás). Ahí cuelga una etiqueta de destino.`;st.nb="hilo gris";}
     STEPS.push(st);});
-  if(i<2){const mr=NAILS[i].find(n=>n.tag==="D"&&Math.abs(n.p.y-yM)<.002),ml=NAILS[i+1].find(n=>n.tag==="I"&&Math.abs(n.p.y-yM)<.002);
-    STEPS.push({f:i,conn:true,a:mr.p,b:null,c:0xb3261e,na:mr.name,nb:`I${ml.k+1} (B${i+2})`,det:`Hilo rojo que une los bastidores: sale de ${mr.name} del bastidor ${i+1}, pasa por detrás de la bisagra y se amarra en ${"I"+(ml.k+1)} del bastidor ${i+2}, la puntilla del medio (${cmf(yM)} cm del piso).`});}});
+  if(i<2){const mr=NAILS[i].find(n=>n.tag==="IZ"&&Math.abs(n.p.y-yM)<.002),ml=NAILS[i+1].find(n=>n.tag==="DE"&&Math.abs(n.p.y-yM)<.002);
+    STEPS.push({f:i,conn:true,a:mr.p,b:null,c:0xb3261e,na:mr.name,nb:`${ml.name} (B${i+2})`,det:`Hilo rojo que une los bastidores: sale de ${mr.name} del bastidor ${i+1} (el larguero de la bisagra), pasa por la junta y se amarra en ${ml.name} del bastidor ${i+2}, la puntilla del medio (${cmf(yM)} cm del piso).`});}});
 const FIRST=[0,1,2].map(i=>STEPS.findIndex(s=>s.f===i));const COUNT=[0,1,2].map(i=>STEPS.filter(s=>s.f===i).length);
 /* ---------- dibujo de la guía: marcadores al frente del marco, hilos en el plano del frente ---------- */
-const ZG=t/2+.004;const guide=frames.map(f=>{const g=new T.Group();f.add(g);return g;});
-const mk=new T.CircleGeometry(.0042,20),mkMat=new T.MeshBasicMaterial({color:0xf4f2ee}),mkRing=new T.RingGeometry(.0042,.0056,20),ringMat=new T.MeshBasicMaterial({color:0x1b1a18});
-const hiMat=new T.MeshBasicMaterial({color:0xb3261e}),hiG=new T.RingGeometry(.007,.0105,28);
-NAILS.forEach((L,i)=>L.forEach(n=>{const d=new T.Mesh(mk,mkMat);d.position.set(n.p.x,n.p.y,ZG);const r=new T.Mesh(mkRing,ringMat);r.position.set(n.p.x,n.p.y,ZG-.0002);guide[i].add(d,r);}));
-const hiA=new T.Mesh(hiG,hiMat),hiB=new T.Mesh(hiG,new T.MeshBasicMaterial({color:0x1b1a18}));
+const ZG=-(t/2+ST.NL+.003);const guide=frames.map(f=>{const g=new T.Group();f.add(g);return g;});
+const mk=new T.CircleGeometry(.0042,20),mkMat=new T.MeshBasicMaterial({color:0xf4f2ee,side:T.DoubleSide}),mkRing=new T.RingGeometry(.0042,.0056,20),ringMat=new T.MeshBasicMaterial({color:0x1b1a18,side:T.DoubleSide});
+const hiMat=new T.MeshBasicMaterial({color:0xb3261e,side:T.DoubleSide}),hiG=new T.RingGeometry(.007,.0105,28);
+NAILS.forEach((L,i)=>L.forEach(n=>{const d=new T.Mesh(mk,mkMat);d.position.set(n.p.x,n.p.y,ZG);const r=new T.Mesh(mkRing,ringMat);r.position.set(n.p.x,n.p.y,ZG+.0002);guide[i].add(d,r);}));
+const hiA=new T.Mesh(hiG,hiMat),hiB=new T.Mesh(hiG,new T.MeshBasicMaterial({color:0x1b1a18,side:T.DoubleSide}));
 const cyl=new T.CylinderGeometry(1,1,1,8,1,true),up=new T.Vector3(0,1,0);
-function rod(a,b,r,color){const A=new T.Vector3(a.x,a.y,ZG+.001),B=new T.Vector3(b.x,b.y,ZG+.001),d=B.clone().sub(A);const m=new T.Mesh(cyl,new T.MeshBasicMaterial({color}));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(up,d.clone().normalize());m.scale.set(r,d.length(),r);return m;}
+function rod(a,b,r,color){const A=new T.Vector3(a.x,a.y,ZG-.001),B=new T.Vector3(b.x,b.y,ZG-.001),d=B.clone().sub(A);const m=new T.Mesh(cyl,new T.MeshBasicMaterial({color}));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(up,d.clone().normalize());m.scale.set(r,d.length(),r);return m;}
 const drawn=new T.Group();
 /* ---------- cámara de frente, ortográfica ---------- */
 const cam=new T.OrthographicCamera(-1,1,1,-1,.01,20);
 function fitCam(i){const w=cv.clientWidth,h=cv.clientHeight,asp=w/h;const f=frames[i],q=new T.Quaternion();f.matrixWorld.decompose(new T.Vector3(),q,new T.Vector3());
   const yc=(OY0+OY1)/2,c=new T.Vector3(W/2,yc,0).applyMatrix4(f.matrixWorld),n=new T.Vector3(0,0,1).applyQuaternion(q);
   const hh=(OY1-OY0)/2+.13,hw=W/2+.08;let half=Math.max(hh,hw/asp);cam.left=-half*asp;cam.right=half*asp;cam.top=half;cam.bottom=-half;cam.updateProjectionMatrix();
-  cam.position.copy(c).addScaledVector(n,3);cam.up.set(0,1,0);cam.lookAt(c);}
+  cam.position.copy(c).addScaledVector(n,-3);/* desde atrás */cam.up.set(0,1,0);cam.lookAt(c);}
 /* ---------- etiquetas ---------- */
 const labs=$("labs");let tags=[];
 function buildLabels(i){labs.innerHTML="";tags=NAILS[i].map(n=>{const d=document.createElement("div");d.className="n";d.textContent=n.k+1;labs.appendChild(d);
-  const off=n.tag==="A"?[0,-14]:n.tag==="B"?[0,14]:n.tag==="I"?[-15,0]:[15,0];return {d,p:n.p,off};});
-  [["A",W/2,OY1+NI,[0,-30]],["B",W/2,OY0-NI,[0,30]],["I",OX0-NI,yM,[-34,0]],["D",OX1+NI,yM,[34,0]]].forEach(([s,x,y,off])=>{const d=document.createElement("div");d.className="n row";d.textContent=s;labs.appendChild(d);tags.push({d,p:new T.Vector3(x,y,0),off,row:1});});
+  const off=n.tag==="AR"?[0,-14]:n.tag==="AB"?[0,14]:n.tag==="IZ"?[-15,0]:[15,0];return {d,p:n.p,off};});
+  [["AR",W/2,OY1+NI,[0,-30]],["AB",W/2,OY0-NI,[0,30]],["IZ",OX1+NI,yM,[-36,0]],["DE",OX0-NI,yM,[36,0]]].forEach(([s,x,y,off])=>{const d=document.createElement("div");d.className="n row";d.textContent=s;labs.appendChild(d);tags.push({d,p:new T.Vector3(x,y,0),off,row:1});});
   ["a","b"].forEach(k=>{const d=document.createElement("div");d.className="n big"+(k==="b"?" b":"");labs.appendChild(d);tags.push({d,big:k});});}
 function placeLabels(i,st){const f=frames[i],w=cv.clientWidth,h=cv.clientHeight;const num=$("cNum").checked;
   tags.forEach(L=>{let p=L.p,off=L.off;if(L.big){p=L.big==="a"?st.a:st.b;if(!p||!(L.big==="a"?st.na:st.nb)||(st.conn&&L.big==="b")){L.d.style.display="none";return;}L.d.style.display="";L.d.textContent=L.big==="a"?st.na:st.nb;off=[0,-26];}
@@ -128,7 +131,7 @@ function go(k){cur=Math.max(0,Math.min(STEPS.length-1,k));const st=STEPS[cur];rn
   drawn.removeFromParent();drawn.clear();guide[frame].add(drawn);
   const all=$("cAll").checked;STEPS.forEach((s,j)=>{if(s.f!==frame||s.conn)return;if(j<cur||(all&&j!==cur))drawn.add(rod(s.a,s.b,j<cur?.0016:.0011,j<cur?s.c:0xc9c4ba));});
   if(!st.conn){drawn.add(rod(st.a,st.b,.0032,st.c));}
-  hiA.position.set(st.a.x,st.a.y,ZG+.002);drawn.add(hiA);if(st.b&&!st.conn){hiB.position.set(st.b.x,st.b.y,ZG+.002);drawn.add(hiB);}
+  hiA.position.set(st.a.x,st.a.y,ZG-.002);drawn.add(hiA);if(st.b&&!st.conn){hiB.position.set(st.b.x,st.b.y,ZG-.002);drawn.add(hiB);}
   const n=cur-FIRST[frame]+1,[cn,hex]=COL[st.c];
   $("cnt").textContent=`Bastidor ${frame+1} · ${NAMES[frame]} — hilo ${n} de ${COUNT[frame]}`;
   $("from").innerHTML=st.title?st.title:st.conn?`${st.na}<span class="ar">→</span>B${frame+2}`:`${st.na}<span class="ar">→</span>${st.nb}`;
