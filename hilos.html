@@ -84,9 +84,56 @@ const NAILS=[0,1,2].map(nailsOf);
 const nameAt=(i,p)=>{const n=NAILS[i].find(q=>Math.abs(q.p.x-p.x)<.002&&Math.abs(q.p.y-p.y)<.002);return n?n.name:null;};
 /* ---------- pasos ---------- */
 const STEPS=[];
+/* ---------- bastidor 1: un solo hilo por color, sin cortar ----------
+   Los mismos 88 hilos del modelo, pero recorridos de corrido desde el ovillo: en cada puntilla se da una vuelta y se sigue.
+   Donde el recorrido no puede seguir directo, el hilo corre por el borde (por detrás del marco, sin cruzar el vano) hasta la siguiente. */
+function planB1(segs){const L=NAILS[0],id=p=>L.findIndex(q=>Math.abs(q.p.x-p.x)<.002&&Math.abs(q.p.y-p.y)<.002);
+  const by=tag=>L.map((n,j)=>({n,j})).filter(o=>o.n.tag===tag).sort((u,v)=>u.n.k-v.n.k).map(o=>o.j);
+  const per=[...by("AR"),...by("DE").reverse(),...by("AB").reverse(),...by("IZ")];/* vuelta al marco desde atrás */
+  const pos=new Array(L.length);let acc=0;per.forEach((j,k)=>{if(k)acc+=L[j].p.distanceTo(L[per[k-1]].p);pos[j]=acc;});
+  const PT=acc+L[per[0]].p.distanceTo(L[per[per.length-1]].p);
+  const fw=(u,v)=>(pos[v]-pos[u]+PT)%PT;
+  const path=(u,v)=>{const out=[u];let k=per.indexOf(u);while(per[k]!==v){k=(k+1)%per.length;out.push(per[k]);}return out;};
+  const mr=L.findIndex(n=>n.tag==="IZ"&&Math.abs(n.p.y-yM)<.002);
+  const match=Q=>{/* Q en orden de vuelta; empareja vecinos: hay dos maneras, se queda con la más corta */
+    if(!Q.length)return {c:0,P:[]};let best=null;for(const o of [0,1]){let c=0,P=[];for(let k=o;k<Q.length+o;k+=2){const u=Q[k%Q.length],v=Q[(k+1)%Q.length];c+=fw(u,v);P.push([u,v]);}if(!best||c<best.c)best={c,P};}return best;};
+  const steps=[];let bord=0,real=0;
+  [0x7d1a14,0xb3261e].forEach(col=>{const E=segs.filter(s=>s.c===col).map(s=>({u:id(s.a),v:id(s.b),k:"hilo"}));
+    const X=-1;if(col===0xb3261e)E.push({u:mr,v:X,k:"conn"});/* el rojo vivo termina pasando al bastidor 2 */
+    const deg=new Map();E.forEach(e=>[e.u,e.v].forEach(n=>deg.set(n,(deg.get(n)||0)+1)));
+    const odd=[...deg].filter(([n,d])=>d%2&&n!==X).map(([n])=>n).sort((a,b)=>pos[a]-pos[b]);
+    /* extremos del hilo: en el rojo vivo uno es el paso al bastidor 2; en el oscuro, los dos que más ahorran borde */
+    let best=null;const rest=ex=>odd.filter(n=>!ex.includes(n));
+    if(col===0xb3261e)odd.forEach(s=>{const m=match(rest([s]));if(!best||m.c<best.m.c)best={s,m};});
+    else odd.forEach((s,a)=>odd.slice(a+1).forEach(e=>{const m=match(rest([s,e]));if(!best||m.c<best.m.c)best={s,m};}));
+    if(!best)best={s:E[0].u,m:{c:0,P:[]}};
+    best.m.P.forEach(([u,v])=>E.push({u,v,k:"borde"}));
+    /* si quedara un grupo suelto, se llega a él por el borde, ida y vuelta */
+    const trail=()=>{const adj=new Map();E.forEach((e,j)=>{e.used=false;[e.u,e.v].forEach(n=>{if(!adj.has(n))adj.set(n,[]);adj.get(n).push(j);});});
+      const st=[[best.s,-1]],out=[];while(st.length){const [n]=st[st.length-1];const l=adj.get(n)||[];while(l.length&&E[l[l.length-1]].used)l.pop();
+        if(l.length){const j=l.pop();E[j].used=true;const e=E[j];st.push([e.u===n?e.v:e.u,j]);}else{const [m,j]=st.pop();if(j>=0)out.push({j,to:m});}}
+      return out.reverse();};
+    let T1=trail();for(let g=0;g<20&&T1.length<E.length;g++){const on=new Set();T1.forEach(o=>{on.add(o.to);});on.add(best.s);
+      let bb=null;E.forEach(e=>{if(e.used)return;[e.u,e.v].forEach(w=>{if(w===X)return;on.forEach(u=>{if(u===X)return;const d=Math.min(fw(u,w),fw(w,u));if(!bb||d<bb.d)bb={u,w,d};});});});
+      E.push({u:bb.u,v:bb.w,k:"borde"},{u:bb.w,v:bb.u,k:"borde"});T1=trail();}
+    let prev=best.s;const n0=steps.length;
+    T1.forEach(({j,to})=>{const e=E[j],from=prev;prev=to;
+      if(e.k==="conn"){steps.push({conn:true,from});return;}
+      const pts=e.k==="borde"?(fw(from,to)<=fw(to,from)?path(from,to):path(to,from).reverse()):[from,to];
+      const len=pts.slice(1).reduce((s,q,k)=>s+L[q].p.distanceTo(L[pts[k]].p),0);if(e.k==="borde")bord+=len;else real+=len;
+      steps.push({f:0,a:L[from].p,b:L[to].p,c:col,na:L[from].name,nb:L[to].name,borde:e.k==="borde",path:pts.map(q=>L[q].p)});});
+    const own=steps.slice(n0).filter(s=>!s.conn),cn=COL[col][0];
+    own.forEach((s,k)=>{s.hilo=`Hilo ${cn} · tramo ${k+1} de ${own.length}`;
+      const pre=k===0?`Amarra la punta del ovillo en ${s.na}. `:"";
+      s.det=s.borde?`${pre}Por el borde: sin cortar, lleva el hilo por detrás del marco, pegado a las puntillas y sin cruzar el vano, hasta ${s.nb}. Desde el frente no se ve.`
+        :`${pre}Sin cortar: tensa recto de ${s.na} a ${s.nb} y dale una vuelta a ${s.nb}.`;});
+    const last=own[own.length-1];if(col===0x7d1a14)last.det+=` Ahí amarra y corta: el rojo oscuro termina.`;
+    console.log(cn,own.length,"tramos",own.filter(s=>s.borde).length,"por el borde");});
+  console.log("B1 hilo en el vano",real.toFixed(2),"m · por el borde",bord.toFixed(2),"m");
+  return steps;}
 let cami=0;[0,1,2].forEach(i=>{let segs=frames[i].userData.segs.map(s=>({a:s[0],b:s[1],c:s[2]}));
   /* al revés del frente; en el 2 el hilo rojo va primero porque los caminos se amarran sobre él y sobre los grises */
-  if(i===0)segs.reverse();
+  if(i===0){planB1(segs).forEach(s=>{if(s.conn)return;STEPS.push(s);});}else{
   if(i===1){const red=segs[0],grey=segs.slice(1,9).sort((u,v)=>v.a.y-u.a.y),cam=segs.slice(9);segs=[red,...grey,...cam];}
   if(i===2){const hz=segs.filter(s=>Math.abs(s.a.y-s.b.y)<.001).sort((u,v)=>u.a.y-v.a.y),vt=segs.filter(s=>Math.abs(s.a.y-s.b.y)>=.001).sort((u,v)=>u.a.x-v.a.x);segs=[...hz,...vt].reverse();}
   segs.forEach(s=>{let na=nameAt(i,s.a),nb=nameAt(i,s.b);
@@ -94,9 +141,10 @@ let cami=0;[0,1,2].forEach(i=>{let segs=frames[i].userData.segs.map(s=>({a:s[0],
     if(na&&nb&&(s.a.x<s.b.x-.001||(Math.abs(s.a.x-s.b.x)<.001&&s.a.y<s.b.y))){[s.a,s.b]=[s.b,s.a];[na,nb]=[nb,na];}
     const st={f:i,a:s.a,b:s.b,c:s.c,na,nb};
     if(!na){st.title="Camino "+(++cami);st.na="hilo rojo";st.det=`Camino: sale del hilo rojo del medio a ${cmf(W-s.a.x)} cm del borde izquierdo y se amarra al hilo gris de ${cmf(s.b.y)} cm del piso, a ${cmf(W-s.b.x)} cm del borde izquierdo (mirando desde atrás). Ahí cuelga una etiqueta de destino.`;st.nb="hilo gris";}
-    STEPS.push(st);});
+    STEPS.push(st);});}
   if(i<2){const mr=NAILS[i].find(n=>n.tag==="IZ"&&Math.abs(n.p.y-yM)<.002),ml=NAILS[i+1].find(n=>n.tag==="DE"&&Math.abs(n.p.y-yM)<.002);
-    STEPS.push({f:i,conn:true,a:mr.p,b:null,c:0xb3261e,na:mr.name,nb:`${ml.name} (B${i+2})`,det:`Hilo rojo que une los bastidores: sale de ${mr.name} del bastidor ${i+1} (el larguero de la bisagra), pasa por la junta y se amarra en ${ml.name} del bastidor ${i+2}, la puntilla del medio (${cmf(yM)} cm del piso).`});}});
+    STEPS.push({f:i,conn:true,a:mr.p,b:null,c:0xb3261e,na:mr.name,nb:`${ml.name} (B${i+2})`,det:`Hilo rojo que une los bastidores: sale de ${mr.name} del bastidor ${i+1} (el larguero de la bisagra), pasa por la junta y se amarra en ${ml.name} del bastidor ${i+2}, la puntilla del medio (${cmf(yM)} cm del piso).`});
+    if(i===0)STEPS[STEPS.length-1].det=`Es el mismo hilo rojo vivo, sin cortar: desde ${mr.name} pasa por la junta de la bisagra y llega a ${ml.name} del bastidor 2, la puntilla del medio (${cmf(yM)} cm del piso). Ahí amarra y corta.`;}});
 const FIRST=[0,1,2].map(i=>STEPS.findIndex(s=>s.f===i));const COUNT=[0,1,2].map(i=>STEPS.filter(s=>s.f===i).length);
 /* ---------- dibujo de la guía: marcadores al frente del marco, hilos en el plano del frente ---------- */
 const ZG=-(t/2+ST.NL+.003);const guide=frames.map(f=>{const g=new T.Group();f.add(g);return g;});
@@ -105,6 +153,7 @@ const hiMat=new T.MeshBasicMaterial({color:0xb3261e,side:T.DoubleSide}),hiG=new 
 NAILS.forEach((L,i)=>L.forEach(n=>{const d=new T.Mesh(mk,mkMat);d.position.set(n.p.x,n.p.y,ZG);const r=new T.Mesh(mkRing,ringMat);r.position.set(n.p.x,n.p.y,ZG+.0002);guide[i].add(d,r);}));
 const hiA=new T.Mesh(hiG,hiMat),hiB=new T.Mesh(hiG,new T.MeshBasicMaterial({color:0x1b1a18,side:T.DoubleSide}));
 const cyl=new T.CylinderGeometry(1,1,1,8,1,true),up=new T.Vector3(0,1,0);
+function rods(s,r,color){const g=new T.Group(),p=s.path||[s.a,s.b];for(let k=1;k<p.length;k++)g.add(rod(p[k-1],p[k],r,color));return g;}
 function rod(a,b,r,color){const A=new T.Vector3(a.x,a.y,ZG-.001),B=new T.Vector3(b.x,b.y,ZG-.001),d=B.clone().sub(A);const m=new T.Mesh(cyl,new T.MeshBasicMaterial({color}));m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(up,d.clone().normalize());m.scale.set(r,d.length(),r);return m;}
 const drawn=new T.Group();
 /* ---------- cámara de frente, ortográfica ---------- */
@@ -129,13 +178,13 @@ const tabs=$("tabs");[0,1,2].forEach(i=>{const b=document.createElement("button"
 function go(k){cur=Math.max(0,Math.min(STEPS.length-1,k));const st=STEPS[cur];rng.value=cur;
   if(st.f!==frame){frame=st.f;guide.forEach((g,i)=>g.visible=i===frame);fitCam(frame);buildLabels(frame);[...tabs.children].forEach((b,i)=>b.classList.toggle("on",i===frame));}
   drawn.removeFromParent();drawn.clear();guide[frame].add(drawn);
-  const all=$("cAll").checked;STEPS.forEach((s,j)=>{if(s.f!==frame||s.conn)return;if(j<cur||(all&&j!==cur))drawn.add(rod(s.a,s.b,j<cur?.0016:.0011,j<cur?s.c:0xc9c4ba));});
-  if(!st.conn){drawn.add(rod(st.a,st.b,.0032,st.c));}
+  const all=$("cAll").checked;STEPS.forEach((s,j)=>{if(s.f!==frame||s.conn)return;if(j<cur||(all&&j!==cur))drawn.add(rods(s,j<cur?(s.borde?.0011:.0016):.0011,j<cur?s.c:0xc9c4ba));});
+  if(!st.conn){drawn.add(rods(st,.0032,st.c));}
   hiA.position.set(st.a.x,st.a.y,ZG-.002);drawn.add(hiA);if(st.b&&!st.conn){hiB.position.set(st.b.x,st.b.y,ZG-.002);drawn.add(hiB);}
   const n=cur-FIRST[frame]+1,[cn,hex]=COL[st.c];
-  $("cnt").textContent=`Bastidor ${frame+1} · ${NAMES[frame]} — hilo ${n} de ${COUNT[frame]}`;
+  $("cnt").textContent=`Bastidor ${frame+1} · ${NAMES[frame]} — paso ${n} de ${COUNT[frame]}`+(st.hilo?` · ${st.hilo}`:"");
   $("from").innerHTML=st.title?st.title:st.conn?`${st.na}<span class="ar">→</span>B${frame+2}`:`${st.na}<span class="ar">→</span>${st.nb}`;
-  $("col").innerHTML=`<span class="sw" style="background:${hex}"></span>${cn[0].toUpperCase()+cn.slice(1)}`;
+  $("col").innerHTML=`<span class="sw" style="background:${hex}"></span>${cn[0].toUpperCase()+cn.slice(1)}`+(st.borde?`<span style="font-weight:500;color:var(--muted)">· por el borde</span>`:"");
   $("det").textContent=st.det||`Amarrar en ${st.na}, tensar recto y amarrar en ${st.nb}.`;}
 $("prev").onclick=()=>go(cur-1);$("next").onclick=()=>go(cur+1);rng.oninput=e=>go(+e.target.value);
 $("cAll").onchange=()=>go(cur);$("cNum").onchange=()=>go(cur);
